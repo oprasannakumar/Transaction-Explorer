@@ -10,7 +10,6 @@
 <style>
 *{box-sizing:border-box}
 
-/* ===== BASE ===== */
 body{
   margin:0;
   font-family:'Inter',sans-serif;
@@ -53,7 +52,6 @@ button{
   cursor:pointer;
 }
 
-/* ===== TABLE (NO HORIZONTAL SCROLL) ===== */
 .table-wrap{
   margin-top:12px;
   overflow-x:hidden;
@@ -73,7 +71,6 @@ th,td{
   text-align:left;
   white-space:normal;
   word-break:break-word;
-  overflow-wrap:anywhere;
 }
 
 th{
@@ -81,9 +78,6 @@ th{
   font-weight:600;
 }
 
-tr:hover td{background:#f9fafb}
-
-/* ===== FILTER ===== */
 .filter-box{position:relative}
 
 .filter-box input{
@@ -146,18 +140,9 @@ tr:hover td{background:#f9fafb}
   color:#6b7280;
 }
 
-/* =========================
-   MOBILE CARD VIEW
-========================= */
+/* ===== MOBILE ===== */
 @media (max-width:768px){
-
-  .table-wrap{overflow-x:hidden}
-
-  table, thead, tbody, tr{
-    display:block;
-    width:100%;
-  }
-
+  table, thead, tbody, tr{display:block}
   thead{display:none}
 
   tbody tr{
@@ -166,7 +151,6 @@ tr:hover td{background:#f9fafb}
     border:1px solid #e5e7eb;
     border-radius:14px;
     padding:14px;
-    box-shadow:0 4px 12px rgba(0,0,0,.06);
   }
 
   tbody td{
@@ -174,34 +158,13 @@ tr:hover td{background:#f9fafb}
     grid-template-columns:120px 1fr;
     gap:10px;
     padding:7px 0;
-    border:none;
     font-size:14px;
-    min-height:32px;
-    align-items:center;
   }
 
   tbody td::before{
     content:attr(data-label);
     font-weight:600;
-    color:#374151;
-    white-space:nowrap;
   }
-
-  tbody td{
-    word-break:normal;
-    overflow-wrap:anywhere;
-  }
-
-  .filter-dropdown{
-    width:94vw;
-    max-width:360px;
-  }
-}
-
-.empty{
-  text-align:center;
-  padding:16px;
-  color:#6b7280;
 }
 </style>
 </head>
@@ -219,7 +182,9 @@ tr:hover td{background:#f9fafb}
   </div>
 
   <div class="table-wrap" id="result">
-    <div class="empty">Select date range</div>
+    <div style="text-align:center;color:#6b7280;padding:16px">
+      Select date range
+    </div>
   </div>
 </div>
 
@@ -237,12 +202,8 @@ function fetchData(){
   fetch(`${API_URL}?from=${from}&to=${to}`)
     .then(r=>r.json())
     .then(d=>{
-      if(!d.length){
-        result.innerHTML='<div class="empty">No transactions found</div>';
-        return;
-      }
       fullData=d;
-      columns=Object.keys(d[0]);
+      columns=Object.keys(d[0]||{});
       filters={};
       renderTable();
     });
@@ -279,9 +240,13 @@ function renderTable(){
   renderRows(fullData);
 }
 
-/* ===== FILTER LOGIC ===== */
+/* ===== FILTER INIT (ZERO SAFE) ===== */
 function initFilter(col){
-  const values=[...new Set(fullData.map(r=>r[col]).filter(v=>v !== null && v !== undefined && v !== ""))].sort();
+  const values=[...new Set(
+    fullData.map(r => r[col])
+      .filter(v => v !== null && v !== undefined)
+  )].sort();
+
   filters[col]=new Set();
 
   const list=document.getElementById(`list-${col}`);
@@ -290,13 +255,14 @@ function initFilter(col){
       <input type="checkbox"
              onclick="event.stopPropagation()"
              onchange="toggleValue('${col}','${encodeURIComponent(v)}')">
-      ${v}
+      ${v === "" ? "—" : v}
     </label>
   `).join("");
 
   document.getElementById(`count-${col}`).textContent=`Displaying ${values.length}`;
 }
 
+/* ===== FILTER ACTIONS ===== */
 function toggleFilter(e,col){
   e.stopPropagation();
   document.querySelectorAll(".filter-dropdown").forEach(d=>d.style.display="none");
@@ -323,7 +289,7 @@ function renderRows(data){
   tbody.innerHTML=data.map(r=>
     `<tr>${columns.map(c=>`
       <td data-label="${c.replace(/_/g,' ')}">
-        ${r[c] === null || r[c] === undefined || r[c] === "" ? "—" : r[c]}
+        ${(r[c] === null || r[c] === undefined || r[c] === "") ? "—" : r[c]}
       </td>
     `).join("")}</tr>`
   ).join("");
@@ -336,7 +302,9 @@ function searchFilter(col,term){
 }
 
 function selectAll(col){
-  const vals=[...new Set(fullData.map(r=>r[col]).filter(v=>v !== null && v !== undefined && v !== ""))];
+  const vals=[...new Set(
+    fullData.map(r=>r[col]).filter(v=>v !== null && v !== undefined)
+  )];
   filters[col]=new Set(vals);
   document.querySelectorAll(`#list-${col} input`).forEach(i=>i.checked=true);
   applyFilters();
