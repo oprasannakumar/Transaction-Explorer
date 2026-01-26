@@ -56,13 +56,13 @@ button{
 /* ===== TABLE (NO HORIZONTAL SCROLL) ===== */
 .table-wrap{
   margin-top:12px;
-  overflow-x:hidden; /* 🚫 no right scroll */
+  overflow-x:hidden;
 }
 
 table{
   width:100%;
   border-collapse:collapse;
-  table-layout:auto; /* 🔑 auto-fit columns */
+  table-layout:auto;
   font-size:12px;
 }
 
@@ -71,8 +71,6 @@ th,td{
   border-bottom:1px solid #e5e7eb;
   vertical-align:top;
   text-align:left;
-
-  /* 🔑 wrapping rules */
   white-space:normal;
   word-break:break-word;
   overflow-wrap:anywhere;
@@ -85,7 +83,7 @@ th{
 
 tr:hover td{background:#f9fafb}
 
-/* ===== FILTER (COMPACT) ===== */
+/* ===== FILTER ===== */
 .filter-box{position:relative}
 
 .filter-box input{
@@ -283,7 +281,7 @@ function renderTable(){
 
 /* ===== FILTER LOGIC ===== */
 function initFilter(col){
-  const values=[...new Set(fullData.map(r=>r[col]).filter(v=>v))].sort();
+  const values=[...new Set(fullData.map(r=>r[col]).filter(v=>v !== null && v !== undefined && v !== ""))].sort();
   filters[col]=new Set();
 
   const list=document.getElementById(`list-${col}`);
@@ -324,7 +322,9 @@ function renderRows(data){
   const tbody=document.getElementById("tbody");
   tbody.innerHTML=data.map(r=>
     `<tr>${columns.map(c=>`
-      <td data-label="${c.replace(/_/g,' ')}">${r[c]||"—"}</td>
+      <td data-label="${c.replace(/_/g,' ')}">
+        ${r[c] === null || r[c] === undefined || r[c] === "" ? "—" : r[c]}
+      </td>
     `).join("")}</tr>`
   ).join("");
 }
@@ -336,7 +336,7 @@ function searchFilter(col,term){
 }
 
 function selectAll(col){
-  const vals=[...new Set(fullData.map(r=>r[col]).filter(v=>v))];
+  const vals=[...new Set(fullData.map(r=>r[col]).filter(v=>v !== null && v !== undefined && v !== ""))];
   filters[col]=new Set(vals);
   document.querySelectorAll(`#list-${col} input`).forEach(i=>i.checked=true);
   applyFilters();
