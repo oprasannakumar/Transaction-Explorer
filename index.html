@@ -10,6 +10,7 @@
 <style>
 *{box-sizing:border-box}
 
+/* ===== BASE ===== */
 body{
   margin:0;
   font-family:'Inter',sans-serif;
@@ -34,7 +35,10 @@ body{
   flex-wrap:wrap;
 }
 
-.controls{display:flex;gap:8px}
+.controls{
+  display:flex;
+  gap:8px;
+}
 
 input,button{
   height:38px;
@@ -52,26 +56,26 @@ button{
 }
 button:hover{background:#1e40af}
 
-/* ===== TABLE ===== */
+/* ===== TABLE (DESKTOP) ===== */
 .table-wrap{
   margin-top:14px;
-  overflow-x:hidden; /* 🚫 no horizontal scroll */
+  overflow-x:hidden;
 }
 
 table{
   width:100%;
   border-collapse:collapse;
-  font-size:12px; /* 🔽 smaller font */
-  table-layout:fixed; /* 🔑 forces compact columns */
+  font-size:12px;
+  table-layout:fixed;
 }
 
 th,td{
-  padding:6px 8px; /* 🔽 less padding */
+  padding:6px 8px;
   border-bottom:1px solid #e5e7eb;
   vertical-align:top;
   word-wrap:break-word;
   word-break:break-word;
-  white-space:normal; /* ✅ allow wrapping */
+  white-space:normal;
 }
 
 th{
@@ -81,25 +85,24 @@ th{
 
 tr:hover td{background:#f9fafb}
 
+td{
+  max-width:160px;
+}
+
 .empty{
   text-align:center;
   padding:20px;
   color:#6b7280;
 }
 
-/* Limit very wide columns */
-td{
-  max-width:160px;
-}
-
-/* ===== FILTER ===== */
+/* ===== FILTER UI ===== */
 .filter-box{position:relative}
 
 .filter-dropdown{
   position:absolute;
   top:32px;
   left:0;
-  width:200px; /* 🔽 narrower */
+  width:200px;
   background:#fff;
   border:1px solid #d1d5db;
   border-radius:8px;
@@ -142,7 +145,6 @@ td{
   padding:3px;
   font-size:12px;
 }
-
 .filter-item:hover{background:#f1f5f9}
 
 .filter-count{
@@ -150,8 +152,61 @@ td{
   padding:4px 8px;
   color:#6b7280;
 }
-</style>
 
+/* =========================
+   MOBILE RESPONSIVE VIEW
+========================= */
+@media (max-width:768px){
+
+  table, thead, tbody, th, tr{
+    display:block;
+  }
+
+  thead{
+    display:none;
+  }
+
+  tbody tr{
+    background:#fff;
+    margin-bottom:12px;
+    border:1px solid #e5e7eb;
+    border-radius:10px;
+    padding:10px;
+    box-shadow:0 4px 12px rgba(0,0,0,.05);
+  }
+
+  tbody td{
+    display:flex;
+    justify-content:space-between;
+    padding:6px 4px;
+    border:none;
+    font-size:13px;
+  }
+
+  tbody td::before{
+    content:attr(data-label);
+    font-weight:600;
+    color:#374151;
+    padding-right:10px;
+    flex:1;
+  }
+
+  tbody td{
+    flex:2;
+    text-align:right;
+  }
+
+  .filter-dropdown{
+    width:90vw;
+    max-width:320px;
+  }
+
+  input,button{
+    height:42px;
+    font-size:14px;
+  }
+}
+</style>
 </head>
 
 <body>
@@ -229,7 +284,7 @@ function renderTable(){
   renderRows(fullData);
 }
 
-/* ===== SMART SORT WITH FLEXIBLE DATE PARSING ===== */
+/* ===== DATE & SORT ===== */
 function smartSort(values,col){
   if(col.toLowerCase().includes("date")){
     return values.sort((a,b)=>parseDate(a)-parseDate(b));
@@ -242,34 +297,24 @@ function smartSort(values,col){
 
 function parseDate(str){
   if(!str) return new Date(0);
-
-  // Match: d-m-yyyy | dd-mm-yyyy | d-MMM-yyyy | dd-MMM-yyyy
-  const m = str.match(/^(\d{1,2})-([A-Za-z]{3}|\d{1,2})-(\d{4})$/);
+  if(/^\d{4}-\d{2}-\d{2}$/.test(str)){
+    const [y,m,d]=str.split("-");
+    return new Date(y,m-1,d);
+  }
+  const m=str.match(/^(\d{1,2})-([A-Za-z]{3}|\d{1,2})-(\d{4})$/);
   if(!m) return new Date(0);
-
-  const day = parseInt(m[1],10);
-  const monthRaw = m[2];
-  const year = parseInt(m[3],10);
-
-  const months = {
-    Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,
-    Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11
-  };
-
-  const month = isNaN(monthRaw)
-    ? months[monthRaw]
-    : parseInt(monthRaw,10)-1;
-
-  return new Date(year, month, day);
+  const months={Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+  const month=isNaN(m[2])?months[m[2]]:m[2]-1;
+  return new Date(m[3],month,m[1]);
 }
 
-/* ===== FILTER INIT ===== */
+/* ===== FILTER ===== */
 function initFilter(col){
   let values=[...new Set(fullData.map(r=>r[col]).filter(v=>v))];
   values=smartSort(values,col);
 
   filters[col]=new Set();
-  const list=document.getElementById(`list-${col}`);
+  list=document.getElementById(`list-${col}`);
   list.innerHTML=values.map(v=>`
     <label class="filter-item">
       <input type="checkbox"
@@ -304,7 +349,9 @@ function applyFilters(){
 
 function renderRows(data){
   tbody.innerHTML=data.map(r=>
-    `<tr>${columns.map(c=>`<td>${r[c]||""}</td>`).join("")}</tr>`
+    `<tr>${columns.map(c=>`
+      <td data-label="${c.replace(/_/g,' ')}">${r[c]||""}</td>
+    `).join("")}</tr>`
   ).join("");
 }
 
