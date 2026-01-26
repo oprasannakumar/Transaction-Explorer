@@ -15,35 +15,35 @@ body{
   margin:0;
   font-family:'Inter',sans-serif;
   background:#eef2f7;
-  padding:12px;
+  padding:10px;
 }
 
 .card{
   width:100%;
   background:#fff;
-  border-radius:14px;
-  padding:16px;
-  box-shadow:0 12px 28px rgba(0,0,0,.08);
+  border-radius:12px;
+  padding:12px;
+  box-shadow:0 10px 24px rgba(0,0,0,.08);
 }
 
 .header{
   display:flex;
   flex-wrap:wrap;
   justify-content:space-between;
-  gap:12px;
+  gap:10px;
 }
 
 .controls{
   display:flex;
-  gap:8px;
+  gap:6px;
 }
 
 input,button{
-  height:40px;
-  padding:0 12px;
-  border-radius:8px;
+  height:36px;
+  padding:0 10px;
+  border-radius:6px;
   border:1px solid #d1d5db;
-  font-size:14px;
+  font-size:13px;
 }
 
 button{
@@ -53,20 +53,20 @@ button{
   cursor:pointer;
 }
 
-/* ===== TABLE (DESKTOP) ===== */
+/* ===== TABLE (DESKTOP – COMPACT) ===== */
 .table-wrap{
-  margin-top:16px;
+  margin-top:12px;
   overflow-x:auto;
 }
 
 table{
   width:100%;
   border-collapse:collapse;
-  font-size:13px;
+  font-size:12px;            /* 🔽 smaller font */
 }
 
 th,td{
-  padding:8px 10px;
+  padding:5px 6px;           /* 🔽 tighter padding */
   border-bottom:1px solid #e5e7eb;
   text-align:left;
   vertical-align:top;
@@ -80,18 +80,24 @@ th{
 
 tr:hover td{background:#f9fafb}
 
-/* ===== FILTER ===== */
+/* ===== FILTER (COMPACT) ===== */
 .filter-box{position:relative}
+
+.filter-box input{
+  height:26px;               /* 🔽 slim filter */
+  font-size:11px;
+  padding:0 6px;
+}
 
 .filter-dropdown{
   position:absolute;
-  top:38px;
+  top:28px;
   left:0;
-  width:220px;
+  width:200px;
   background:#fff;
   border:1px solid #d1d5db;
-  border-radius:8px;
-  box-shadow:0 8px 20px rgba(0,0,0,.12);
+  border-radius:6px;
+  box-shadow:0 8px 18px rgba(0,0,0,.12);
   z-index:100;
   display:none;
 }
@@ -99,8 +105,8 @@ tr:hover td{background:#f9fafb}
 .filter-header{
   display:flex;
   justify-content:space-between;
-  padding:6px 10px;
-  font-size:11px;
+  padding:4px 8px;
+  font-size:10px;
 }
 
 .filter-header span{
@@ -110,34 +116,35 @@ tr:hover td{background:#f9fafb}
 
 .filter-search{
   width:100%;
-  padding:6px 10px;
+  padding:4px 8px;
   border:none;
   border-bottom:1px solid #e5e7eb;
   outline:none;
+  font-size:11px;
 }
 
 .filter-list{
-  max-height:180px;
+  max-height:160px;
   overflow:auto;
-  padding:6px;
+  padding:4px;
 }
 
 .filter-item{
   display:flex;
   align-items:center;
   gap:6px;
-  padding:4px;
-  font-size:13px;
+  padding:2px 4px;
+  font-size:11px;
 }
 
 .filter-count{
-  font-size:11px;
-  padding:4px 10px;
+  font-size:10px;
+  padding:3px 8px;
   color:#6b7280;
 }
 
 /* =========================
-   MOBILE CARD VIEW
+   MOBILE CARD VIEW (UNCHANGED)
 ========================= */
 @media (max-width:768px){
 
@@ -148,13 +155,11 @@ tr:hover td{background:#f9fafb}
     width:100%;
   }
 
-  thead{
-    display:none;
-  }
+  thead{display:none}
 
   tbody tr{
     background:#fff;
-    margin-bottom:16px;
+    margin-bottom:14px;
     border:1px solid #e5e7eb;
     border-radius:14px;
     padding:14px;
@@ -164,8 +169,8 @@ tr:hover td{background:#f9fafb}
   tbody td{
     display:grid;
     grid-template-columns:120px 1fr;
-    gap:12px;
-    padding:8px 0;
+    gap:10px;
+    padding:7px 0;
     border:none;
     font-size:14px;
     min-height:32px;
@@ -192,7 +197,7 @@ tr:hover td{background:#f9fafb}
 
 .empty{
   text-align:center;
-  padding:20px;
+  padding:16px;
   color:#6b7280;
 }
 </style>
@@ -302,13 +307,12 @@ function toggleValue(col,val){
 }
 
 function applyFilters(){
-  const filtered=fullData.filter(r=>{
+  renderRows(fullData.filter(r=>{
     return Object.keys(filters).every(c=>{
       if(!filters[c].size) return true;
       return filters[c].has(r[c]);
     });
-  });
-  renderRows(filtered);
+  }));
 }
 
 function renderRows(data){
@@ -339,7 +343,6 @@ function clearFilter(col){
   applyFilters();
 }
 
-/* CLOSE FILTER ON OUTSIDE CLICK */
 document.addEventListener("click",()=>{
   document.querySelectorAll(".filter-dropdown").forEach(d=>d.style.display="none");
 });
