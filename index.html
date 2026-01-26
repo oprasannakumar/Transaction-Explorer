@@ -60,14 +60,12 @@ button{
 table{
   width:100%;
   border-collapse:collapse;
-  table-layout:auto;
   font-size:12px;
 }
 
 th,td{
   padding:5px 6px;
   border-bottom:1px solid #e5e7eb;
-  vertical-align:top;
   text-align:left;
   white-space:normal;
   word-break:break-word;
@@ -76,68 +74,6 @@ th,td{
 th{
   background:#f8fafc;
   font-weight:600;
-}
-
-.filter-box{position:relative}
-
-.filter-box input{
-  height:24px;
-  font-size:11px;
-  padding:0 6px;
-}
-
-.filter-dropdown{
-  position:absolute;
-  top:26px;
-  left:0;
-  width:200px;
-  background:#fff;
-  border:1px solid #d1d5db;
-  border-radius:6px;
-  box-shadow:0 8px 18px rgba(0,0,0,.12);
-  z-index:100;
-  display:none;
-}
-
-.filter-header{
-  display:flex;
-  justify-content:space-between;
-  padding:4px 8px;
-  font-size:10px;
-}
-
-.filter-header span{
-  color:#2563eb;
-  cursor:pointer;
-}
-
-.filter-search{
-  width:100%;
-  padding:4px 8px;
-  border:none;
-  border-bottom:1px solid #e5e7eb;
-  outline:none;
-  font-size:11px;
-}
-
-.filter-list{
-  max-height:160px;
-  overflow:auto;
-  padding:4px;
-}
-
-.filter-item{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  padding:2px 4px;
-  font-size:11px;
-}
-
-.filter-count{
-  font-size:10px;
-  padding:3px 8px;
-  color:#6b7280;
 }
 
 /* ===== MOBILE ===== */
@@ -155,7 +91,7 @@ th{
 
   tbody td{
     display:grid;
-    grid-template-columns:120px 1fr;
+    grid-template-columns:130px 1fr;
     gap:10px;
     padding:7px 0;
     font-size:14px;
@@ -192,7 +128,13 @@ th{
 const API_URL =
 "https://script.google.com/macros/s/AKfycbx7UZ48h0TvA53h3dP0mAqwM2yz88bngxYctvJOJ_OKLuHOcllc7IPZAxGN3N0U0lQJ/exec";
 
-let fullData=[], columns=[], filters={};
+/* 👇 EXACT COLUMN NAMES (MATCH SHEET HEADERS) */
+const AMOUNT_COLUMNS = [
+  "Withdrawn Amount",
+  "Deposit Amount"
+];
+
+let fullData=[], columns=[];
 
 function fetchData(){
   const from=document.getElementById("from").value;
@@ -204,121 +146,45 @@ function fetchData(){
     .then(d=>{
       fullData=d;
       columns=Object.keys(d[0]||{});
-      filters={};
       renderTable();
     });
 }
 
 function renderTable(){
   let html=`<table><thead><tr>`;
-  columns.forEach(c=>html+=`<th>${c.replace(/_/g,' ')}</th>`);
-  html+=`</tr><tr>`;
-
-  columns.forEach(c=>{
-    html+=`
-    <th>
-      <div class="filter-box">
-        <input readonly placeholder="Filter" onclick="toggleFilter(event,'${c}')">
-        <div class="filter-dropdown" id="dd-${c}" onclick="event.stopPropagation()">
-          <div class="filter-header">
-            <span onclick="selectAll('${c}')">Select all</span>
-            <span onclick="clearFilter('${c}')">Clear</span>
-          </div>
-          <input class="filter-search" placeholder="Search"
-                 oninput="searchFilter('${c}',this.value)">
-          <div class="filter-list" id="list-${c}"></div>
-          <div class="filter-count" id="count-${c}"></div>
-        </div>
-      </div>
-    </th>`;
-  });
-
+  columns.forEach(c=>html+=`<th>${c}</th>`);
   html+=`</tr></thead><tbody id="tbody"></tbody></table>`;
   result.innerHTML=html;
-
-  columns.forEach(initFilter);
   renderRows(fullData);
-}
-
-/* ===== FILTER INIT (ZERO SAFE) ===== */
-function initFilter(col){
-  const values=[...new Set(
-    fullData.map(r => r[col])
-      .filter(v => v !== null && v !== undefined)
-  )].sort();
-
-  filters[col]=new Set();
-
-  const list=document.getElementById(`list-${col}`);
-  list.innerHTML=values.map(v=>`
-    <label class="filter-item">
-      <input type="checkbox"
-             onclick="event.stopPropagation()"
-             onchange="toggleValue('${col}','${encodeURIComponent(v)}')">
-      ${v === "" ? "—" : v}
-    </label>
-  `).join("");
-
-  document.getElementById(`count-${col}`).textContent=`Displaying ${values.length}`;
-}
-
-/* ===== FILTER ACTIONS ===== */
-function toggleFilter(e,col){
-  e.stopPropagation();
-  document.querySelectorAll(".filter-dropdown").forEach(d=>d.style.display="none");
-  document.getElementById(`dd-${col}`).style.display="block";
-}
-
-function toggleValue(col,val){
-  val=decodeURIComponent(val);
-  filters[col].has(val)?filters[col].delete(val):filters[col].add(val);
-  applyFilters();
-}
-
-function applyFilters(){
-  renderRows(fullData.filter(r=>{
-    return Object.keys(filters).every(c=>{
-      if(!filters[c].size) return true;
-      return filters[c].has(r[c]);
-    });
-  }));
 }
 
 function renderRows(data){
   const tbody=document.getElementById("tbody");
+
   tbody.innerHTML=data.map(r=>
-    `<tr>${columns.map(c=>`
-      <td data-label="${c.replace(/_/g,' ')}">
-        ${(r[c] === null || r[c] === undefined || r[c] === "") ? "—" : r[c]}
-      </td>
-    `).join("")}</tr>`
+    `<tr>${
+      columns.map(c=>{
+        let val = r[c];
+
+        /* ✅ FORCE AMOUNT VISIBILITY */
+        if (AMOUNT_COLUMNS.includes(c)) {
+          if (val === "" || val === null || val === undefined) {
+            val = "0";
+          }
+        } else {
+          if (val === "" || val === null || val === undefined) {
+            val = "—";
+          }
+        }
+
+        return `
+          <td data-label="${c}">
+            ${val}
+          </td>`;
+      }).join("")
+    }</tr>`
   ).join("");
 }
-
-function searchFilter(col,term){
-  term=term.toLowerCase();
-  document.querySelectorAll(`#list-${col} label`)
-    .forEach(l=>l.style.display=l.innerText.toLowerCase().includes(term)?"":"none");
-}
-
-function selectAll(col){
-  const vals=[...new Set(
-    fullData.map(r=>r[col]).filter(v=>v !== null && v !== undefined)
-  )];
-  filters[col]=new Set(vals);
-  document.querySelectorAll(`#list-${col} input`).forEach(i=>i.checked=true);
-  applyFilters();
-}
-
-function clearFilter(col){
-  filters[col].clear();
-  document.querySelectorAll(`#list-${col} input`).forEach(i=>i.checked=false);
-  applyFilters();
-}
-
-document.addEventListener("click",()=>{
-  document.querySelectorAll(".filter-dropdown").forEach(d=>d.style.display="none");
-});
 </script>
 
 </body>
