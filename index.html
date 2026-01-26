@@ -39,8 +39,8 @@ body{
 }
 
 input,button{
-  height:36px;
-  padding:0 10px;
+  height:34px;
+  padding:0 8px;
   border-radius:6px;
   border:1px solid #d1d5db;
   font-size:13px;
@@ -53,29 +53,34 @@ button{
   cursor:pointer;
 }
 
-/* ===== TABLE (DESKTOP – COMPACT) ===== */
+/* ===== TABLE (NO HORIZONTAL SCROLL) ===== */
 .table-wrap{
   margin-top:12px;
-  overflow-x:auto;
+  overflow-x:hidden; /* 🚫 no right scroll */
 }
 
 table{
   width:100%;
   border-collapse:collapse;
-  font-size:12px;            /* 🔽 smaller font */
+  table-layout:auto; /* 🔑 auto-fit columns */
+  font-size:12px;
 }
 
 th,td{
-  padding:5px 6px;           /* 🔽 tighter padding */
+  padding:5px 6px;
   border-bottom:1px solid #e5e7eb;
-  text-align:left;
   vertical-align:top;
+  text-align:left;
+
+  /* 🔑 wrapping rules */
+  white-space:normal;
+  word-break:break-word;
+  overflow-wrap:anywhere;
 }
 
 th{
   background:#f8fafc;
   font-weight:600;
-  white-space:nowrap;
 }
 
 tr:hover td{background:#f9fafb}
@@ -84,14 +89,14 @@ tr:hover td{background:#f9fafb}
 .filter-box{position:relative}
 
 .filter-box input{
-  height:26px;               /* 🔽 slim filter */
+  height:24px;
   font-size:11px;
   padding:0 6px;
 }
 
 .filter-dropdown{
   position:absolute;
-  top:28px;
+  top:26px;
   left:0;
   width:200px;
   background:#fff;
@@ -144,7 +149,7 @@ tr:hover td{background:#f9fafb}
 }
 
 /* =========================
-   MOBILE CARD VIEW (UNCHANGED)
+   MOBILE CARD VIEW
 ========================= */
 @media (max-width:768px){
 
