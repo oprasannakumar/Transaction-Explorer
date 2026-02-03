@@ -2,6 +2,412 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<title>Financial Intelligence Hub</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #2563eb;
+    --brand-soft: rgba(37, 99, 235, 0.1);
+    --bg-main: #f3f4f6;
+    --surface: #ffffff;
+    --text-primary: #111827;
+    --text-secondary: #6b7280;
+    --border-color: #e5e7eb;
+    --success: #10b981;
+    --error: #ef4444;
+    --radius: 12px;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body { 
+    font-family: 'Inter', sans-serif; 
+    background-color: var(--bg-main); 
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .layout-wrapper {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 32px 24px;
+  }
+
+  /* --- Top Navigation / Header --- */
+  .top-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+  }
+
+  .nav-brand { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+  .nav-brand .logo-box {
+    background: var(--brand);
+    color: white;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 20px;
+    box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+  }
+  .nav-brand h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.025em; }
+
+  .filter-pill {
+    background: var(--surface);
+    padding: 6px;
+    border-radius: 16px;
+    display: flex;
+    gap: 8px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+  }
+
+  input[type="date"], button {
+    border: none;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    outline: none;
+  }
+
+  input[type="date"] { background: #f9fafb; color: var(--text-secondary); border: 1px solid transparent; }
+  input[type="date"]:focus { border-color: var(--brand); background: #fff; }
+
+  button { 
+    cursor: pointer; 
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  .btn-primary { background: var(--brand); color: white; }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
+
+  .btn-trace { background: var(--success); color: white; }
+  .btn-delete { background: var(--error); color: white; }
+
+  /* --- Metrics Hub --- */
+  .metrics-hub {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-bottom: 40px;
+  }
+
+  .metric-card {
+    background: var(--surface);
+    padding: 24px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border-color);
+    transition: transform 0.2s, border-color 0.2s;
+    position: relative;
+  }
+
+  .metric-card.interactive:hover {
+    border-color: var(--brand);
+    cursor: pointer;
+    transform: translateY(-4px);
+  }
+
+  .metric-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+  .metric-value { font-size: 28px; font-weight: 700; margin: 8px 0; display: block; }
+  .metric-footer { font-size: 12px; display: flex; align-items: center; gap: 4px; }
+  
+  .trend-up { color: var(--success); }
+  .trend-down { color: var(--error); }
+
+  /* --- Data Container --- */
+  .data-container {
+    background: var(--surface);
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05);
+    overflow: hidden;
+  }
+
+  .sheet-block { margin: 24px; border-radius: 12px; border: 1px solid #f3f4f6; overflow: hidden; }
+  .sheet-title { 
+    background: #f9fafb; 
+    padding: 16px 24px; 
+    font-size: 13px; 
+    font-weight: 600; 
+    color: var(--text-secondary);
+    display: flex; justify-content: space-between;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th { padding: 16px 24px; text-align: left; font-size: 12px; color: var(--text-secondary); border-bottom: 1px solid #f3f4f6; text-transform: uppercase; letter-spacing: 0.025em; }
+  td { padding: 16px 24px; font-size: 14px; color: var(--text-primary); border-bottom: 1px solid #f9fafb; }
+
+  .row-interactive { cursor: pointer; transition: background 0.15s; }
+  .row-interactive:hover { background-color: var(--brand-soft); }
+  .row-link-icon { color: var(--brand); font-size: 14px; margin-right: 10px; }
+
+  .empty-state { text-align: center; padding: 120px 40px; color: var(--text-secondary); }
+  .empty-state h3 { color: var(--text-primary); margin-bottom: 8px; }
+
+  @media(max-width:992px){
+    .top-nav { flex-direction: column; align-items: flex-start; gap: 20px; }
+    .filter-pill { width: 100%; flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+
+<div class="layout-wrapper">
+  <nav class="top-nav">
+    <div class="nav-brand" onclick="location.reload()">
+      <div class="logo-box">₹</div>
+      <h1>Analysis Hub</h1>
+    </div>
+    <div class="filter-pill">
+      <input type="date" id="from">
+      <input type="date" id="to">
+      <button onclick="fetchData()" class="btn-primary">Analyze</button>
+      <button id="traceBtn" onclick="traceSelected()" class="btn-trace" style="display:none;">
+        Trace Selection (<span id="trace-count">0</span>)
+      </button>
+      <button id="deleteBtn" onclick="deleteSelected()" class="btn-delete" style="display:none;">
+        Delete (<span id="del-count">0</span>)
+      </button>
+    </div>
+  </nav>
+
+  <section id="summary" class="metrics-hub">
+    <div class="metric-card interactive" onclick="fetchRange('Savings')">
+      <span class="metric-label">Liquidity Pool 🔗</span>
+      <span id="raw-savings" class="metric-value">₹0.00</span>
+      <div class="metric-footer"><span class="trend-up">●</span> Active Accounts</div>
+    </div>
+    <div class="metric-card interactive" onclick="fetchRange('CC')">
+      <span class="metric-label">Credit Exposure 🔗</span>
+      <span id="raw-cc" class="metric-value">₹0.00</span>
+      <div class="metric-footer"><span class="trend-down">●</span> Used Limits</div>
+    </div>
+    <div class="metric-card" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: white;">
+      <span class="metric-label" style="color: rgba(255,255,255,0.6)">Net Portfolio</span>
+      <span id="net-balance" class="metric-value">₹0.00</span>
+      <div class="metric-footer" style="color: rgba(255,255,255,0.4)">Consolidated available</div>
+    </div>
+    <div class="metric-card">
+      <span class="metric-label">Session Inflow</span>
+      <span id="total-dep" class="metric-value" style="color: var(--success);">₹0.00</span>
+    </div>
+    <div class="metric-card">
+      <span class="metric-label">Session Outflow</span>
+      <span id="total-with" class="metric-value" style="color: var(--error);">₹0.00</span>
+    </div>
+  </section>
+
+  <main id="result" class="data-container">
+    <div class="empty-state">
+      <div style="font-size: 48px; margin-bottom: 20px; opacity: 0.2;">📊</div>
+      <h3>No Data Selected</h3>
+      <p>Enter a date range or click a metric card to begin deep-dive analysis.</p>
+    </div>
+  </main>
+</div>
+
+<script>
+// --- CORE LOGIC (Maintained from your stable version) ---
+const API_URL = "https://script.google.com/macros/s/AKfycbxeyI-iKfYu216UnB-6HBW1uuIwTzjykzOdLXaWK2JzxEl7XUF5ytr9hYWKmq4Batdtgg/exec";
+let deleteSet = new Set();
+let isNamedRangeView = false;
+let currentRangeName = '';
+let currentStats = { net: 0, rawS: 0, rawC: 0 };
+
+async function initDashboard() {
+  try {
+    const r = await fetch(API_URL, { redirect: "follow" });
+    const res = await r.json();
+    currentStats = { net: res.netBalance, rawS: res.rawSavings, rawC: res.rawCC };
+    updateSummaryUI(0, 0);
+  } catch(e) { renderMsg("Connection Sync Failed."); }
+}
+
+window.onload = initDashboard;
+
+function formatCurrency(val) {
+  const num = parseFloat(String(val || "").replace(/[₹, \s]/g, ""));
+  if (isNaN(num)) return val;
+  return "₹" + num.toLocaleString('en-IN', { minimumFractionDigits: 2 });
+}
+
+function parseAmount(v){
+  return parseFloat(String(v||"").replace(/[₹, \s]/g,"")) || 0;
+}
+
+async function fetchData() {
+  isNamedRangeView = false;
+  currentRangeName = '';
+  const from = document.getElementById("from").value, to = document.getElementById("to").value;
+  if(!from || !to) return alert("Select start and end dates.");
+  renderLoading("Compiling Statement...");
+  try {
+    const r = await fetch(`${API_URL}?from=${from}&to=${to}`, { redirect: "follow" });
+    const res = await r.json();
+    currentStats = { net: res.netBalance, rawS: res.rawSavings, rawC: res.rawCC };
+    renderData(res.transactions);
+  } catch(e) { renderMsg("Network error fetching statement.", true); }
+}
+
+async function fetchRange(name) {
+  isNamedRangeView = true;
+  currentRangeName = name;
+  renderLoading(`Indexing ${name} Registry...`);
+  try {
+    const r = await fetch(`${API_URL}?rangeName=${name}`, { redirect: "follow" });
+    const res = await r.json();
+    currentStats = { net: res.netBalance, rawS: res.rawSavings, rawC: res.rawCC };
+    renderData(res.transactions);
+  } catch(e) { renderMsg(`Failed to load ${name} range.`, true); }
+}
+
+async function traceRow(val) {
+  const sourceMode = (isNamedRangeView && currentRangeName === 'CC') ? 'CC' : 'Account';
+  isNamedRangeView = false; 
+  renderLoading(`Tracing Account: ${val}...`);
+  try {
+    const r = await fetch(`${API_URL}?action=trace&refId=${encodeURIComponent(val)}&source=${sourceMode}`, { redirect: "follow" });
+    const res = await r.json();
+    currentStats = { net: res.netBalance, rawS: res.rawSavings, rawC: res.rawCC };
+    renderData(res.transactions);
+  } catch(e) { renderMsg("Error during account trace.", true); }
+}
+
+async function traceSelected() {
+  if (deleteSet.size === 0) return;
+  isNamedRangeView = false;
+  const terms = Array.from(deleteSet).join(",");
+  renderLoading(`Universal Cross-Trace...`);
+  try {
+    const r = await fetch(`${API_URL}?action=trace&refId=${encodeURIComponent(terms)}&source=Reference`, { redirect: "follow" });
+    const res = await r.json();
+    currentStats = { net: res.netBalance, rawS: res.rawSavings, rawC: res.rawCC };
+    renderData(res.transactions);
+  } catch(e) { renderMsg("Error during global trace.", true); }
+}
+
+function renderData(data) {
+  const resultDiv = document.getElementById("result");
+  if(!data || data.length === 0) {
+    updateSummaryUI(0,0);
+    return renderMsg("No corresponding records found.");
+  }
+  resultDiv.innerHTML = "";
+  let gDep = 0, gWith = 0;
+
+  document.getElementById("traceBtn").style.display = isNamedRangeView ? "none" : "inline-flex";
+  document.getElementById("deleteBtn").style.display = isNamedRangeView ? "none" : "inline-flex";
+  updateSelection();
+
+  const grouped = data.reduce((acc, item) => {
+    if(!acc[item.SheetSource]) acc[item.SheetSource] = [];
+    acc[item.SheetSource].push(item.data);
+    return acc;
+  }, {});
+
+  Object.keys(grouped).forEach(sheetName => {
+    const rows = grouped[sheetName];
+    const headers = rows[0].map(pair => pair.k); 
+
+    const container = document.createElement("div");
+    container.className = "sheet-block";
+    container.innerHTML = `
+      <div class="sheet-title"><span>📂 ${sheetName}</span><span>${rows.length} records</span></div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              ${!isNamedRangeView ? `<th style="width:40px;"></th>` : ''}
+              ${headers.map(h => `<th>${h}</th>`).join("")}
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(rowPairs => {
+              const accountName = rowPairs[0].v;
+              const referenceId = rowPairs[rowPairs.length - 1].v;
+              const rowAttr = isNamedRangeView ? `class="row-interactive" onclick="traceRow('${accountName}')"` : "";
+              
+              return `<tr ${rowAttr}>
+                ${!isNamedRangeView ? `<td><input type="checkbox" class="cb-${sheetName}" data-ref="${referenceId}" onchange="updateSelection()"></td>` : ''}
+                ${rowPairs.map((pair, i) => {
+                  let val = pair.v;
+                  let className = "";
+                  if(isNamedRangeView && i === 0) val = `<span class="row-link-icon">⚡</span>${val}`;
+                  if(i === 0 || pair.k.toLowerCase().includes("date")) val = formatDate(val);
+                  else if (!isNaN(parseFloat(String(val).replace(/[₹, \s]/g, "")))) val = formatCurrency(val);
+                  
+                  if(pair.k.toLowerCase().includes("deposit")) { gDep += parseAmount(pair.v); className = "amt-deposit"; }
+                  if(pair.k.toLowerCase().includes("withdraw")) { gWith += parseAmount(pair.v); className = "amt-withdraw"; }
+                  return `<td data-label="${pair.k}" class="${className}">${val || "—"}</td>`;
+                }).join("")}
+              </tr>`;
+            }).join("")}
+          </tbody>
+        </table>
+      </div>`;
+    resultDiv.appendChild(container);
+  });
+  updateSummaryUI(gDep, gWith);
+}
+
+function updateSummaryUI(dep, withdr) {
+  document.getElementById("raw-savings").innerText = formatCurrency(currentStats.rawS);
+  document.getElementById("raw-cc").innerText = formatCurrency(currentStats.rawC);
+  document.getElementById("net-balance").innerText = formatCurrency(currentStats.net);
+  document.getElementById("total-dep").innerText = formatCurrency(dep);
+  document.getElementById("total-with").innerText = formatCurrency(withdr);
+}
+
+function updateSelection() {
+  deleteSet.clear();
+  if(!isNamedRangeView) {
+    document.querySelectorAll('input[data-ref]:checked').forEach(cb => {
+      const ref = cb.getAttribute("data-ref");
+      if(ref && ref !== "—") deleteSet.add(ref);
+    });
+  }
+  const count = deleteSet.size;
+  document.getElementById("del-count").innerText = count;
+  document.getElementById("trace-count").innerText = count;
+  document.getElementById("deleteBtn").disabled = document.getElementById("traceBtn").disabled = (count === 0);
+}
+
+function toggleSheet(master, sName) {
+  document.querySelectorAll(`.cb-${sName}`).forEach(cb => cb.checked = master.checked);
+  updateSelection();
+}
+
+function formatDate(dateStr) {
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return dateStr; 
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+}
+
+async function deleteSelected() {
+  const ids = Array.from(deleteSet);
+  if(!confirm(`Are you sure you want to permanently delete these ${ids.length} records?`)) return;
+  try {
+    await fetch(API_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ ids: ids }) });
+    alert("Deletion successful."); location.reload();
+  } catch(e) { alert("Execution error."); }
+}
+
+function renderMsg(m, isErr) { document.getElementById("result").innerHTML = `<div class="empty-state"><h3 style="${isErr?'color:var(--error)':''}">Notice</h3><p>${m}</p></div>`; }
+function renderLoading(m) { document.getElementById("result").innerHTML = `<div class="empty-state"><div style="color:var(--brand); font-weight:700; font-size:18px;">${m}</div><p>Aggregating spreadsheet data...</p></div>`; }
+</script>
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
 <title>Unified Financial Explorer</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
