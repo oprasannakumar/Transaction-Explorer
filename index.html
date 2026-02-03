@@ -4,195 +4,40 @@
 <meta charset="UTF-8">
 <title>Transaction Explorer</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
-*{box-sizing:border-box}
+  *{box-sizing:border-box}
+  body{margin:0; font-family:'Inter',sans-serif; background:#f3f6fb; padding:12px;}
+  .card{background:#fff; border-radius:16px; padding:16px; box-shadow:0 14px 30px rgba(0,0,0,.1);}
+  .header{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom: 15px;}
+  .controls{display:flex; gap:8px; align-items: center;}
+  input,button{height:36px; padding:0 10px; border-radius:8px; border:1px solid #d1d5db; font-size:13px;}
+  button{background:#2563eb; color:#fff; border:none; cursor:pointer; transition: all 0.2s ease;}
+  button:hover{background:#1e40af}
+  .btn-delete {background:#ef4444; font-weight:600;}
+  .btn-delete:hover {background:#dc2626; transform:translateY(-1px);}
+  .table-wrap{margin-top:14px; overflow-x:auto; position:relative;}
+  table{width:100%; border-collapse:separate; border-spacing:6px; font-size:12px; table-layout:fixed;}
+  th{background:#f1f5f9; border:1px solid #e5e7eb; border-radius:10px; padding:8px 10px; text-align:left; cursor:pointer; position:relative; user-select:none;}
+  th::after{content:"▾"; position:absolute; right:10px; top:50%; transform:translateY(-50%); font-size:11px; color:#64748b;}
+  th.no-arrow::after {content:"";}
+  td{background:#f9fafb; border:1px solid #e5e7eb; border-radius:10px; padding:8px 10px; word-break:break-word;}
+  tfoot td{background:#0f172a; color:#fff; font-weight:600; text-align:right;}
+  .filter-dropdown{position:fixed; width:260px; background:#fff; border:1px solid #d1d5db; border-radius:10px; box-shadow:0 12px 30px rgba(0,0,0,.25); z-index:999; display:none;}
+  .filter-header{display:flex; justify-content:space-between; padding:8px 10px; font-size:11px;}
+  .filter-header span{color:#2563eb; cursor:pointer;}
+  .filter-search{width:100%; border:none; border-bottom:1px solid #e5e7eb; padding:6px 8px; outline:none;}
+  .filter-item{display:flex; align-items:center; gap:8px; padding:6px; font-size:12px;}
+  .filter-list{max-height:200px; overflow:auto; padding:6px;}
 
-/* ===== BASE ===== */
-body{
-  margin:0;
-  font-family:'Inter',sans-serif;
-  background:#f3f6fb;
-  padding:12px;
-}
-
-.card{
-  background:#fff;
-  border-radius:16px;
-  padding:16px;
-  box-shadow:0 14px 30px rgba(0,0,0,.1);
-}
-
-.header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
-  flex-wrap:wrap;
-}
-
-.controls{
-  display:flex;
-  gap:8px;
-}
-
-input,button{
-  height:36px;
-  padding:0 10px;
-  border-radius:8px;
-  border:1px solid #d1d5db;
-  font-size:13px;
-}
-
-button{
-  background:#2563eb;
-  color:#fff;
-  border:none;
-  cursor:pointer;
-}
-button:hover{background:#1e40af}
-
-/* ===== TABLE ===== */
-.table-wrap{
-  margin-top:14px;
-  overflow-x:auto;
-  overflow-y:visible;
-  position:relative;
-}
-
-table{
-  width:100%;
-  border-collapse:separate;
-  border-spacing:6px;
-  font-size:12px;
-  table-layout:fixed;
-}
-
-th{
-  background:#f1f5f9;
-  border:1px solid #e5e7eb;
-  border-radius:10px;
-  padding:8px 10px;
-  text-align:left;
-  cursor:pointer;
-  position:relative;
-  user-select:none;
-}
-
-th:hover{
-  background:#e5e7eb;
-}
-
-/* dropdown indicator */
-th::after{
-  content:"▾";
-  position:absolute;
-  right:10px;
-  top:50%;
-  transform:translateY(-50%);
-  font-size:11px;
-  color:#64748b;
-}
-
-td{
-  background:#f9fafb;
-  border:1px solid #e5e7eb;
-  border-radius:10px;
-  padding:8px 10px;
-  max-width:170px;
-  white-space:normal;
-}
-
-tr:hover td{background:#eef2f7}
-
-/* ===== TOTAL ROW ===== */
-tfoot td{
-  background:#0f172a;
-  color:#fff;
-  font-weight:600;
-  text-align:right;
-}
-
-/* ===== FILTER DROPDOWN ===== */
-.filter-dropdown{
-  position:fixed;
-  width:260px;
-  background:#fff;
-  border:1px solid #d1d5db;
-  border-radius:10px;
-  box-shadow:0 12px 30px rgba(0,0,0,.25);
-  z-index:99999;
-  display:none;
-}
-
-.filter-header{
-  display:flex;
-  justify-content:space-between;
-  padding:8px 10px;
-  font-size:11px;
-}
-
-.filter-header span{
-  color:#2563eb;
-  cursor:pointer;
-}
-
-.filter-search{
-  width:100%;
-  border:none;
-  border-bottom:1px solid #e5e7eb;
-  padding:6px 8px;
-  outline:none;
-}
-
-/* checkbox alignment */
-.filter-item{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  padding:6px;
-  font-size:12px;
-}
-
-.filter-item input{
-  width:14px;
-  height:14px;
-  margin:0;
-}
-
-.filter-item:hover{background:#f1f5f9}
-
-.filter-list{
-  max-height:200px;
-  overflow:auto;
-  padding:6px;
-}
-
-/* ===== MOBILE ===== */
-@media(max-width:768px){
-  table,thead,tbody,th,tr,tfoot{display:block}
-  thead,tfoot{display:none}
-
-  tbody tr{
-    border:1px solid #e5e7eb;
-    border-radius:14px;
-    padding:10px;
-    margin-bottom:14px;
+  @media(max-width:768px){
+    table,thead,tbody,th,tr,tfoot{display:block}
+    thead,tfoot{display:none}
+    tbody tr{border:1px solid #e5e7eb; border-radius:14px; padding:10px; margin-bottom:14px;}
+    tbody td{display:flex; justify-content:space-between; margin:6px 0;}
+    tbody td::before{content:attr(data-label); font-weight:600;}
   }
-
-  tbody td{
-    display:flex;
-    justify-content:space-between;
-    margin:6px 0;
-  }
-
-  tbody td::before{
-    content:attr(data-label);
-    font-weight:600;
-  }
-}
 </style>
 </head>
 
@@ -205,157 +50,202 @@ tfoot td{
       <input type="date" id="from">
       <input type="date" id="to">
       <button onclick="fetchData()">Fetch</button>
+      <button id="deleteBtn" onclick="deleteSelected()" class="btn-delete" style="display:none;"></button>
     </div>
   </div>
-
-  <div class="table-wrap" id="result">Select date range</div>
+  <div class="table-wrap" id="result">Select date range and click Fetch</div>
 </div>
 
 <script>
-const API_URL =
-"https://script.google.com/macros/s/AKfycbxZx40apmQCC7-2MsmadGJgZgUZo-YVdF_rRQQfK4QpjFeMUdnlLztNMA0py18BrMOa/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxeyI-iKfYu216UnB-6HBW1uuIwTzjykzOdLXaWK2JzxEl7XUF5ytr9hYWKmq4Batdtgg/exec";
 
-let fullData=[], columns=[], filters={};
+let fullData = [], columns = [], filters = {}, selectedIds = new Set();
 
-/* ===== HELPERS ===== */
+/* --- DATE FORMATTER --- */
+function formatDate(dateStr) {
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return dateStr; 
+
+  const day = date.getDate();
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  
+  return `${day}-${months[date.getMonth()]}-${date.getFullYear()} (${days[date.getDay()]})`;
+}
+
 function parseAmount(v){
   return parseFloat(String(v||"").replace(/[₹,]/g,"")) || 0;
 }
 
-/* ===== FETCH ===== */
+function updateSelectionUI() {
+  const count = selectedIds.size;
+  const deleteBtn = document.getElementById("deleteBtn");
+  if (count > 0) {
+    deleteBtn.innerText = `Delete (${count}) Selected`;
+    deleteBtn.style.display = "inline-block";
+  } else {
+    deleteBtn.style.display = "none";
+  }
+}
+
 function fetchData(){
   const from=document.getElementById("from").value;
   const to=document.getElementById("to").value;
   if(!from||!to){alert("Select both dates");return;}
+  document.getElementById("result").innerHTML = "Loading data...";
 
   fetch(`${API_URL}?from=${from}&to=${to}`)
-    .then(r=>r.json())
-    .then(d=>{
-      if(d.error){alert(d.error);return;}
-      fullData=d;
-      columns=Object.keys(d[0]||{});
-      filters={};
+    .then(r => r.json())
+    .then(d => {
+      if(d.error) throw new Error(d.error);
+      fullData = d.map((row, index) => ({ ...row, _rowId: index }));
+      columns = Object.keys(d[0] || {}).filter(k => k !== '_rowId');
+      filters = {}; selectedIds.clear(); updateSelectionUI();
       renderTable();
+    })
+    .catch(err => {
+      document.getElementById("result").innerHTML = "Error loading data. Ensure your API URL and Spreadsheet ID are correct.";
+      console.error(err);
     });
 }
 
-/* ===== RENDER ===== */
 function renderTable(){
-  result.innerHTML=
-  `<table>
+  const resultDiv = document.getElementById("result");
+  resultDiv.innerHTML= `
+  <table>
     <thead>
-      <tr>${columns.map(c=>`
-        <th onclick="openFilter(event,'${c}')">${c}</th>
-      `).join("")}</tr>
+      <tr>
+        <th class="no-arrow" style="width:40px; text-align:center;"><input type="checkbox" id="masterCb" onclick="toggleAllRows(this)"></th>
+        ${columns.map(c=>`<th onclick="openFilter(event,'${c}')">${c}</th>`).join("")}
+      </tr>
     </thead>
     <tbody id="tbody"></tbody>
     <tfoot><tr id="totalRow"></tr></tfoot>
   </table>
-
   ${columns.map(c=>`
     <div class="filter-dropdown" id="dd-${c}" onclick="event.stopPropagation()">
-      <div class="filter-header">
-        <span onclick="selectAll('${c}')">Select all</span>
-        <span onclick="clearFilter('${c}')">Clear</span>
-      </div>
-      <input class="filter-search" placeholder="Search"
-             oninput="searchFilter('${c}',this.value)">
+      <div class="filter-header"><span onclick="selectAll('${c}')">Select all</span><span onclick="clearFilter('${c}')">Clear</span></div>
+      <input class="filter-search" placeholder="Search" oninput="searchFilter('${c}',this.value)">
       <div class="filter-list" id="list-${c}"></div>
-    </div>
-  `).join("")}
-  `;
-
+    </div>`).join("")}`;
   columns.forEach(initFilter);
   applyFilters();
 }
 
-/* ===== FILTER DROPDOWN POSITION ===== */
-function openFilter(e,col){
-  e.stopPropagation();
-
-  document.querySelectorAll(".filter-dropdown")
-    .forEach(d=>d.style.display="none");
-
-  const rect=e.target.getBoundingClientRect();
-  const dd=document.getElementById(`dd-${col}`);
-
-  dd.style.top=(rect.bottom+6)+"px";
-  dd.style.left=rect.left+"px";
-  dd.style.display="block";
+function toggleRowSelection(id) {
+  selectedIds.has(id) ? selectedIds.delete(id) : selectedIds.add(id);
+  updateSelectionUI();
 }
 
-/* ===== FILTER LOGIC ===== */
+function toggleAllRows(master) {
+  const checkboxes = document.querySelectorAll('.row-checkbox');
+  checkboxes.forEach(cb => {
+    const id = parseInt(cb.dataset.id);
+    cb.checked = master.checked;
+    master.checked ? selectedIds.add(id) : selectedIds.delete(id);
+  });
+  updateSelectionUI();
+}
+
+async function deleteSelected() {
+  if (selectedIds.size === 0) return;
+  const refColumnName = columns[columns.length - 1];
+  const refsToDelete = fullData.filter(row => selectedIds.has(row._rowId)).map(row => row[refColumnName]);
+
+  if (confirm(`Permanently delete ${refsToDelete.length} records?`)) {
+    const btn = document.getElementById("deleteBtn");
+    btn.disabled = true; btn.innerText = "Processing...";
+
+    try {
+      await fetch(API_URL, {
+        method: "POST",
+        mode: "no-cors", 
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify({ action: "delete", ids: refsToDelete })
+      });
+      fullData = fullData.filter(row => !selectedIds.has(row._rowId));
+      selectedIds.clear();
+      updateSelectionUI();
+      applyFilters();
+      alert("Delete request sent successfully.");
+    } catch (error) {
+      alert("Error sending request.");
+    } finally {
+      btn.disabled = false;
+    }
+  }
+}
+
 function initFilter(col){
-  const vals=[...new Set(fullData.map(r=>r[col]).filter(v=>v))];
-  filters[col]=new Set();
-
-  document.getElementById(`list-${col}`).innerHTML=
-    vals.map(v=>`
-      <label class="filter-item">
-        <input type="checkbox" onchange="toggleVal('${col}','${encodeURIComponent(v)}')">
-        ${v}
-      </label>`).join("");
+  const vals = [...new Set(fullData.map(r=>r[col]).filter(v=>v))];
+  filters[col] = new Set();
+  document.getElementById(`list-${col}`).innerHTML = vals.map(v => `
+      <label class="filter-item"><input type="checkbox" onchange="toggleVal('${col}','${encodeURIComponent(v)}')">${v}</label>`).join("");
 }
 
-function toggleVal(col,val){
-  val=decodeURIComponent(val);
-  filters[col].has(val)?filters[col].delete(val):filters[col].add(val);
+function toggleVal(col, val){
+  val = decodeURIComponent(val);
+  filters[col].has(val) ? filters[col].delete(val) : filters[col].add(val);
   applyFilters();
 }
 
 function applyFilters(){
-  const filtered=fullData.filter(r=>
-    Object.keys(filters).every(c=>!filters[c].size||filters[c].has(r[c]))
-  );
+  const filtered = fullData.filter(r => Object.keys(filters).every(c => !filters[c].size || filters[c].has(r[c])));
   renderRows(filtered);
 }
 
-/* ===== ROWS & TOTALS ===== */
 function renderRows(data){
+  const tbody = document.getElementById("tbody");
   let tw=0, td=0;
+  tbody.innerHTML = data.map(r => `
+    <tr>
+      <td style="text-align:center;"><input type="checkbox" class="row-checkbox" data-id="${r._rowId}" ${selectedIds.has(r._rowId) ? 'checked' : ''} onchange="toggleRowSelection(${r._rowId})"></td>
+      ${columns.map((c, index) => {
+        let v = r[c];
+        // Apply date formatting to the first column
+        if(index === 0) v = formatDate(v);
+        
+        if(c.toLowerCase().includes("withdraw")) tw += parseAmount(v);
+        if(c.toLowerCase().includes("deposit")) td += parseAmount(v);
+        return `<td data-label="${c}">${v||"—"}</td>`;
+      }).join("")}
+    </tr>`).join("");
 
-  tbody.innerHTML=data.map(r=>
-    `<tr>${columns.map(c=>{
-      const v=r[c];
-      if(c.toLowerCase().includes("withdraw")) tw+=parseAmount(v);
-      if(c.toLowerCase().includes("deposit")) td+=parseAmount(v);
-      return `<td data-label="${c}">${v||"—"}</td>`;
-    }).join("")}</tr>`
-  ).join("");
-
-  totalRow.innerHTML=columns.map((c,i)=>{
+  document.getElementById("totalRow").innerHTML = `<td></td>` + columns.map((c,i) => {
     if(i===0) return `<td>TOTAL</td>`;
-    if(c.toLowerCase().includes("withdraw"))
-      return `<td>₹${tw.toLocaleString("en-IN",{minimumFractionDigits:2})}</td>`;
-    if(c.toLowerCase().includes("deposit"))
-      return `<td>₹${td.toLocaleString("en-IN",{minimumFractionDigits:2})}</td>`;
+    if(c.toLowerCase().includes("withdraw")) return `<td>₹${tw.toLocaleString("en-IN",{minimumFractionDigits:2})}</td>`;
+    if(c.toLowerCase().includes("deposit")) return `<td>₹${td.toLocaleString("en-IN",{minimumFractionDigits:2})}</td>`;
     return `<td>—</td>`;
   }).join("");
 }
 
-function searchFilter(col,val){
-  val=val.toLowerCase();
-  document.querySelectorAll(`#list-${col} label`)
-    .forEach(l=>l.style.display=l.innerText.toLowerCase().includes(val)?"":"none");
+function openFilter(e, col){
+  e.stopPropagation();
+  document.querySelectorAll(".filter-dropdown").forEach(d=>d.style.display="none");
+  const dd = document.getElementById(`dd-${col}`);
+  const rect = e.target.getBoundingClientRect();
+  dd.style.top = (rect.bottom + window.scrollY + 5) + "px";
+  dd.style.left = rect.left + "px";
+  dd.style.display = "block";
+}
+
+function searchFilter(col, val){
+  val = val.toLowerCase();
+  document.querySelectorAll(`#list-${col} label`).forEach(l => l.style.display = l.innerText.toLowerCase().includes(val) ? "" : "none");
 }
 
 function selectAll(col){
-  filters[col]=new Set(fullData.map(r=>r[col]).filter(v=>v));
-  document.querySelectorAll(`#list-${col} input`).forEach(i=>i.checked=true);
+  document.querySelectorAll(`#list-${col} input`).forEach(i => { i.checked = true; filters[col].add(i.parentElement.innerText.trim()); });
   applyFilters();
 }
 
 function clearFilter(col){
   filters[col].clear();
-  document.querySelectorAll(`#list-${col} input`).forEach(i=>i.checked=false);
+  document.querySelectorAll(`#list-${col} input`).forEach(i => i.checked = false);
   applyFilters();
 }
 
-/* CLOSE FILTER ON OUTSIDE CLICK */
-document.addEventListener("click",()=>{
-  document.querySelectorAll(".filter-dropdown").forEach(d=>d.style.display="none");
-});
+document.addEventListener("click", () => document.querySelectorAll(".filter-dropdown").forEach(d => d.style.display="none"));
 </script>
-
 </body>
 </html>
