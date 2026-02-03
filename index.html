@@ -11,9 +11,9 @@
   .card{background:#fff; border-radius:16px; padding:20px; box-shadow:0 10px 25px rgba(0,0,0,.05); max-width: 1400px; margin: auto;}
   .header{display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap; margin-bottom: 20px;}
   .controls{display:flex; gap:10px; align-items: center; flex-wrap: wrap;}
-  .summary-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+  .summary-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px; }
   .stat-card { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 12px; }
-  .stat-label { font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600; }
+  .stat-label { font-size: 10px; color: #64748b; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
   .stat-value { font-size: 18px; font-weight: 700; color: #0f172a; margin-top: 5px; }
   .sheet-group { margin-bottom: 30px; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background: #fff; }
   .sheet-header { background: #0f172a; color: #fff; padding: 10px 15px; font-size: 13px; font-weight: 600; display: flex; justify-content: space-between; }
@@ -24,16 +24,17 @@
   button:disabled { background: #cbd5e1; cursor: not-allowed; color: #64748b; }
   
   .btn-delete { background: #ef4444; }
-  .btn-delete:hover:not(:disabled) { background: #dc2626; }
   .btn-trace-bulk { background: #10b981; }
-  .btn-trace-bulk:hover:not(:disabled) { background: #059669; }
-  
   .count-badge { background: rgba(0,0,0,0.2); padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; }
   
   .table-wrap { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 12px; }
   th { background: #f8fafc; padding: 12px 15px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #475569; }
   td { padding: 12px 15px; border-bottom: 1px solid #f1f5f9; color: #1e293b; word-break: break-word; }
+  
+  /* Amount Coloring */
+  .amt-deposit { color: #10b981; font-weight: 600; }
+  .amt-withdraw { color: #ef4444; font-weight: 600; }
   
   @media(max-width:768px){
     .header { flex-direction: column; align-items: flex-start; }
@@ -63,9 +64,18 @@
   </div>
 
   <div id="summary" class="summary-bar" style="display:none;">
-    <div class="stat-card"><div class="stat-label">Total Deposits</div><div id="total-dep" class="stat-value">₹0.00</div></div>
-    <div class="stat-card"><div class="stat-label">Total Withdrawals</div><div id="total-with" class="stat-value">₹0.00</div></div>
-    <div class="stat-card"><div class="stat-label">Net Balance</div><div id="total-net" class="stat-value">₹0.00</div></div>
+    <div class="stat-card" style="border-left: 4px solid #3b82f6;">
+      <div class="stat-label">Available Balance (C11)</div>
+      <div id="total-savings" class="stat-value">₹0.00</div>
+    </div>
+    <div class="stat-card" style="border-left: 4px solid #10b981;">
+      <div class="stat-label">Total Deposits (Selected)</div>
+      <div id="total-dep" class="stat-value">₹0.00</div>
+    </div>
+    <div class="stat-card" style="border-left: 4px solid #ef4444;">
+      <div class="stat-label">Total Withdrawals (Selected)</div>
+      <div id="total-with" class="stat-value">₹0.00</div>
+    </div>
   </div>
 
   <div id="result">Please select a date range.</div>
@@ -75,6 +85,7 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbxeyI-iKfYu216UnB-6HBW1uuIwTzjykzOdLXaWK2JzxEl7XUF5ytr9hYWKmq4Batdtgg/exec";
 let deleteSet = new Set();
 let actionState = "fetch";
+let globalSavings = 0;
 
 function formatDate(dateStr) {
   const date = new Date(dateStr);
@@ -95,8 +106,9 @@ async function fetchData() {
   renderLoading("Fetching data...");
   try {
     const r = await fetch(`${API_URL}?from=${from}&to=${to}`, { redirect: "follow" });
-    renderData(await r.json());
-    resetButtons(); // Clear counts on new fetch
+    const res = await r.json();
+    globalSavings = res.savings; 
+    renderData(res.transactions);
   } catch(e) { renderMsg("Error fetching data.", true); }
 }
 
@@ -104,10 +116,12 @@ async function traceSelected() {
   if (deleteSet.size === 0) return;
   const ids = Array.from(deleteSet).join(",");
   actionState = "trace";
-  renderLoading(`Tracing ${deleteSet.size} Reference(s)...`);
+  renderLoading(`Tracing Reference(s)...`);
   try {
     const r = await fetch(`${API_URL}?action=trace&refId=${encodeURIComponent(ids)}`, { redirect: "follow" });
-    renderData(await r.json());
+    const res = await r.json();
+    globalSavings = res.savings;
+    renderData(res.transactions);
   } catch(e) { renderMsg("Error tracing IDs.", true); }
 }
 
@@ -146,10 +160,19 @@ function renderData(data) {
                 <td><input type="checkbox" class="cb-${sheetName}" data-ref="${refId}" onchange="updateSelection()"></td>
                 ${rowPairs.map((pair, i) => {
                   let val = pair.v;
+                  let className = "";
                   if(i === 0 || pair.k.toLowerCase().includes("date")) val = formatDate(val);
-                  if(pair.k.toLowerCase().includes("deposit")) gDep += parseAmount(val);
-                  if(pair.k.toLowerCase().includes("withdraw")) gWith += parseAmount(val);
-                  return `<td data-label="${pair.k}">${val || "—"}</td>`;
+                  
+                  if(pair.k.toLowerCase().includes("deposit")) {
+                    gDep += parseAmount(val);
+                    className = "amt-deposit";
+                  }
+                  if(pair.k.toLowerCase().includes("withdraw")) {
+                    gWith += parseAmount(val);
+                    className = "amt-withdraw";
+                  }
+                  
+                  return `<td data-label="${pair.k}" class="${className}">${val || "—"}</td>`;
                 }).join("")}
               </tr>`;
             }).join("")}
@@ -158,14 +181,14 @@ function renderData(data) {
       </div>`;
     resultDiv.appendChild(container);
   });
-  updateSummary(gDep, gWith);
+  updateSummary(gDep, gWith, globalSavings);
 }
 
-function updateSummary(dep, withdr) {
+function updateSummary(dep, withdr, savings) {
   document.getElementById("summary").style.display = "grid";
+  document.getElementById("total-savings").innerText = `₹${savings.toLocaleString('en-IN', {minimumFractionDigits:2})}`;
   document.getElementById("total-dep").innerText = `₹${dep.toLocaleString('en-IN', {minimumFractionDigits:2})}`;
   document.getElementById("total-with").innerText = `₹${withdr.toLocaleString('en-IN', {minimumFractionDigits:2})}`;
-  document.getElementById("total-net").innerText = `₹${(dep - withdr).toLocaleString('en-IN', {minimumFractionDigits:2})}`;
 }
 
 function updateSelection() {
@@ -174,21 +197,11 @@ function updateSelection() {
     const ref = cb.getAttribute("data-ref");
     if(ref && ref !== "—") deleteSet.add(ref);
   });
-  
   const dBtn = document.getElementById("deleteBtn");
   const tBtn = document.getElementById("traceBtn");
-  const dCount = document.getElementById("del-count");
-  const tCount = document.getElementById("trace-count");
-  
   const count = deleteSet.size;
-  dCount.innerText = tCount.innerText = count;
-  
+  document.getElementById("del-count").innerText = document.getElementById("trace-count").innerText = count;
   dBtn.disabled = tBtn.disabled = (count === 0);
-}
-
-function resetButtons() {
-  deleteSet.clear();
-  updateSelection();
 }
 
 function toggleSheet(master, sName) {
@@ -198,11 +211,11 @@ function toggleSheet(master, sName) {
 
 async function deleteSelected() {
   const ids = Array.from(deleteSet);
-  if(!confirm(`Delete ${ids.length} records permanently?`)) return;
+  if(!confirm(`Delete ${ids.length} records?`)) return;
   try {
     await fetch(API_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ ids: ids }) });
-    alert("Deleted successfully!"); location.reload();
-  } catch(e) { alert("Error deleting."); }
+    alert("Deleted!"); location.reload();
+  } catch(e) { alert("Error."); }
 }
 
 function renderMsg(m, isErr) { document.getElementById("result").innerHTML = `<div style="text-align:center; padding:40px; color:${isErr?'red':'#64748b'};">${m}</div>`; }
