@@ -1,89 +1,262 @@
-const SS_ID = '18kXdV216Q--8cFt4AkTT3cmwfJ1s9VAT5ok1CwcsyKQ'; 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Unified Financial Explorer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0; font-family:'Inter',sans-serif; background:#f3f6fb; padding:12px;}
+  .card{background:#fff; border-radius:16px; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,.05); max-width: 1400px; margin: auto; min-height: 85vh;}
+  .header{display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap; margin-bottom: 24px; border-bottom: 1px solid #f1f5f9; padding-bottom: 20px;}
+  .controls{display:flex; gap:10px; align-items: center; flex-wrap: wrap;}
+  
+  .summary-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
+  .stat-card { background: #f8fafc; border: 1px solid #e2e8f0; padding: 16px; border-radius: 12px; transition: all 0.2s ease; }
+  .clickable-card { cursor: pointer; border-bottom: 3px solid transparent; }
+  .clickable-card:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.05); background: #fff; }
+  
+  .stat-label { font-size: 10px; color: #64748b; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
+  .stat-value { font-size: 20px; font-weight: 700; color: #0f172a; margin-top: 6px; }
 
-function doGet(e) {
-  try {
-    var action = e.parameter.action;
-    var ss = SpreadsheetApp.openById(SS_ID);
-    var results = [];
-    
-    // 1. Fetch Savings from Named Range
-    var savingsVal = 0;
-    try {
-      var range = ss.getRangeByName("Savings");
-      if (range) savingsVal = range.getValue();
-    } catch(err) {
-      console.log("Named range 'Savings' not found.");
-    }
+  .welcome-box { text-align: center; padding: 60px 20px; color: #64748b; background: #fcfdfe; border: 2px dashed #e2e8f0; border-radius: 16px; margin-top: 20px; }
+  .sheet-group { margin-bottom: 30px; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background: #fff; animation: fadeIn 0.3s ease-in; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    // 2. Select sheets based on action
-    var sheets = (action === 'trace') ? ss.getSheets() : [ss.getSheets()[0]];
-    
-    sheets.forEach(function(sheet) {
-      var vals = sheet.getDataRange().getValues();
-      if (vals.length < 2) return;
-      
-      var headers = vals.shift();
-      var sName = sheet.getName();
-      var lastCol = headers.length - 1;
-
-      for (var r = 0; r < vals.length; r++) {
-        var row = vals[r];
-        var isMatch = false;
-
-        if (action === 'trace') {
-          var refIds = e.parameter.refId.split(',');
-          isMatch = (refIds.indexOf(String(row[lastCol])) !== -1);
-        } else {
-          var d = new Date(row[0]);
-          var from = new Date(e.parameter.from);
-          var to = new Date(e.parameter.to);
-          from.setHours(0,0,0,0); to.setHours(23,59,59,999);
-          isMatch = (!isNaN(d.getTime()) && d >= from && d <= to);
-        }
-
-        if (isMatch) {
-          var rowData = [];
-          headers.forEach(function(h, i) {
-            rowData.push({ k: h.toString(), v: row[i] });
-          });
-          results.push({ "SheetSource": sName, "data": rowData });
-        }
-      }
-    });
-
-    // Bundle transactions and savings value together
-    var output = {
-      transactions: results,
-      savings: savingsVal
-    };
-
-    return ContentService.createTextOutput(JSON.stringify(output))
-      .setMimeType(ContentService.MimeType.JSON);
-  } catch (err) {
-    return ContentService.createTextOutput(JSON.stringify({"error": err.toString()}))
-      .setMimeType(ContentService.MimeType.JSON);
+  .sheet-header { background: #0f172a; color: #fff; padding: 12px 18px; font-size: 13px; font-weight: 600; display: flex; justify-content: space-between; }
+  input, button { height: 40px; padding: 0 16px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 13px; }
+  button { background: #2563eb; color: #fff; border: none; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 8px; font-weight: 500; }
+  button:hover:not(:disabled) { background: #1e40af; }
+  button:disabled { background: #cbd5e1; cursor: not-allowed; }
+  
+  .btn-delete { background: #ef4444; }
+  .btn-trace-bulk { background: #10b981; }
+  .count-badge { background: rgba(0,0,0,0.2); padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+  
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { background: #f8fafc; padding: 12px 15px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #475569; }
+  td { padding: 12px 15px; border-bottom: 1px solid #f1f5f9; color: #1e293b; }
+  
+  .amt-deposit { color: #10b981; font-weight: 600; }
+  .amt-withdraw { color: #ef4444; font-weight: 600; }
+  
+  @media(max-width:768px){
+    .header { flex-direction: column; align-items: stretch; }
+    table, thead, tbody, th, tr { display: block; }
+    thead { display: none; }
+    tbody td { display: flex; justify-content: space-between; padding: 10px 15px; border: none; }
+    tbody td::before { content: attr(data-label); font-weight: 600; color: #64748b; }
   }
+</style>
+</head>
+<body onload="initDashboard()">
+
+<div class="card">
+  <div class="header">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div style="width:40px; height:40px; background:#2563eb; border-radius:10px; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold;">₹</div>
+      <h2 style="margin:0; font-size:20px; color:#0f172a;">Unified Statement Explorer</h2>
+    </div>
+    <div class="controls">
+      <input type="date" id="from">
+      <input type="date" id="to">
+      <button onclick="fetchData()">Fetch Data</button>
+      <button id="traceBtn" onclick="traceSelected()" class="btn-trace-bulk" disabled style="display:none;">
+        Trace Selected <span id="trace-count" class="count-badge">0</span>
+      </button>
+      <button id="deleteBtn" onclick="deleteSelected()" class="btn-delete" disabled style="display:none;">
+        Delete Selected <span id="del-count" class="count-badge">0</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="summary" class="summary-bar">
+    <div class="stat-card clickable-card" style="border-left: 4px solid #8b5cf6;" onclick="fetchRange('Savings')">
+      <div class="stat-label">Total Savings Amount 🔗</div>
+      <div id="raw-savings" class="stat-value">₹0.00</div>
+    </div>
+    <div class="stat-card clickable-card" style="border-left: 4px solid #ef4444;" onclick="fetchRange('CC')">
+      <div class="stat-label">Used Credit Limits 🔗</div>
+      <div id="raw-cc" class="stat-value">₹0.00</div>
+    </div>
+    <div class="stat-card" style="border-left: 4px solid #3b82f6; background: #f0f7ff;">
+      <div class="stat-label">Net Available Amount</div>
+      <div id="net-balance" class="stat-value">₹0.00</div>
+    </div>
+    <div class="stat-card"><div class="stat-label">Deposits (Selection)</div><div id="total-dep" class="stat-value">₹0.00</div></div>
+    <div class="stat-card"><div class="stat-label">Withdrawals (Selection)</div><div id="total-with" class="stat-value">₹0.00</div></div>
+  </div>
+
+  <div id="result">
+    <div class="welcome-box">
+      <h3>Ready to Explore</h3>
+      <p>Select a date range or tap a card to begin. Data synced from Full Statement and Named Ranges.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbw4x4_aevBLrEuWiHFex84Cz_EiFuThFPO5jgxWaGUYQYOTsbNHIPhUe8KJ1GVpLX9zfg/exec";
+let deleteSet = new Set();
+let currentStats = { net: 0, rawS: 0, rawC: 0 };
+
+async function initDashboard() {
+  try {
+    const r = await fetch(API_URL, { redirect: "follow" });
+    const res = await r.json();
+    currentStats = { net: res.netBalance, rawS: res.rawSavings, rawC: res.rawCC };
+    updateSummary(0, 0);
+  } catch(e) { renderMsg("Connection failed.", true); }
 }
 
-function doPost(e) {
-  try {
-    var data = JSON.parse(e.postData.contents);
-    var ids = data.ids.map(String);
-    var ss = SpreadsheetApp.openById(SS_ID);
-    var count = 0;
-    ss.getSheets().forEach(function(sheet) {
-      var vals = sheet.getDataRange().getValues();
-      if (vals.length < 2) return;
-      var lastCol = vals[0].length - 1;
-      for (var i = vals.length - 1; i >= 1; i--) {
-        if (ids.indexOf(String(vals[i][lastCol])) !== -1) {
-          sheet.deleteRow(i + 1);
-          count++;
-        }
-      }
-    });
-    return ContentService.createTextOutput("Deleted " + count).setMimeType(ContentService.MimeType.TEXT);
-  } catch (e) {
-    return ContentService.createTextOutput("Error").setMimeType(ContentService.MimeType.TEXT);
-  }
+function formatCurrency(val) {
+  const num = parseFloat(String(val || "").replace(/[₹, \s]/g, ""));
+  if (isNaN(num)) return val;
+  return "₹" + num.toLocaleString('en-IN', { minimumFractionDigits: 2 });
 }
+
+function parseAmount(v){
+  return parseFloat(String(v||"").replace(/[₹, \s]/g,"")) || 0;
+}
+
+async function fetchData() {
+  const from = document.getElementById("from").value, to = document.getElementById("to").value;
+  if(!from || !to) return alert("Select dates");
+  renderLoading("Fetching...");
+  try {
+    const r = await fetch(`${API_URL}?from=${from}&to=${to}`, { redirect: "follow" });
+    const res = await r.json();
+    currentStats = { net: res.netBalance, rawS: res.rawSavings, rawC: res.rawCC };
+    renderData(res.transactions);
+  } catch(e) { renderMsg("Error fetching data.", true); }
+}
+
+async function fetchRange(name) {
+  renderLoading(`Loading ${name}...`);
+  try {
+    const r = await fetch(`${API_URL}?rangeName=${name}`, { redirect: "follow" });
+    const res = await r.json();
+    currentStats = { net: res.netBalance, rawS: res.rawSavings, rawC: res.rawCC };
+    renderData(res.transactions);
+  } catch(e) { renderMsg(`Could not load range.`, true); }
+}
+
+async function traceSelected() {
+  if (deleteSet.size === 0) return;
+  const ids = Array.from(deleteSet).join(",");
+  renderLoading(`Tracing...`);
+  try {
+    const r = await fetch(`${API_URL}?action=trace&refId=${encodeURIComponent(ids)}`, { redirect: "follow" });
+    const res = await r.json();
+    currentStats = { net: res.netBalance, rawS: res.rawSavings, rawC: res.rawCC };
+    renderData(res.transactions);
+  } catch(e) { renderMsg("Error during trace.", true); }
+}
+
+function renderData(data) {
+  const resultDiv = document.getElementById("result");
+  if(!data || data.length === 0) {
+    updateSummary(0,0);
+    return renderMsg("No records found.");
+  }
+  resultDiv.innerHTML = "";
+  let gDep = 0, gWith = 0;
+
+  document.getElementById("traceBtn").style.display = "inline-flex";
+  document.getElementById("deleteBtn").style.display = "inline-flex";
+  updateSelection();
+
+  const grouped = data.reduce((acc, item) => {
+    if(!acc[item.SheetSource]) acc[item.SheetSource] = [];
+    acc[item.SheetSource].push(item.data);
+    return acc;
+  }, {});
+
+  Object.keys(grouped).forEach(sheetName => {
+    const rows = grouped[sheetName];
+    const headers = rows[0].map(pair => pair.k); 
+
+    const container = document.createElement("div");
+    container.className = "sheet-group";
+    container.innerHTML = `
+      <div class="sheet-header"><span>📄 Source: ${sheetName}</span><span>${rows.length} records</span></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:40px;"><input type="checkbox" onclick="toggleSheet(this, '${sheetName}')"></th>
+              ${headers.map(h => `<th>${h}</th>`).join("")}
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(rowPairs => {
+              const refId = rowPairs[rowPairs.length - 1].v;
+              return `<tr>
+                <td><input type="checkbox" class="cb-${sheetName}" data-ref="${refId}" onchange="updateSelection()"></td>
+                ${rowPairs.map((pair, i) => {
+                  let val = pair.v;
+                  let className = "";
+                  if(i === 0 || pair.k.toLowerCase().includes("date")) val = formatDate(val);
+                  else if (!isNaN(parseFloat(String(val).replace(/[₹, \s]/g, "")))) val = formatCurrency(val);
+                  
+                  if(pair.k.toLowerCase().includes("deposit")) { gDep += parseAmount(pair.v); className = "amt-deposit"; }
+                  if(pair.k.toLowerCase().includes("withdraw")) { gWith += parseAmount(pair.v); className = "amt-withdraw"; }
+                  return `<td data-label="${pair.k}" class="${className}">${val || "—"}</td>`;
+                }).join("")}
+              </tr>`;
+            }).join("")}
+          </tbody>
+        </table>
+      </div>`;
+    resultDiv.appendChild(container);
+  });
+  updateSummary(gDep, gWith);
+}
+
+function updateSummary(dep, withdr) {
+  document.getElementById("raw-savings").innerText = formatCurrency(currentStats.rawS);
+  document.getElementById("raw-cc").innerText = formatCurrency(currentStats.rawC);
+  document.getElementById("net-balance").innerText = formatCurrency(currentStats.net);
+  document.getElementById("total-dep").innerText = formatCurrency(dep);
+  document.getElementById("total-with").innerText = formatCurrency(withdr);
+}
+
+function updateSelection() {
+  deleteSet.clear();
+  document.querySelectorAll('input[data-ref]:checked').forEach(cb => {
+    const ref = cb.getAttribute("data-ref");
+    if(ref && ref !== "—") deleteSet.add(ref);
+  });
+  const count = deleteSet.size;
+  document.getElementById("del-count").innerText = document.getElementById("trace-count").innerText = count;
+  document.getElementById("deleteBtn").disabled = document.getElementById("traceBtn").disabled = (count === 0);
+}
+
+function toggleSheet(master, sName) {
+  document.querySelectorAll(`.cb-${sName}`).forEach(cb => cb.checked = master.checked);
+  updateSelection();
+}
+
+function formatDate(dateStr) {
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return dateStr; 
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return `${date.getDate()}-${months[date.getMonth()]}-${date.getFullYear()}`;
+}
+
+async function deleteSelected() {
+  const ids = Array.from(deleteSet);
+  if(!confirm(`Delete ${ids.length} records?`)) return;
+  try {
+    await fetch(API_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ ids: ids }) });
+    alert("Deleted!"); location.reload();
+  } catch(e) { alert("Error."); }
+}
+
+function renderMsg(m, isErr) { document.getElementById("result").innerHTML = `<div style="text-align:center; padding:60px; color:${isErr?'red':'#64748b'};"><h4>${isErr?'Error':'Note'}</h4><p>${m}</p></div>`; }
+function renderLoading(m) { document.getElementById("result").innerHTML = `<div style="text-align:center; padding:100px 0;"><div style="color:#2563eb; font-weight:600;">${m}</div></div>`; }
+</script>
+</body>
+</html>
