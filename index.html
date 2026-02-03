@@ -2,406 +2,229 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Financial Intelligence Hub</title>
+<title>AERO Finance Pro | Cyber Hub</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --brand: #2563eb;
-    --brand-soft: rgba(37, 99, 235, 0.1);
-    --bg-main: #f3f4f6;
-    --surface: #ffffff;
-    --text-primary: #111827;
-    --text-secondary: #6b7280;
-    --border-color: #e5e7eb;
-    --success: #10b981;
-    --error: #ef4444;
-    --radius: 12px;
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  :root { 
+    --neon-blue: #00d2ff; --neon-cyan: #00ffff; --neon-red: #ff0055; --neon-green: #00ff88;
+    --cyber-black: #0a0b10; --border: rgba(255, 255, 255, 0.1);
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  
   body { 
-    font-family: 'Inter', sans-serif; 
-    background-color: var(--bg-main); 
-    color: var(--text-primary);
-    -webkit-font-smoothing: antialiased;
+    font-family: 'Inter', sans-serif; background: #0a0b10; color: #fff; min-height: 100vh; padding: 20px; 
+    background: radial-gradient(circle at 50% 0%, #1a1c2c, #0a0b10);
   }
-
-  .layout-wrapper {
-    max-width: 1440px;
-    margin: 0 auto;
-    padding: 32px 24px;
-  }
-
-  /* --- Top Navigation / Header --- */
-  .top-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 40px;
-  }
-
-  .nav-brand { display: flex; align-items: center; gap: 12px; cursor: pointer; }
-  .nav-brand .logo-box {
-    background: var(--brand);
-    color: white;
-    padding: 10px 14px;
-    border-radius: 10px;
-    font-weight: 800;
-    font-size: 20px;
-    box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
-  }
-  .nav-brand h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.025em; }
-
-  .filter-pill {
-    background: var(--surface);
-    padding: 6px;
-    border-radius: 16px;
-    display: flex;
-    gap: 8px;
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow);
-  }
-
-  input[type="date"], button {
-    border: none;
-    border-radius: 10px;
-    padding: 10px 16px;
-    font-size: 13px;
-    font-weight: 500;
-    outline: none;
-  }
-
-  input[type="date"] { background: #f9fafb; color: var(--text-secondary); border: 1px solid transparent; }
-  input[type="date"]:focus { border-color: var(--brand); background: #fff; }
-
-  button { 
-    cursor: pointer; 
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex; align-items: center; gap: 6px;
-  }
-
-  .btn-primary { background: var(--brand); color: white; }
-  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
-
-  .btn-trace { background: var(--success); color: white; }
-  .btn-delete { background: var(--error); color: white; }
-
-  /* --- Metrics Hub --- */
-  .metrics-hub {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 24px;
-    margin-bottom: 40px;
-  }
-
-  .metric-card {
-    background: var(--surface);
-    padding: 24px;
-    border-radius: var(--radius);
-    border: 1px solid var(--border-color);
-    transition: transform 0.2s, border-color 0.2s;
-    position: relative;
-  }
-
-  .metric-card.interactive:hover {
-    border-color: var(--brand);
-    cursor: pointer;
-    transform: translateY(-4px);
-  }
-
-  .metric-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
-  .metric-value { font-size: 28px; font-weight: 700; margin: 8px 0; display: block; }
-  .metric-footer { font-size: 12px; display: flex; align-items: center; gap: 4px; }
+  .wrapper { max-width: 1440px; margin: 0 auto; }
   
-  .trend-up { color: var(--success); }
-  .trend-down { color: var(--error); }
-
-  /* --- Data Container --- */
-  .data-container {
-    background: var(--surface);
-    border-radius: 20px;
-    border: 1px solid var(--border-color);
-    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05);
-    overflow: hidden;
+  /* --- Glass Navigation --- */
+  .top-nav { 
+    backdrop-filter: blur(20px); background: rgba(255, 255, 255, 0.03); 
+    border-radius: 20px; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center;
+    border: 1px solid var(--border); margin-bottom: 30px; position: sticky; top: 10px; z-index: 1000;
   }
-
-  .sheet-block { margin: 24px; border-radius: 12px; border: 1px solid #f3f4f6; overflow: hidden; }
-  .sheet-title { 
-    background: #f9fafb; 
-    padding: 16px 24px; 
-    font-size: 13px; 
-    font-weight: 600; 
-    color: var(--text-secondary);
-    display: flex; justify-content: space-between;
-    border-bottom: 1px solid #f3f4f6;
+  .brand { display: flex; align-items: center; gap: 15px; cursor: pointer; }
+  .logo { 
+    background: linear-gradient(135deg, var(--neon-blue), var(--neon-cyan)); 
+    width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    font-family: 'Orbitron', sans-serif; font-weight: 700; box-shadow: 0 0 15px var(--neon-blue); color: #000;
   }
+  .brand h1 { font-family: 'Orbitron', sans-serif; font-size: 16px; letter-spacing: 2px; }
+  
+  .filter-hub { display: flex; gap: 10px; }
+  input[type="date"] { background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 10px; color: #fff; padding: 10px; font-size: 12px; outline: none; }
+  button { 
+    background: var(--neon-blue); color: #000; font-weight: 800; padding: 10px 20px; border: none; border-radius: 10px; 
+    cursor: pointer; transition: 0.3s; text-transform: uppercase; font-size: 11px; letter-spacing: 1px;
+  }
+  button:hover:not(:disabled) { box-shadow: 0 0 20px var(--neon-blue); transform: translateY(-2px); }
+  button:disabled { background: #333; color: #666; cursor: not-allowed; }
 
-  .table-scroll { overflow-x: auto; }
+  /* --- Neon Metrics --- */
+  .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
+  .neon-card { 
+    background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 20px; padding: 25px;
+    transition: 0.3s; position: relative;
+  }
+  .neon-card.interactive:hover { background: rgba(255, 255, 255, 0.05); border-color: var(--neon-blue); cursor: pointer; }
+  .label { font-size: 9px; text-transform: uppercase; letter-spacing: 2px; opacity: 0.5; font-weight: 700; }
+  .value { font-family: 'Orbitron', sans-serif; font-size: 22px; margin: 8px 0; }
+
+  /* --- Cyber Table --- */
+  .container { background: rgba(0,0,0,0.3); border-radius: 25px; border: 1px solid var(--border); padding: 20px; min-height: 500px; }
+  .sheet-title { font-family: 'Orbitron', sans-serif; font-size: 11px; margin-bottom: 20px; color: var(--neon-cyan); display: flex; justify-content: space-between; padding: 0 10px; }
+  
+  .table-scroll { overflow-x: auto; border-radius: 15px; }
   table { width: 100%; border-collapse: collapse; }
-  th { padding: 16px 24px; text-align: left; font-size: 12px; color: var(--text-secondary); border-bottom: 1px solid #f3f4f6; text-transform: uppercase; letter-spacing: 0.025em; }
-  td { padding: 16px 24px; font-size: 14px; color: var(--text-primary); border-bottom: 1px solid #f9fafb; }
-
-  .row-interactive { cursor: pointer; transition: background 0.15s; }
-  .row-interactive:hover { background-color: var(--brand-soft); }
-  .row-link-icon { color: var(--brand); font-size: 14px; margin-right: 10px; }
-
-  .empty-state { text-align: center; padding: 120px 40px; color: var(--text-secondary); }
-  .empty-state h3 { color: var(--text-primary); margin-bottom: 8px; }
-
-  @media(max-width:992px){
-    .top-nav { flex-direction: column; align-items: flex-start; gap: 20px; }
-    .filter-pill { width: 100%; flex-wrap: wrap; }
+  th { padding: 15px 20px; text-align: left; font-size: 10px; text-transform: uppercase; color: rgba(255,255,255,0.4); border-bottom: 1px solid var(--border); }
+  td { padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.02); font-size: 13px; }
+  
+  .row-interactive { cursor: pointer; transition: 0.2s; }
+  .row-interactive:hover { background: rgba(255,255,255,0.03); }
+  .row-selected { 
+    background: rgba(0, 210, 255, 0.1) !important; 
+    border-left: 4px solid var(--neon-cyan);
+    box-shadow: inset 5px 0 15px rgba(0, 210, 255, 0.1);
   }
+
+  .bank-tag { padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 700; border: 1px solid currentColor; }
+  .tag-hdfc { color: var(--neon-blue); } .tag-sbi { color: var(--neon-green); } .tag-icici { color: #ffa500; }
+  
+  .amt-dep { color: var(--neon-green); font-weight: 700; }
+  .amt-with { color: var(--neon-red); font-weight: 700; }
+
+  .empty { text-align: center; padding: 150px; opacity: 0.3; font-family: 'Orbitron', sans-serif; font-size: 12px; letter-spacing: 5px; }
 </style>
 </head>
-<body>
+<body onload="initDashboard()">
 
-<div class="layout-wrapper">
+<div class="wrapper">
   <nav class="top-nav">
-    <div class="nav-brand" onclick="location.reload()">
-      <div class="logo-box">₹</div>
-      <h1>Analysis Hub</h1>
-    </div>
-    <div class="filter-pill">
-      <input type="date" id="from">
-      <input type="date" id="to">
-      <button onclick="fetchData()" class="btn-primary">Analyze</button>
-      <button id="traceBtn" onclick="traceSelected()" class="btn-trace" style="display:none;">
-        Trace Selection (<span id="trace-count">0</span>)
-      </button>
-      <button id="deleteBtn" onclick="deleteSelected()" class="btn-delete" style="display:none;">
-        Delete (<span id="del-count">0</span>)
-      </button>
+    <div class="brand" onclick="location.reload()"><div class="logo">₹</div><h1>AERO SYSTEM</h1></div>
+    <div class="filter-hub">
+      <input type="date" id="from"> <input type="date" id="to">
+      <button onclick="fetchData()">Initialize</button>
+      <button id="traceBtn" onclick="traceSelected()" style="display:none; background:var(--neon-green);">Global Sync (<span id="trace-count">0</span>)</button>
     </div>
   </nav>
 
-  <section id="summary" class="metrics-hub">
-    <div class="metric-card interactive" onclick="fetchRange('Savings')">
-      <span class="metric-label">Liquidity Pool 🔗</span>
-      <span id="raw-savings" class="metric-value">₹0.00</span>
-      <div class="metric-footer"><span class="trend-up">●</span> Active Accounts</div>
-    </div>
-    <div class="metric-card interactive" onclick="fetchRange('CC')">
-      <span class="metric-label">Credit Exposure 🔗</span>
-      <span id="raw-cc" class="metric-value">₹0.00</span>
-      <div class="metric-footer"><span class="trend-down">●</span> Used Limits</div>
-    </div>
-    <div class="metric-card" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: white;">
-      <span class="metric-label" style="color: rgba(255,255,255,0.6)">Net Portfolio</span>
-      <span id="net-balance" class="metric-value">₹0.00</span>
-      <div class="metric-footer" style="color: rgba(255,255,255,0.4)">Consolidated available</div>
-    </div>
-    <div class="metric-card">
-      <span class="metric-label">Session Inflow</span>
-      <span id="total-dep" class="metric-value" style="color: var(--success);">₹0.00</span>
-    </div>
-    <div class="metric-card">
-      <span class="metric-label">Session Outflow</span>
-      <span id="total-with" class="metric-value" style="color: var(--error);">₹0.00</span>
-    </div>
+  <section class="metrics-grid">
+    <div class="neon-card interactive" onclick="fetchRange('Savings')"><span class="label">Liquidity Pool 🔗</span><div id="raw-savings" class="value">₹0.00</div></div>
+    <div class="neon-card interactive" onclick="fetchRange('CC')"><span class="label">Credit Exposure 🔗</span><div id="raw-cc" class="value">₹0.00</div></div>
+    <div class="neon-card" style="border: 1px solid var(--neon-blue);"><span class="label" style="color:var(--neon-blue)">Net Portfolio</span><div id="net-balance" class="value">₹0.00</div></div>
+    <div class="neon-card"><span class="label">Session In</span><div id="total-dep" class="value amt-dep">₹0.00</div></div>
+    <div class="neon-card"><span class="label">Session Out</span><div id="total-with" class="value amt-with">₹0.00</div></div>
   </section>
 
-  <main id="result" class="data-container">
-    <div class="empty-state">
-      <div style="font-size: 48px; margin-bottom: 20px; opacity: 0.2;">📊</div>
-      <h3>No Data Selected</h3>
-      <p>Enter a date range or click a metric card to begin deep-dive analysis.</p>
-    </div>
+  <main id="result" class="container">
+    <div class="empty">SYSTEM OFFLINE: AWAITING INPUT</div>
   </main>
 </div>
 
 <script>
-// --- CORE LOGIC (Maintained from your stable version) ---
-const API_URL = "https://script.google.com/macros/s/AKfycbxeyI-iKfYu216UnB-6HBW1uuIwTzjykzOdLXaWK2JzxEl7XUF5ytr9hYWKmq4Batdtgg/exec";
-let deleteSet = new Set();
-let isNamedRangeView = false;
-let currentRangeName = '';
-let currentStats = { net: 0, rawS: 0, rawC: 0 };
+const API_URL = "https://script.google.com/macros/s/AKfycbw4x4_aevBLrEuWiHFex84Cz_EiFuThFPO5jgxWaGUYQYOTsbNHIPhUe8KJ1GVpLX9zfg/exec";
+let selectionSet = new Set(), isNamedRangeView = false, currentRangeName = '', currentActiveName = '', currentStats = { net: 0, rawS: 0, rawC: 0 };
 
 async function initDashboard() {
-  try {
-    const r = await fetch(API_URL, { redirect: "follow" });
-    const res = await r.json();
-    currentStats = { net: res.netBalance, rawS: res.rawSavings, rawC: res.rawCC };
-    updateSummaryUI(0, 0);
-  } catch(e) { renderMsg("Connection Sync Failed."); }
-}
-
-window.onload = initDashboard;
-
-function formatCurrency(val) {
-  const num = parseFloat(String(val || "").replace(/[₹, \s]/g, ""));
-  if (isNaN(num)) return val;
-  return "₹" + num.toLocaleString('en-IN', { minimumFractionDigits: 2 });
-}
-
-function parseAmount(v){
-  return parseFloat(String(v||"").replace(/[₹, \s]/g,"")) || 0;
+  const r = await fetch(API_URL, { redirect: "follow" });
+  const res = await r.json();
+  currentStats = { net: res.netBalance, rawS: res.rawSavings, rawC: res.rawCC };
+  updateUI(0, 0);
 }
 
 async function fetchData() {
-  isNamedRangeView = false;
-  currentRangeName = '';
-  const from = document.getElementById("from").value, to = document.getElementById("to").value;
-  if(!from || !to) return alert("Select start and end dates.");
-  renderLoading("Compiling Statement...");
-  try {
-    const r = await fetch(`${API_URL}?from=${from}&to=${to}`, { redirect: "follow" });
-    const res = await r.json();
-    currentStats = { net: res.netBalance, rawS: res.rawSavings, rawC: res.rawCC };
-    renderData(res.transactions);
-  } catch(e) { renderMsg("Network error fetching statement.", true); }
+  isNamedRangeView = false; currentActiveName = ''; selectionSet.clear();
+  const f = document.getElementById("from").value, t = document.getElementById("to").value;
+  if(!f || !t) return;
+  renderLoad("BOOTING MASTER STATEMENT...");
+  const r = await fetch(`${API_URL}?from=${f}&to=${t}`, { redirect: "follow" });
+  const res = await r.json();
+  renderData(res.transactions);
 }
 
 async function fetchRange(name) {
-  isNamedRangeView = true;
-  currentRangeName = name;
-  renderLoading(`Indexing ${name} Registry...`);
-  try {
-    const r = await fetch(`${API_URL}?rangeName=${name}`, { redirect: "follow" });
-    const res = await r.json();
-    currentStats = { net: res.netBalance, rawS: res.rawSavings, rawC: res.rawCC };
-    renderData(res.transactions);
-  } catch(e) { renderMsg(`Failed to load ${name} range.`, true); }
+  isNamedRangeView = true; currentRangeName = name; currentActiveName = ''; selectionSet.clear();
+  renderLoad(`SCANNING ${name} REGISTRY...`);
+  const r = await fetch(`${API_URL}?rangeName=${name}`, { redirect: "follow" });
+  const res = await r.json();
+  renderData(res.transactions);
 }
 
-async function traceRow(val) {
-  const sourceMode = (isNamedRangeView && currentRangeName === 'CC') ? 'CC' : 'Account';
-  isNamedRangeView = false; 
-  renderLoading(`Tracing Account: ${val}...`);
-  try {
-    const r = await fetch(`${API_URL}?action=trace&refId=${encodeURIComponent(val)}&source=${sourceMode}`, { redirect: "follow" });
-    const res = await r.json();
-    currentStats = { net: res.netBalance, rawS: res.rawSavings, rawC: res.rawCC };
-    renderData(res.transactions);
-  } catch(e) { renderMsg("Error during account trace.", true); }
+function toggleSelection(rowElement, refId) {
+  if (isNamedRangeView) {
+    traceAccount(refId);
+    return;
+  }
+  if (selectionSet.has(refId)) {
+    selectionSet.delete(refId);
+    rowElement.classList.remove('row-selected');
+  } else {
+    selectionSet.add(refId);
+    rowElement.classList.add('row-selected');
+  }
+  updateSelectCount();
+}
+
+async function traceAccount(val) {
+  currentActiveName = val; isNamedRangeView = false; selectionSet.clear();
+  const source = (currentRangeName === 'CC') ? 'CC' : 'Account';
+  renderLoad(`TRACING ENTITY: ${val}...`);
+  const r = await fetch(`${API_URL}?action=trace&refId=${encodeURIComponent(val)}&source=${source}`, { redirect: "follow" });
+  const res = await r.json();
+  renderData(res.transactions);
 }
 
 async function traceSelected() {
-  if (deleteSet.size === 0) return;
-  isNamedRangeView = false;
-  const terms = Array.from(deleteSet).join(",");
-  renderLoading(`Universal Cross-Trace...`);
-  try {
-    const r = await fetch(`${API_URL}?action=trace&refId=${encodeURIComponent(terms)}&source=Reference`, { redirect: "follow" });
-    const res = await r.json();
-    currentStats = { net: res.netBalance, rawS: res.rawSavings, rawC: res.rawCC };
-    renderData(res.transactions);
-  } catch(e) { renderMsg("Error during global trace.", true); }
+  if (selectionSet.size === 0) return;
+  const terms = Array.from(selectionSet).join(","); 
+  isNamedRangeView = false; currentActiveName = ''; selectionSet.clear();
+  renderLoad("UNIVERSAL SYNC IN PROGRESS...");
+  const r = await fetch(`${API_URL}?action=trace&refId=${encodeURIComponent(terms)}&source=Reference`, { redirect: "follow" });
+  const res = await r.json();
+  renderData(res.transactions);
 }
 
 function renderData(data) {
   const resultDiv = document.getElementById("result");
-  if(!data || data.length === 0) {
-    updateSummaryUI(0,0);
-    return renderMsg("No corresponding records found.");
-  }
+  if(!data || data.length === 0) return resultDiv.innerHTML = "<div class='empty'>ZERO DATA PACKETS</div>";
   resultDiv.innerHTML = "";
   let gDep = 0, gWith = 0;
-
+  
   document.getElementById("traceBtn").style.display = isNamedRangeView ? "none" : "inline-flex";
-  document.getElementById("deleteBtn").style.display = isNamedRangeView ? "none" : "inline-flex";
-  updateSelection();
+  updateSelectCount();
 
-  const grouped = data.reduce((acc, item) => {
-    if(!acc[item.SheetSource]) acc[item.SheetSource] = [];
-    acc[item.SheetSource].push(item.data);
-    return acc;
-  }, {});
+  const grouped = data.reduce((acc, item) => { if(!acc[item.SheetSource]) acc[item.SheetSource] = []; acc[item.SheetSource].push(item.data); return acc; }, {});
 
-  Object.keys(grouped).forEach(sheetName => {
-    const rows = grouped[sheetName];
-    const headers = rows[0].map(pair => pair.k); 
+  Object.keys(grouped).forEach(sheet => {
+    const rows = grouped[sheet], headers = rows[0].map(p => p.k);
+    const div = document.createElement("div"); div.className = "sheet-block";
+    
+    let displayTitle = isNamedRangeView ? `${currentRangeName} REGISTRY` : `SHEET: ${sheet}`;
+    if (currentActiveName) displayTitle = `LOGS: ${currentActiveName} (via ${sheet})`;
 
-    const container = document.createElement("div");
-    container.className = "sheet-block";
-    container.innerHTML = `
-      <div class="sheet-title"><span>📂 ${sheetName}</span><span>${rows.length} records</span></div>
-      <div class="table-scroll">
-        <table>
-          <thead>
-            <tr>
-              ${!isNamedRangeView ? `<th style="width:40px;"></th>` : ''}
-              ${headers.map(h => `<th>${h}</th>`).join("")}
-            </tr>
-          </thead>
-          <tbody>
-            ${rows.map(rowPairs => {
-              const accountName = rowPairs[0].v;
-              const referenceId = rowPairs[rowPairs.length - 1].v;
-              const rowAttr = isNamedRangeView ? `class="row-interactive" onclick="traceRow('${accountName}')"` : "";
-              
-              return `<tr ${rowAttr}>
-                ${!isNamedRangeView ? `<td><input type="checkbox" class="cb-${sheetName}" data-ref="${referenceId}" onchange="updateSelection()"></td>` : ''}
-                ${rowPairs.map((pair, i) => {
-                  let val = pair.v;
-                  let className = "";
-                  if(isNamedRangeView && i === 0) val = `<span class="row-link-icon">⚡</span>${val}`;
-                  if(i === 0 || pair.k.toLowerCase().includes("date")) val = formatDate(val);
-                  else if (!isNaN(parseFloat(String(val).replace(/[₹, \s]/g, "")))) val = formatCurrency(val);
-                  
-                  if(pair.k.toLowerCase().includes("deposit")) { gDep += parseAmount(pair.v); className = "amt-deposit"; }
-                  if(pair.k.toLowerCase().includes("withdraw")) { gWith += parseAmount(pair.v); className = "amt-withdraw"; }
-                  return `<td data-label="${pair.k}" class="${className}">${val || "—"}</td>`;
-                }).join("")}
-              </tr>`;
-            }).join("")}
-          </tbody>
-        </table>
-      </div>`;
-    resultDiv.appendChild(container);
+    div.innerHTML = `<div class="sheet-title"><span>> ${displayTitle.toUpperCase()}</span><span>[${rows.length} UNITS]</span></div>
+    <div class="table-scroll"><table><thead><tr>${headers.map(h => `<th>${h}</th>`).join("")}</tr></thead>
+    <tbody>${rows.map(row => {
+      const refId = row[row.length - 1].v;
+      const primaryVal = row[0].v;
+      const passId = isNamedRangeView ? primaryVal : refId;
+      
+      return `<tr class="row-interactive" onclick="toggleSelection(this, '${passId}')">${row.map((p, i) => {
+        let val = p.v, cls = "";
+        if(p.k.toLowerCase().includes('from')) {
+           let tag = val.toLowerCase().includes('hdfc') ? 'tag-hdfc' : val.toLowerCase().includes('sbi') ? 'tag-sbi' : 'tag-icici';
+           val = `<span class="bank-tag ${tag}">${val}</span>`;
+        }
+        if(i === 0 || p.k.toLowerCase().includes("date")) val = formatDate(val);
+        else if (!isNaN(parseFloat(String(val).replace(/[₹, \s]/g, "")))) val = formatCurr(val);
+        if(p.k.toLowerCase().includes("deposit")) { gDep += parse(p.v); cls = "amt-dep"; }
+        if(p.k.toLowerCase().includes("withdraw")) { gWith += parse(p.v); cls = "amt-with"; }
+        return `<td class="${cls}">${val || "—"}</td>`;
+      }).join("")}</tr>`;
+    }).join("")}</tbody></table></div>`;
+    resultDiv.appendChild(div);
   });
-  updateSummaryUI(gDep, gWith);
+  updateUI(gDep, gWith);
 }
 
-function updateSummaryUI(dep, withdr) {
-  document.getElementById("raw-savings").innerText = formatCurrency(currentStats.rawS);
-  document.getElementById("raw-cc").innerText = formatCurrency(currentStats.rawC);
-  document.getElementById("net-balance").innerText = formatCurrency(currentStats.net);
-  document.getElementById("total-dep").innerText = formatCurrency(dep);
-  document.getElementById("total-with").innerText = formatCurrency(withdr);
+function updateSelectCount() {
+  const c = selectionSet.size;
+  document.getElementById("trace-count").innerText = c;
+  document.getElementById("traceBtn").disabled = (c === 0);
 }
 
-function updateSelection() {
-  deleteSet.clear();
-  if(!isNamedRangeView) {
-    document.querySelectorAll('input[data-ref]:checked').forEach(cb => {
-      const ref = cb.getAttribute("data-ref");
-      if(ref && ref !== "—") deleteSet.add(ref);
-    });
-  }
-  const count = deleteSet.size;
-  document.getElementById("del-count").innerText = count;
-  document.getElementById("trace-count").innerText = count;
-  document.getElementById("deleteBtn").disabled = document.getElementById("traceBtn").disabled = (count === 0);
+function updateUI(d, w) {
+  document.getElementById("raw-savings").innerText = formatCurr(currentStats.rawS);
+  document.getElementById("raw-cc").innerText = formatCurr(currentStats.rawC);
+  document.getElementById("net-balance").innerText = formatCurr(currentStats.net);
+  document.getElementById("total-dep").innerText = formatCurr(d);
+  document.getElementById("total-with").innerText = formatCurr(w);
 }
 
-function toggleSheet(master, sName) {
-  document.querySelectorAll(`.cb-${sName}`).forEach(cb => cb.checked = master.checked);
-  updateSelection();
-}
-
-function formatDate(dateStr) {
-  const date = new Date(dateStr);
-  if (isNaN(date.getTime())) return dateStr; 
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
-}
-
-async function deleteSelected() {
-  const ids = Array.from(deleteSet);
-  if(!confirm(`Are you sure you want to permanently delete these ${ids.length} records?`)) return;
-  try {
-    await fetch(API_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ ids: ids }) });
-    alert("Deletion successful."); location.reload();
-  } catch(e) { alert("Execution error."); }
-}
-
-function renderMsg(m, isErr) { document.getElementById("result").innerHTML = `<div class="empty-state"><h3 style="${isErr?'color:var(--error)':''}">Notice</h3><p>${m}</p></div>`; }
-function renderLoading(m) { document.getElementById("result").innerHTML = `<div class="empty-state"><div style="color:var(--brand); font-weight:700; font-size:18px;">${m}</div><p>Aggregating spreadsheet data...</p></div>`; }
+function formatCurr(v) { let n = parseFloat(String(v || "").replace(/[₹, \s]/g, "")); return isNaN(n) ? v : "₹" + n.toLocaleString('en-IN', { minimumFractionDigits: 2 }); }
+function formatDate(d) { let date = new Date(d); return isNaN(date.getTime()) ? d : `${date.getDate()} ${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][date.getMonth()]} ${date.getFullYear()}`; }
+function parse(v){ return parseFloat(String(v||"").replace(/[₹, \s]/g,"")) || 0; }
+function renderLoad(m) { document.getElementById("result").innerHTML = `<div class="empty"><div style="color:var(--neon-cyan); text-shadow:0 0 15px var(--neon-cyan);">${m}</div></div>`; }
 </script>
 </body>
 </html>
