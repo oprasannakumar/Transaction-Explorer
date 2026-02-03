@@ -2,24 +2,18 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Transaction Explorer Pro</title>
+<title>Financial Explorer Pro</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box}
   body{margin:0; font-family:'Inter',sans-serif; background:#f3f6fb; padding:12px;}
-  .card{background:#fff; border-radius:16px; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,.05); max-width: 1400px; margin: auto; min-height: 80vh;}
+  .card{background:#fff; border-radius:16px; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,.05); max-width: 1400px; margin: auto; min-height: 85vh;}
   .header{display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap; margin-bottom: 24px; border-bottom: 1px solid #f1f5f9; padding-bottom: 20px;}
   .controls{display:flex; gap:10px; align-items: center; flex-wrap: wrap;}
   
   .summary-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 30px; }
-  .stat-card { 
-    background: #f8fafc; 
-    border: 1px solid #e2e8f0; 
-    padding: 16px; 
-    border-radius: 12px; 
-    transition: all 0.2s ease;
-  }
+  .stat-card { background: #f8fafc; border: 1px solid #e2e8f0; padding: 16px; border-radius: 12px; transition: all 0.2s ease; }
   .clickable-card { cursor: pointer; border-bottom: 3px solid transparent; }
   .clickable-card:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.05); background: #fff; }
   
@@ -27,7 +21,6 @@
   .stat-value { font-size: 20px; font-weight: 700; color: #0f172a; margin-top: 6px; }
   
   .welcome-box { text-align: center; padding: 60px 20px; color: #64748b; background: #fcfdfe; border: 2px dashed #e2e8f0; border-radius: 16px; margin-top: 20px; }
-  .welcome-box h3 { color: #1e293b; margin-bottom: 10px; }
   
   .sheet-group { margin-bottom: 30px; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background: #fff; animation: fadeIn 0.3s ease-in; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -46,7 +39,11 @@
   .table-wrap { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 12px; }
   th { background: #f8fafc; padding: 12px 15px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #475569; }
-  td { padding: 12px 15px; border-bottom: 1px solid #f1f5f9; color: #1e293b; word-break: break-word; }
+  td { padding: 12px 15px; border-bottom: 1px solid #f1f5f9; color: #1e293b; }
+  
+  .range-row { cursor: pointer; transition: background 0.2s; }
+  .range-row:hover { background-color: #f0f9ff !important; }
+
   .amt-deposit { color: #10b981; font-weight: 600; }
   .amt-withdraw { color: #ef4444; font-weight: 600; }
   
@@ -65,12 +62,12 @@
   <div class="header">
     <div style="display:flex; align-items:center; gap:12px;">
       <div style="width:40px; height:40px; background:#2563eb; border-radius:10px; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold;">₹</div>
-      <h2 style="margin:0; font-size:20px; color:#0f172a;">Financial Dashboard</h2>
+      <h2 style="margin:0; font-size:20px; color:#0f172a;">Unified Statement Explorer</h2>
     </div>
     <div class="controls">
       <input type="date" id="from">
       <input type="date" id="to">
-      <button onclick="fetchData()">Fetch Transactions</button>
+      <button onclick="fetchData()">Fetch Data</button>
       <button id="traceBtn" onclick="traceSelected()" class="btn-trace-bulk" disabled style="display:none;">
         Trace Selected <span id="trace-count" class="count-badge">0</span>
       </button>
@@ -99,8 +96,8 @@
 
   <div id="result">
     <div class="welcome-box">
-      <h3>Welcome to Explorer Pro</h3>
-      <p>Select a date range to view transactions, or click on <b>Savings</b> or <b>Credit Limits</b> above to see detailed breakdowns.</p>
+      <h3>Ready to Explore</h3>
+      <p>Select a date range or tap a card to begin. Filter logic optimized for partial matching.</p>
     </div>
   </div>
 </div>
@@ -109,25 +106,16 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbxeyI-iKfYu216UnB-6HBW1uuIwTzjykzOdLXaWK2JzxEl7XUF5ytr9hYWKmq4Batdtgg/exec";
 let deleteSet = new Set();
 let isNamedRangeView = false;
+let currentRangeName = ''; // Tracks if we are in CC or Savings view
 let currentStats = { net: 0, rawS: 0, rawC: 0 };
 
 async function initDashboard() {
-  document.getElementById("result").innerHTML = `<div style="text-align:center; padding:40px;">Initializing secure connection...</div>`;
   try {
     const r = await fetch(API_URL, { redirect: "follow" });
     const res = await r.json();
     currentStats = { net: res.netBalance, rawS: res.rawSavings, rawC: res.rawCC };
     updateSummary(0, 0);
-    showWelcome();
-  } catch(e) { renderMsg("Connection failed. Please check if the script is deployed as 'Anyone'.", true); }
-}
-
-function showWelcome() {
-  document.getElementById("result").innerHTML = `
-    <div class="welcome-box">
-      <h3>Dashboard Ready</h3>
-      <p>All balances are synced from Google Sheets. <br>Use the date filters above or tap a card to explore your data.</p>
-    </div>`;
+  } catch(e) { renderMsg("Connection failed.", true); }
 }
 
 function formatDate(dateStr) {
@@ -149,9 +137,10 @@ function parseAmount(v){
 
 async function fetchData() {
   isNamedRangeView = false;
+  currentRangeName = '';
   const from = document.getElementById("from").value, to = document.getElementById("to").value;
-  if(!from || !to) return alert("Please select both dates");
-  renderLoading("Fetching Transactions...");
+  if(!from || !to) return alert("Select dates");
+  renderLoading("Fetching...");
   try {
     const r = await fetch(`${API_URL}?from=${from}&to=${to}`, { redirect: "follow" });
     const res = await r.json();
@@ -162,33 +151,50 @@ async function fetchData() {
 
 async function fetchRange(name) {
   isNamedRangeView = true;
-  renderLoading(`Loading ${name} Details...`);
+  currentRangeName = name;
+  renderLoading(`Loading ${name}...`);
   try {
     const r = await fetch(`${API_URL}?rangeName=${name}`, { redirect: "follow" });
     const res = await r.json();
     currentStats = { net: res.netBalance, rawS: res.rawSavings, rawC: res.rawCC };
     renderData(res.transactions);
-  } catch(e) { renderMsg(`Could not load ${name}.`, true); }
+  } catch(e) { renderMsg(`Could not load range.`, true); }
 }
 
 async function traceSelected() {
   if (deleteSet.size === 0) return;
   isNamedRangeView = false;
-  const ids = Array.from(deleteSet).join(",");
-  renderLoading(`Tracing Reference IDs...`);
+  const terms = Array.from(deleteSet).join(",");
+  renderLoading(`Tracing Selection...`);
   try {
-    const r = await fetch(`${API_URL}?action=trace&refId=${encodeURIComponent(ids)}`, { redirect: "follow" });
+    const r = await fetch(`${API_URL}?action=trace&refId=${encodeURIComponent(terms)}`, { redirect: "follow" });
     const res = await r.json();
     currentStats = { net: res.netBalance, rawS: res.rawSavings, rawC: res.rawCC };
     renderData(res.transactions);
   } catch(e) { renderMsg("Error during trace.", true); }
 }
 
+async function traceRow(elementValue) {
+  if (!elementValue || elementValue === "—") return;
+  
+  // Detect source for CC-specific filtering
+  const source = (isNamedRangeView && currentRangeName === 'CC') ? 'CC' : 'Other';
+  
+  isNamedRangeView = false;
+  renderLoading(`Filtering for: ${elementValue}...`);
+  try {
+    const r = await fetch(`${API_URL}?action=trace&refId=${encodeURIComponent(elementValue)}&source=${source}`, { redirect: "follow" });
+    const res = await r.json();
+    currentStats = { net: res.netBalance, rawS: res.rawSavings, rawC: res.rawCC };
+    renderData(res.transactions);
+  } catch(e) { renderMsg("Error fetching statement.", true); }
+}
+
 function renderData(data) {
   const resultDiv = document.getElementById("result");
   if(!data || data.length === 0) {
     updateSummary(0,0);
-    return renderMsg("No records found for this selection.");
+    return renderMsg("No records found.");
   }
   resultDiv.innerHTML = "";
   let gDep = 0, gWith = 0;
@@ -220,18 +226,18 @@ function renderData(data) {
           </thead>
           <tbody>
             ${rows.map(rowPairs => {
-              const refId = rowPairs[rowPairs.length - 1].v;
-              return `<tr>
-                ${!isNamedRangeView ? `<td><input type="checkbox" class="cb-${sheetName}" data-ref="${refId}" onchange="updateSelection()"></td>` : ''}
+              const firstColValue = rowPairs[0].v; 
+              const rowAttr = isNamedRangeView ? `class="range-row" onclick="traceRow('${firstColValue}')" title="Filter by ${firstColValue}"` : "";
+              
+              return `<tr ${rowAttr}>
+                ${!isNamedRangeView ? `<td><input type="checkbox" class="cb-${sheetName}" data-ref="${firstColValue}" onchange="updateSelection()"></td>` : ''}
                 ${rowPairs.map((pair, i) => {
                   let val = pair.v;
                   let className = "";
                   if(i === 0 || pair.k.toLowerCase().includes("date")) val = formatDate(val);
                   else if (!isNaN(parseFloat(String(val).replace(/[₹, \s]/g, "")))) val = formatCurrency(val);
-
                   if(pair.k.toLowerCase().includes("deposit")) { gDep += parseAmount(pair.v); className = "amt-deposit"; }
                   if(pair.k.toLowerCase().includes("withdraw")) { gWith += parseAmount(pair.v); className = "amt-withdraw"; }
-                  
                   return `<td data-label="${pair.k}" class="${className}">${val || "—"}</td>`;
                 }).join("")}
               </tr>`;
