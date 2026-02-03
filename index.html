@@ -8,20 +8,36 @@
 <style>
   *{box-sizing:border-box}
   body{margin:0; font-family:'Inter',sans-serif; background:#f3f6fb; padding:12px;}
-  .card{background:#fff; border-radius:16px; padding:20px; box-shadow:0 10px 25px rgba(0,0,0,.05); max-width: 1400px; margin: auto;}
-  .header{display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap; margin-bottom: 20px;}
+  .card{background:#fff; border-radius:16px; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,.05); max-width: 1400px; margin: auto; min-height: 80vh;}
+  .header{display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap; margin-bottom: 24px; border-bottom: 1px solid #f1f5f9; padding-bottom: 20px;}
   .controls{display:flex; gap:10px; align-items: center; flex-wrap: wrap;}
-  .summary-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px; }
-  .stat-card { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 12px; }
-  .stat-label { font-size: 10px; color: #64748b; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
-  .stat-value { font-size: 18px; font-weight: 700; color: #0f172a; margin-top: 5px; }
-  .sheet-group { margin-bottom: 30px; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background: #fff; }
-  .sheet-header { background: #0f172a; color: #fff; padding: 10px 15px; font-size: 13px; font-weight: 600; display: flex; justify-content: space-between; }
   
-  input, button { height: 38px; padding: 0 15px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 13px; }
-  button { background: #2563eb; color: #fff; border: none; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 8px; }
-  button:hover:not(:disabled) { background: #1e40af; transform: translateY(-1px); }
-  button:disabled { background: #cbd5e1; cursor: not-allowed; color: #64748b; }
+  .summary-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 30px; }
+  .stat-card { 
+    background: #f8fafc; 
+    border: 1px solid #e2e8f0; 
+    padding: 16px; 
+    border-radius: 12px; 
+    transition: all 0.2s ease;
+  }
+  .clickable-card { cursor: pointer; border-bottom: 3px solid transparent; }
+  .clickable-card:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.05); background: #fff; }
+  
+  .stat-label { font-size: 10px; color: #64748b; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
+  .stat-value { font-size: 20px; font-weight: 700; color: #0f172a; margin-top: 6px; }
+  
+  .welcome-box { text-align: center; padding: 60px 20px; color: #64748b; background: #fcfdfe; border: 2px dashed #e2e8f0; border-radius: 16px; margin-top: 20px; }
+  .welcome-box h3 { color: #1e293b; margin-bottom: 10px; }
+  
+  .sheet-group { margin-bottom: 30px; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background: #fff; animation: fadeIn 0.3s ease-in; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .sheet-header { background: #0f172a; color: #fff; padding: 12px 18px; font-size: 13px; font-weight: 600; display: flex; justify-content: space-between; }
+  
+  input, button { height: 40px; padding: 0 16px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 13px; }
+  button { background: #2563eb; color: #fff; border: none; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 8px; font-weight: 500; }
+  button:hover:not(:disabled) { background: #1e40af; }
+  button:disabled { background: #cbd5e1; cursor: not-allowed; }
   
   .btn-delete { background: #ef4444; }
   .btn-trace-bulk { background: #10b981; }
@@ -31,105 +47,155 @@
   table { width: 100%; border-collapse: collapse; font-size: 12px; }
   th { background: #f8fafc; padding: 12px 15px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #475569; }
   td { padding: 12px 15px; border-bottom: 1px solid #f1f5f9; color: #1e293b; word-break: break-word; }
-  
-  /* Amount Coloring */
   .amt-deposit { color: #10b981; font-weight: 600; }
   .amt-withdraw { color: #ef4444; font-weight: 600; }
   
   @media(max-width:768px){
-    .header { flex-direction: column; align-items: flex-start; }
+    .header { flex-direction: column; align-items: stretch; }
     table, thead, tbody, th, tr { display: block; }
     thead { display: none; }
-    tbody td { display: flex; justify-content: space-between; padding: 8px 0; border: none; }
+    tbody td { display: flex; justify-content: space-between; padding: 10px 15px; border: none; }
     tbody td::before { content: attr(data-label); font-weight: 600; color: #64748b; }
   }
 </style>
 </head>
-<body>
+<body onload="initDashboard()">
 
 <div class="card">
   <div class="header">
-    <h2>Transaction Explorer</h2>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div style="width:40px; height:40px; background:#2563eb; border-radius:10px; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold;">₹</div>
+      <h2 style="margin:0; font-size:20px; color:#0f172a;">Financial Dashboard</h2>
+    </div>
     <div class="controls">
       <input type="date" id="from">
       <input type="date" id="to">
-      <button onclick="fetchData()">Fetch Data</button>
-      <button id="traceBtn" onclick="traceSelected()" class="btn-trace-bulk" disabled>
+      <button onclick="fetchData()">Fetch Transactions</button>
+      <button id="traceBtn" onclick="traceSelected()" class="btn-trace-bulk" disabled style="display:none;">
         Trace Selected <span id="trace-count" class="count-badge">0</span>
       </button>
-      <button id="deleteBtn" onclick="deleteSelected()" class="btn-delete" disabled>
+      <button id="deleteBtn" onclick="deleteSelected()" class="btn-delete" disabled style="display:none;">
         Delete Selected <span id="del-count" class="count-badge">0</span>
       </button>
     </div>
   </div>
 
-  <div id="summary" class="summary-bar" style="display:none;">
-    <div class="stat-card" style="border-left: 4px solid #3b82f6;">
-      <div class="stat-label">Available Balance (C11)</div>
-      <div id="total-savings" class="stat-value">₹0.00</div>
+  <div id="summary" class="summary-bar">
+    <div class="stat-card clickable-card" style="border-left: 4px solid #8b5cf6;" onclick="fetchRange('Savings')">
+      <div class="stat-label">Total Savings Amount 🔗</div>
+      <div id="raw-savings" class="stat-value">₹0.00</div>
     </div>
-    <div class="stat-card" style="border-left: 4px solid #10b981;">
-      <div class="stat-label">Total Deposits (Selected)</div>
-      <div id="total-dep" class="stat-value">₹0.00</div>
+    <div class="stat-card clickable-card" style="border-left: 4px solid #ef4444;" onclick="fetchRange('CC')">
+      <div class="stat-label">Used Credit Limits 🔗</div>
+      <div id="raw-cc" class="stat-value">₹0.00</div>
     </div>
-    <div class="stat-card" style="border-left: 4px solid #ef4444;">
-      <div class="stat-label">Total Withdrawals (Selected)</div>
-      <div id="total-with" class="stat-value">₹0.00</div>
+    <div class="stat-card" style="border-left: 4px solid #3b82f6; background: #f0f7ff;">
+      <div class="stat-label">Net Available Amount</div>
+      <div id="net-balance" class="stat-value">₹0.00</div>
     </div>
+    <div class="stat-card"><div class="stat-label">Deposits (Selection)</div><div id="total-dep" class="stat-value">₹0.00</div></div>
+    <div class="stat-card"><div class="stat-label">Withdrawals (Selection)</div><div id="total-with" class="stat-value">₹0.00</div></div>
   </div>
 
-  <div id="result">Please select a date range.</div>
+  <div id="result">
+    <div class="welcome-box">
+      <h3>Welcome to Explorer Pro</h3>
+      <p>Select a date range to view transactions, or click on <b>Savings</b> or <b>Credit Limits</b> above to see detailed breakdowns.</p>
+    </div>
+  </div>
 </div>
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbxeyI-iKfYu216UnB-6HBW1uuIwTzjykzOdLXaWK2JzxEl7XUF5ytr9hYWKmq4Batdtgg/exec";
 let deleteSet = new Set();
-let actionState = "fetch";
-let globalSavings = 0;
+let isNamedRangeView = false;
+let currentStats = { net: 0, rawS: 0, rawC: 0 };
+
+async function initDashboard() {
+  document.getElementById("result").innerHTML = `<div style="text-align:center; padding:40px;">Initializing secure connection...</div>`;
+  try {
+    const r = await fetch(API_URL, { redirect: "follow" });
+    const res = await r.json();
+    currentStats = { net: res.netBalance, rawS: res.rawSavings, rawC: res.rawCC };
+    updateSummary(0, 0);
+    showWelcome();
+  } catch(e) { renderMsg("Connection failed. Please check if the script is deployed as 'Anyone'.", true); }
+}
+
+function showWelcome() {
+  document.getElementById("result").innerHTML = `
+    <div class="welcome-box">
+      <h3>Dashboard Ready</h3>
+      <p>All balances are synced from Google Sheets. <br>Use the date filters above or tap a card to explore your data.</p>
+    </div>`;
+}
 
 function formatDate(dateStr) {
   const date = new Date(dateStr);
   if (isNaN(date.getTime())) return dateStr; 
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  return `${date.getDate()}-${months[date.getMonth()]}-${date.getFullYear()} (${days[date.getDay()]})`;
+  return `${date.getDate()}-${months[date.getMonth()]}-${date.getFullYear()}`;
+}
+
+function formatCurrency(val) {
+  const num = parseFloat(String(val || "").replace(/[₹, \s]/g, ""));
+  if (isNaN(num)) return val;
+  return "₹" + num.toLocaleString('en-IN', { minimumFractionDigits: 2 });
 }
 
 function parseAmount(v){
-  return parseFloat(String(v||"").replace(/[₹,]/g,"")) || 0;
+  return parseFloat(String(v||"").replace(/[₹, \s]/g,"")) || 0;
 }
 
 async function fetchData() {
-  actionState = "fetch";
+  isNamedRangeView = false;
   const from = document.getElementById("from").value, to = document.getElementById("to").value;
-  if(!from || !to) return alert("Select dates");
-  renderLoading("Fetching data...");
+  if(!from || !to) return alert("Please select both dates");
+  renderLoading("Fetching Transactions...");
   try {
     const r = await fetch(`${API_URL}?from=${from}&to=${to}`, { redirect: "follow" });
     const res = await r.json();
-    globalSavings = res.savings; 
+    currentStats = { net: res.netBalance, rawS: res.rawSavings, rawC: res.rawCC };
     renderData(res.transactions);
   } catch(e) { renderMsg("Error fetching data.", true); }
 }
 
+async function fetchRange(name) {
+  isNamedRangeView = true;
+  renderLoading(`Loading ${name} Details...`);
+  try {
+    const r = await fetch(`${API_URL}?rangeName=${name}`, { redirect: "follow" });
+    const res = await r.json();
+    currentStats = { net: res.netBalance, rawS: res.rawSavings, rawC: res.rawCC };
+    renderData(res.transactions);
+  } catch(e) { renderMsg(`Could not load ${name}.`, true); }
+}
+
 async function traceSelected() {
   if (deleteSet.size === 0) return;
+  isNamedRangeView = false;
   const ids = Array.from(deleteSet).join(",");
-  actionState = "trace";
-  renderLoading(`Tracing Reference(s)...`);
+  renderLoading(`Tracing Reference IDs...`);
   try {
     const r = await fetch(`${API_URL}?action=trace&refId=${encodeURIComponent(ids)}`, { redirect: "follow" });
     const res = await r.json();
-    globalSavings = res.savings;
+    currentStats = { net: res.netBalance, rawS: res.rawSavings, rawC: res.rawCC };
     renderData(res.transactions);
-  } catch(e) { renderMsg("Error tracing IDs.", true); }
+  } catch(e) { renderMsg("Error during trace.", true); }
 }
 
 function renderData(data) {
-  if(!data || data.length === 0) return renderMsg("No records found.");
   const resultDiv = document.getElementById("result");
+  if(!data || data.length === 0) {
+    updateSummary(0,0);
+    return renderMsg("No records found for this selection.");
+  }
   resultDiv.innerHTML = "";
   let gDep = 0, gWith = 0;
+
+  document.getElementById("traceBtn").style.display = isNamedRangeView ? "none" : "inline-flex";
+  document.getElementById("deleteBtn").style.display = isNamedRangeView ? "none" : "inline-flex";
+  updateSelection();
 
   const grouped = data.reduce((acc, item) => {
     if(!acc[item.SheetSource]) acc[item.SheetSource] = [];
@@ -140,16 +206,15 @@ function renderData(data) {
   Object.keys(grouped).forEach(sheetName => {
     const rows = grouped[sheetName];
     const headers = rows[0].map(pair => pair.k); 
-
     const container = document.createElement("div");
     container.className = "sheet-group";
     container.innerHTML = `
-      <div class="sheet-header"><span>📄 Sheet: ${sheetName}</span><span>${rows.length} records</span></div>
+      <div class="sheet-header"><span>📄 Source: ${sheetName}</span><span>${rows.length} records</span></div>
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
-              <th style="width:40px;"><input type="checkbox" onclick="toggleSheet(this, '${sheetName}')"></th>
+              ${!isNamedRangeView ? `<th style="width:40px;"><input type="checkbox" onclick="toggleSheet(this, '${sheetName}')"></th>` : ''}
               ${headers.map(h => `<th>${h}</th>`).join("")}
             </tr>
           </thead>
@@ -157,20 +222,15 @@ function renderData(data) {
             ${rows.map(rowPairs => {
               const refId = rowPairs[rowPairs.length - 1].v;
               return `<tr>
-                <td><input type="checkbox" class="cb-${sheetName}" data-ref="${refId}" onchange="updateSelection()"></td>
+                ${!isNamedRangeView ? `<td><input type="checkbox" class="cb-${sheetName}" data-ref="${refId}" onchange="updateSelection()"></td>` : ''}
                 ${rowPairs.map((pair, i) => {
                   let val = pair.v;
                   let className = "";
                   if(i === 0 || pair.k.toLowerCase().includes("date")) val = formatDate(val);
-                  
-                  if(pair.k.toLowerCase().includes("deposit")) {
-                    gDep += parseAmount(val);
-                    className = "amt-deposit";
-                  }
-                  if(pair.k.toLowerCase().includes("withdraw")) {
-                    gWith += parseAmount(val);
-                    className = "amt-withdraw";
-                  }
+                  else if (!isNaN(parseFloat(String(val).replace(/[₹, \s]/g, "")))) val = formatCurrency(val);
+
+                  if(pair.k.toLowerCase().includes("deposit")) { gDep += parseAmount(pair.v); className = "amt-deposit"; }
+                  if(pair.k.toLowerCase().includes("withdraw")) { gWith += parseAmount(pair.v); className = "amt-withdraw"; }
                   
                   return `<td data-label="${pair.k}" class="${className}">${val || "—"}</td>`;
                 }).join("")}
@@ -181,22 +241,25 @@ function renderData(data) {
       </div>`;
     resultDiv.appendChild(container);
   });
-  updateSummary(gDep, gWith, globalSavings);
+  updateSummary(gDep, gWith);
 }
 
-function updateSummary(dep, withdr, savings) {
-  document.getElementById("summary").style.display = "grid";
-  document.getElementById("total-savings").innerText = `₹${savings.toLocaleString('en-IN', {minimumFractionDigits:2})}`;
-  document.getElementById("total-dep").innerText = `₹${dep.toLocaleString('en-IN', {minimumFractionDigits:2})}`;
-  document.getElementById("total-with").innerText = `₹${withdr.toLocaleString('en-IN', {minimumFractionDigits:2})}`;
+function updateSummary(dep, withdr) {
+  document.getElementById("raw-savings").innerText = formatCurrency(currentStats.rawS);
+  document.getElementById("raw-cc").innerText = formatCurrency(currentStats.rawC);
+  document.getElementById("net-balance").innerText = formatCurrency(currentStats.net);
+  document.getElementById("total-dep").innerText = formatCurrency(dep);
+  document.getElementById("total-with").innerText = formatCurrency(withdr);
 }
 
 function updateSelection() {
   deleteSet.clear();
-  document.querySelectorAll('input[data-ref]:checked').forEach(cb => {
-    const ref = cb.getAttribute("data-ref");
-    if(ref && ref !== "—") deleteSet.add(ref);
-  });
+  if(!isNamedRangeView) {
+    document.querySelectorAll('input[data-ref]:checked').forEach(cb => {
+      const ref = cb.getAttribute("data-ref");
+      if(ref && ref !== "—") deleteSet.add(ref);
+    });
+  }
   const dBtn = document.getElementById("deleteBtn");
   const tBtn = document.getElementById("traceBtn");
   const count = deleteSet.size;
@@ -217,9 +280,8 @@ async function deleteSelected() {
     alert("Deleted!"); location.reload();
   } catch(e) { alert("Error."); }
 }
-
-function renderMsg(m, isErr) { document.getElementById("result").innerHTML = `<div style="text-align:center; padding:40px; color:${isErr?'red':'#64748b'};">${m}</div>`; }
-function renderLoading(m) { document.getElementById("result").innerHTML = `<div style="text-align:center; padding:40px; color:#2563eb; font-weight:600;">${m}</div>`; }
+function renderMsg(m, isErr) { document.getElementById("result").innerHTML = `<div style="text-align:center; padding:60px; color:${isErr?'red':'#64748b'};"><h4>${isErr?'Error':'Note'}</h4><p>${m}</p></div>`; }
+function renderLoading(m) { document.getElementById("result").innerHTML = `<div style="text-align:center; padding:100px 0;"><div style="color:#2563eb; font-weight:600;">${m}</div></div>`; }
 </script>
 </body>
 </html>
