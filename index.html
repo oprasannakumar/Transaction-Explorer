@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Finance OS | Clean Date Stream</title>
+<title>Finance OS | Global Trace Navigation</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
 <style>
@@ -26,7 +26,7 @@
   .brand { display: flex; align-items: center; gap: 15px; }
   .brand h1 { font-family: 'Orbitron'; font-size: 18px; color: var(--neon-blue); cursor: pointer; }
   
-  .filter-hub { display: flex; gap: 10px; }
+  .filter-hub { display: flex; gap: 10px; align-items: center; }
   input[type="date"] { background: #000; border: 1px solid var(--neon-blue); border-radius: 5px; color: #fff; padding: 8px; font-family: 'JetBrains Mono'; }
   
   button { 
@@ -34,8 +34,12 @@
     cursor: pointer; font-family: 'Orbitron'; font-size: 11px; transition: 0.2s;
   }
   
+  /* BACK button: Only for Trace View */
   #back-btn { background: transparent; color: var(--neon-cyan); border: 1px solid var(--neon-cyan); display: none; }
+  #back-btn:hover { background: rgba(0, 255, 255, 0.1); box-shadow: 0 0 10px var(--neon-cyan); }
+  
   #action-btn { background: var(--neon-green); box-shadow: 0 0 15px var(--neon-green); display: none; }
+  #delete-btn { background: rgba(255, 0, 85, 0.1); color: var(--neon-red); border: 1px solid var(--neon-red); display: none; }
 
   .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
   .neon-card { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); padding: 20px; border-radius: 10px; transition: 0.3s; cursor: pointer; }
@@ -83,7 +87,8 @@
     <div class="filter-hub">
       <input type="date" id="from"> <input type="date" id="to">
       <button onclick="fetchData()">FETCH MASTER</button>
-      <button id="action-btn" onclick="executeFinalTrace()">TRACE SELECTED (<span id="count">0</span>)</button>
+      <button id="delete-btn" onclick="executeDelete()">DELETE (<span id="del-count">0</span>)</button>
+      <button id="action-btn" onclick="executeFinalTrace()">TRACE (<span id="count">0</span>)</button>
     </div>
   </nav>
 
@@ -120,7 +125,7 @@ function pushToStack(type, data, range = '') {
   navStack.push({ type: currentViewState, data: document.getElementById("result").innerHTML, range: currentRange, sel: new Set(selectionSet) });
   currentViewState = type;
   currentRange = range;
-  document.getElementById("back-btn").style.display = "block";
+  toggleBackButton();
 }
 
 function goBack() {
@@ -130,37 +135,43 @@ function goBack() {
   currentRange = prev.range;
   selectionSet = prev.sel;
   document.getElementById("result").innerHTML = prev.data;
-  if (navStack.length === 0) document.getElementById("back-btn").style.display = "none";
+  toggleBackButton();
   updateBtn();
 }
 
+// Logic: Back button ONLY visible in TRACED view (Global Sync results)
+function toggleBackButton() {
+  const btn = document.getElementById("back-btn");
+  btn.style.display = (currentViewState === 'TRACED' && navStack.length > 0) ? "block" : "none";
+}
+
 async function fetchData() {
-  pushToStack('MASTER', '');
-  selectionSet.clear(); updateBtn();
+  currentViewState = 'MASTER'; selectionSet.clear(); updateBtn();
   const f = document.getElementById("from").value, t = document.getElementById("to").value;
   if(!f || !t) return;
   renderLoad("DECRYPTING MASTER DATABASE...");
   const r = await fetch(`${API_URL}?from=${f}&to=${t}`, { redirect: "follow" });
   const res = await r.json();
   renderData(res.transactions);
+  toggleBackButton(); 
 }
 
 async function fetchRegistry(name) {
-  pushToStack('REGISTRY', '', name);
-  selectionSet.clear(); updateBtn();
+  currentViewState = 'REGISTRY'; currentRange = name; selectionSet.clear(); updateBtn();
   renderLoad(`SCANNING ${name} REGISTRY...`);
   const r = await fetch(`${API_URL}?rangeName=${name}`, { redirect: "follow" });
   const res = await r.json();
   renderData(res.transactions);
+  toggleBackButton();
 }
 
 async function fetchStatement(val) {
-  pushToStack('STATEMENT', '');
-  selectionSet.clear(); updateBtn();
+  currentViewState = 'STATEMENT'; selectionSet.clear(); updateBtn();
   renderLoad(`GENERATING STATEMENT FOR: ${val}...`);
   const r = await fetch(`${API_URL}?action=trace&refId=${encodeURIComponent(val)}&source=${(currentRange === 'CC') ? 'CC' : 'Account'}`, { redirect: "follow" });
   const res = await r.json();
   renderData(res.transactions);
+  toggleBackButton();
 }
 
 function handleRowClick(rowElement, refId) {
@@ -177,10 +188,18 @@ function handleRowClick(rowElement, refId) {
   updateBtn();
 }
 
+async function executeDelete() {
+  if (!confirm(`Wipe ${selectionSet.size} packets?`)) return;
+  renderLoad("ERASING DATA...");
+  const r = await fetch(`${API_URL}?action=delete&refId=${encodeURIComponent(Array.from(selectionSet).join(","))}`, { redirect: "follow" });
+  selectionSet.clear();
+  location.reload();
+}
+
 async function executeFinalTrace() {
   const terms = Array.from(selectionSet).join(",");
-  pushToStack('TRACED', '');
-  renderLoad(`LINKING NEURAL PATHWAYS...`);
+  pushToStack('TRACED', ''); // Navigates to the Global Trace view
+  renderLoad("LINKING NEURAL PATHWAYS...");
   const r = await fetch(`${API_URL}?action=trace&refId=${encodeURIComponent(terms)}&source=Reference`, { redirect: "follow" });
   const res = await r.json();
   selectionSet.clear();
@@ -209,24 +228,14 @@ function renderData(data) {
       
       return `<tr class="${rowClass}" onclick="handleRowClick(this, '${passId}')">${row.map((p, i) => {
         let val = p.v, cls = "";
-        
-        // --- STRICT DATE LOGIC (No Currency Format Here) ---
-        if(i === 0 || p.k.toLowerCase().includes("date")) { 
-            val = formatDate(val); 
-            cls = "date-cell"; 
-        }
+        if(i === 0 || p.k.toLowerCase().includes("date")) { val = formatDate(val); cls = "date-cell"; }
         else if(p.k.toLowerCase().includes('from') || p.k.toLowerCase().includes('account')) {
            let valStr = String(val);
-           let tagCls = valStr.toLowerCase().includes('hdfc') ? 'tag-hdfc' : 
-                        valStr.toLowerCase().includes('sbi') ? 'tag-sbi' : 'tag-icici';
+           let tagCls = valStr.toLowerCase().includes('hdfc') ? 'tag-hdfc' : valStr.toLowerCase().includes('sbi') ? 'tag-sbi' : 'tag-icici';
            let pts = valStr.split(' ');
            val = `<div class="bank-tag ${tagCls}">${pts[0]}${pts[1] ? `<span>${pts.slice(1).join(' ')}</span>` : ''}</div>`;
         }
-        // Apply currency only to non-date numeric columns
-        else if (!isNaN(parseFloat(String(val).replace(/[₹, \s]/g, "")))) {
-            val = formatCurr(val);
-        }
-        
+        else if (!isNaN(parseFloat(String(val).replace(/[₹, \s]/g, "")))) val = formatCurr(val);
         if(p.k.toLowerCase().includes("deposit")) { gDep += parse(p.v); cls = "amt-dep"; }
         if(p.k.toLowerCase().includes("withdraw")) { gWith += parse(p.v); cls = "amt-with"; }
         return `<td class="${cls}">${val || "—"}</td>`;
@@ -239,10 +248,12 @@ function renderData(data) {
 
 function updateBtn() {
   const btn = document.getElementById("action-btn");
-  if (selectionSet.size > 0 && currentViewState !== 'TRACED' && currentViewState !== 'REGISTRY') {
-    btn.style.display = "inline-flex";
-    document.getElementById("count").innerText = selectionSet.size;
-  } else { btn.style.display = "none"; }
+  const delBtn = document.getElementById("delete-btn");
+  const canInteract = (selectionSet.size > 0 && currentViewState !== 'TRACED' && currentViewState !== 'REGISTRY');
+  btn.style.display = delBtn.style.display = canInteract ? "inline-flex" : "none";
+  if (canInteract) {
+    document.getElementById("count").innerText = document.getElementById("del-count").innerText = selectionSet.size;
+  }
 }
 
 function updateUI(d, w) {
@@ -262,7 +273,6 @@ function formatDate(d) {
   let val = String(d || "").trim();
   let dayNum = parseInt(val);
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  
   if (!isNaN(dayNum) && dayNum >= 1 && dayNum <= 31 && !val.includes("/") && !val.includes("-")) {
       return `${dayNum < 10 ? '0' + dayNum : dayNum}-${months[new Date().getMonth()]}`;
   }
