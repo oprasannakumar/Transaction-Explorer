@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Finance OS | Global Trace Navigation</title>
+<title>Finance OS | Precision Cash Stream</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
 <style>
@@ -34,7 +34,6 @@
     cursor: pointer; font-family: 'Orbitron'; font-size: 11px; transition: 0.2s;
   }
   
-  /* BACK button: Only for Trace View */
   #back-btn { background: transparent; color: var(--neon-cyan); border: 1px solid var(--neon-cyan); display: none; }
   #back-btn:hover { background: rgba(0, 255, 255, 0.1); box-shadow: 0 0 10px var(--neon-cyan); }
   
@@ -67,12 +66,8 @@
   }
   .bank-tag span { font-size: 8px; opacity: 0.7; margin-top: 3px; text-transform: uppercase; letter-spacing: 1px; }
 
-  .tag-hdfc { color: var(--neon-blue); }
-  .tag-sbi { color: var(--neon-green); }
-  .tag-icici { color: #ffa500; }
-
-  .amt-dep { color: var(--neon-green); } 
-  .amt-with { color: var(--neon-red); }
+  .tag-hdfc { color: var(--neon-blue); } .tag-sbi { color: var(--neon-green); } .tag-icici { color: #ffa500; }
+  .amt-dep { color: var(--neon-green); } .amt-with { color: var(--neon-red); }
   .empty { text-align: center; padding: 80px; color: var(--neon-blue); font-family: 'Orbitron'; opacity: 0.6; }
 </style>
 </head>
@@ -106,7 +101,7 @@
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbxeyI-iKfYu216UnB-6HBW1uuIwTzjykzOdLXaWK2JzxEl7XUF5ytr9hYWKmq4Batdtgg/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxeyI-iKfYu216UnB-6HBW1uuIwTzjykzOdLXaWK2JzxEl7XUF5ytr9hYWKmq4Batdtgg/exech";
 
 let navStack = [];
 let selectionSet = new Set();
@@ -139,7 +134,6 @@ function goBack() {
   updateBtn();
 }
 
-// Logic: Back button ONLY visible in TRACED view (Global Sync results)
 function toggleBackButton() {
   const btn = document.getElementById("back-btn");
   btn.style.display = (currentViewState === 'TRACED' && navStack.length > 0) ? "block" : "none";
@@ -157,7 +151,8 @@ async function fetchData() {
 }
 
 async function fetchRegistry(name) {
-  currentViewState = 'REGISTRY'; currentRange = name; selectionSet.clear(); updateBtn();
+  pushToStack('REGISTRY', '', name);
+  selectionSet.clear(); updateBtn();
   renderLoad(`SCANNING ${name} REGISTRY...`);
   const r = await fetch(`${API_URL}?rangeName=${name}`, { redirect: "follow" });
   const res = await r.json();
@@ -166,7 +161,8 @@ async function fetchRegistry(name) {
 }
 
 async function fetchStatement(val) {
-  currentViewState = 'STATEMENT'; selectionSet.clear(); updateBtn();
+  pushToStack('STATEMENT', '');
+  selectionSet.clear(); updateBtn();
   renderLoad(`GENERATING STATEMENT FOR: ${val}...`);
   const r = await fetch(`${API_URL}?action=trace&refId=${encodeURIComponent(val)}&source=${(currentRange === 'CC') ? 'CC' : 'Account'}`, { redirect: "follow" });
   const res = await r.json();
@@ -177,28 +173,20 @@ async function fetchStatement(val) {
 function handleRowClick(rowElement, refId) {
   if (currentViewState === 'TRACED') return;
   if (currentViewState === 'REGISTRY') { fetchStatement(refId); return; }
-  
-  if (selectionSet.has(refId)) {
-    selectionSet.delete(refId);
-    rowElement.classList.remove('row-selected');
-  } else {
-    selectionSet.add(refId);
-    rowElement.classList.add('row-selected');
-  }
+  if (selectionSet.has(refId)) { selectionSet.delete(refId); rowElement.classList.remove('row-selected'); } 
+  else { selectionSet.add(refId); rowElement.classList.add('row-selected'); }
   updateBtn();
 }
 
 async function executeDelete() {
   if (!confirm(`Wipe ${selectionSet.size} packets?`)) return;
-  renderLoad("ERASING DATA...");
   const r = await fetch(`${API_URL}?action=delete&refId=${encodeURIComponent(Array.from(selectionSet).join(","))}`, { redirect: "follow" });
-  selectionSet.clear();
-  location.reload();
+  selectionSet.clear(); location.reload();
 }
 
 async function executeFinalTrace() {
   const terms = Array.from(selectionSet).join(",");
-  pushToStack('TRACED', ''); // Navigates to the Global Trace view
+  pushToStack('TRACED', '');
   renderLoad("LINKING NEURAL PATHWAYS...");
   const r = await fetch(`${API_URL}?action=trace&refId=${encodeURIComponent(terms)}&source=Reference`, { redirect: "follow" });
   const res = await r.json();
@@ -218,6 +206,10 @@ function renderData(data) {
   Object.keys(grouped).forEach(sheet => {
     const rows = grouped[sheet], headers = rows[0].map(p => p.k);
     const div = document.createElement("div");
+    
+    // CASH CHECK: Check if the current sheet name is "CASH" (case-insensitive)
+    const isCashSheet = sheet.toUpperCase() === "CASH";
+
     div.innerHTML = `<div style="font-family:'Orbitron'; color:var(--neon-cyan); margin: 25px 0 10px 0; font-size: 11px;">> ${currentViewState}: ${sheet.toUpperCase()}</div>
     <div style="overflow-x:auto;"><table><thead><tr>${headers.map(h => `<th>${h}</th>`).join("")}</tr></thead>
     <tbody>${rows.map(row => {
@@ -228,14 +220,24 @@ function renderData(data) {
       
       return `<tr class="${rowClass}" onclick="handleRowClick(this, '${passId}')">${row.map((p, i) => {
         let val = p.v, cls = "";
-        if(i === 0 || p.k.toLowerCase().includes("date")) { val = formatDate(val); cls = "date-cell"; }
+        
+        // 1. Handle Dates
+        if(i === 0 || p.k.toLowerCase().includes("date")) { 
+            val = formatDate(val); cls = "date-cell"; 
+        }
+        // 2. Handle Tags
         else if(p.k.toLowerCase().includes('from') || p.k.toLowerCase().includes('account')) {
            let valStr = String(val);
            let tagCls = valStr.toLowerCase().includes('hdfc') ? 'tag-hdfc' : valStr.toLowerCase().includes('sbi') ? 'tag-sbi' : 'tag-icici';
            let pts = valStr.split(' ');
            val = `<div class="bank-tag ${tagCls}">${pts[0]}${pts[1] ? `<span>${pts.slice(1).join(' ')}</span>` : ''}</div>`;
         }
-        else if (!isNaN(parseFloat(String(val).replace(/[₹, \s]/g, "")))) val = formatCurr(val);
+        // 3. Handle Currency Logic
+        else if (!isNaN(parseFloat(String(val).replace(/[₹, \s]/g, "")))) {
+            // ONLY format if NOT a Cash sheet
+            val = isCashSheet ? val : formatCurr(val);
+        }
+        
         if(p.k.toLowerCase().includes("deposit")) { gDep += parse(p.v); cls = "amt-dep"; }
         if(p.k.toLowerCase().includes("withdraw")) { gWith += parse(p.v); cls = "amt-with"; }
         return `<td class="${cls}">${val || "—"}</td>`;
@@ -247,13 +249,10 @@ function renderData(data) {
 }
 
 function updateBtn() {
-  const btn = document.getElementById("action-btn");
-  const delBtn = document.getElementById("delete-btn");
+  const btn = document.getElementById("action-btn"), delBtn = document.getElementById("delete-btn");
   const canInteract = (selectionSet.size > 0 && currentViewState !== 'TRACED' && currentViewState !== 'REGISTRY');
   btn.style.display = delBtn.style.display = canInteract ? "inline-flex" : "none";
-  if (canInteract) {
-    document.getElementById("count").innerText = document.getElementById("del-count").innerText = selectionSet.size;
-  }
+  if (canInteract) document.getElementById("count").innerText = document.getElementById("del-count").innerText = selectionSet.size;
 }
 
 function updateUI(d, w) {
@@ -270,14 +269,10 @@ function formatCurr(v) {
 }
 
 function formatDate(d) { 
-  let val = String(d || "").trim();
-  let dayNum = parseInt(val);
+  let val = String(d || "").trim(), dayNum = parseInt(val);
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  if (!isNaN(dayNum) && dayNum >= 1 && dayNum <= 31 && !val.includes("/") && !val.includes("-")) {
-      return `${dayNum < 10 ? '0' + dayNum : dayNum}-${months[new Date().getMonth()]}`;
-  }
-  let date = new Date(d); 
-  if (isNaN(date.getTime())) return d;
+  if (!isNaN(dayNum) && dayNum >= 1 && dayNum <= 31 && !val.includes("/") && !val.includes("-")) return `${dayNum < 10 ? '0' + dayNum : dayNum}-${months[new Date().getMonth()]}`;
+  let date = new Date(d); if (isNaN(date.getTime())) return d;
   return `${date.getDate() < 10 ? '0' + date.getDate() : date.getDate()}-${months[date.getMonth()]}`;
 }
 
