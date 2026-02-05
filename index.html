@@ -36,6 +36,9 @@
 #mainDataTable td:first-child {
     display: none; /* Hides the Sel column */
 }
+.controls-group > * {
+  flex-shrink: 0;
+}
 /* Add this to your CSS section */
 input[type="date"] {
     width: 145px; /* Adjust this number to your preference */
@@ -183,11 +186,16 @@ input[type="date"]:focus {
         .value { font-size: 28px; font-weight: 800; }
 
         /* Toolbar Alignment */
-        .toolbar {
-    /* ... existing styles ... */
-    z-index: 100; /* Ensure it stays above the table */
+       .toolbar {
+    background: var(--surface); /* Solid background */
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 20px;
+    z-index: 100; 
     position: sticky;
     top: 10px;
+    box-shadow: var(--shadow); /* Adds depth so it looks layered above the table */
 }
 
 
@@ -249,9 +257,9 @@ input[type="date"]:focus {
   flex-wrap: wrap;                /* allows wrap on small screens */
   gap: clamp(8px, 1.5vw, 20px);   /* 🔥 responsive spacing */
 }
-@media (max-width: 900px) {
+@media (max-width: 1200px) {
   .controls-group {
-    justify-content: flex-start;
+    row-gap: 12px;
   }
 }
 .date-input {
@@ -261,7 +269,7 @@ input[type="date"]:focus {
     display: flex; 
     align-items: center; /* Aligns label and input side-by-side */
     gap: 8px; 
-    width:150px;
+    width:190px;
 }
        .date-input label { 
     font-size: 10px; 
@@ -291,14 +299,15 @@ input[type="date"]:focus {
 }
 /* Table Search Container */
 .table-search-box {
-    padding: 12px 20px;
-    background: rgba(0,0,0,0.2);
+    background: #161e2e; /* Slightly darker solid blue-black */
     border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
-    gap: 12px;
+    padding: 12px 20px;
+    position: sticky; /* Keep search and metrics visible while scrolling */
+    top: 0;
+    z-index: 20;
 }
-
 .table-search-box input {
     background: var(--bg);
     border: 1px solid var(--surface-accent);
@@ -318,15 +327,35 @@ input[type="date"]:focus {
 .row-hidden {
     display: none !important;
 }
-
+.table-metrics-inline {
+    display: flex;
+    gap: 24px;
+    padding: 0 20px;
+    border-left: 1px solid var(--surface-accent);
+}
 .match-highlight {
     background: rgba(56, 189, 248, 0.2);
     color: var(--primary);
     font-weight: bold;
 }
-        .metric-pill { display: flex; flex-direction: column; }
-        .pill-label { font-size: 9px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; }
-        .pill-val { font-size: 16px; font-weight: 700; }
+       .metric-pill {
+    display: flex;
+    flex-direction: column;
+}
+       .pill-label {
+    font-size: 8px;
+    font-weight: 800;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1;
+    margin-bottom: 2px;
+}
+       .pill-val {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+}
 
        button { 
     height: 34px; 
@@ -341,6 +370,30 @@ input[type="date"]:focus {
     align-items: center; 
     gap: 6px;
     white-space: nowrap;
+}
+
+/* Search input inside the filter dropdown */
+.filter-search-input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-bottom: 10px;
+    outline: none;
+}
+
+.filter-search-input:focus {
+    border-color: var(--primary);
+}
+
+/* Container for the checkboxes to allow scrolling */
+.filter-options-container {
+    max-height: 180px;
+    overflow-y: auto;
+    margin-bottom: 10px;
 }
         .btn-blue { background: var(--primary); color: var(--bg); }
         .btn-accent { background: #818cf8; color: white; }
@@ -371,7 +424,16 @@ input[type="date"]:focus {
 }
 
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { text-align: left; padding: 12px 20px; color: var(--text-muted); background: rgba(0,0,0,0.3); position: sticky; top: 0; z-index: 10; }
+       th {
+    text-align: left; 
+    padding: 12px 20px; 
+    color: var(--text-muted); 
+    background: #1e293b !important; /* Forces a solid background */
+    position: sticky; 
+    top: 0; 
+    z-index: 10;
+    border-bottom: 2px solid var(--border);
+}
         td { padding: 12px 20px; border-bottom: 1px solid var(--border); }
         tr:hover { background: rgba(255,255,255,0.02); }
         
@@ -590,11 +652,23 @@ function renderTable(headers, rows) {
 
   let html = `
     <div class='sheet-card'>
-      <div class="table-search-box">
-        <input type="text" id="tableFilter" placeholder="Universal Search..." onkeyup="applyMultiFilter()">
-        <span id="rowCount" style="font-size: 11px; color: var(--text-muted); margin-left: auto;">
-          Showing ${rows.length} records
-        </span>
+           <div class="table-search-box">
+          <input type="text" id="tableFilter" placeholder="Universal Search..." onkeyup="applyMultiFilter()">
+          
+          <div class="table-metrics-inline" style="display: flex; gap: 20px; margin-left: 20px;">
+              <div class="metric-pill">
+                  <span class="pill-label">Inflow</span>
+                  <span class="pill-val" id="bar-inflow" style="color: var(--success);">₹0</span>
+              </div>
+              <div class="metric-pill">
+                  <span class="pill-label">Outflow</span>
+                  <span class="pill-val" id="bar-outflow" style="color: var(--danger);">₹0</span>
+              </div>
+          </div>
+
+          <span id="rowCount" style="font-size: 11px; color: var(--text-muted); margin-left: auto;">
+              Showing ${rows.length} records
+          </span>
       </div>
 
       <div class='table-wrap' style="position: relative;">
@@ -657,10 +731,12 @@ function handleRowClick(rowElement) {
     // 1. Toggle the visual class
     rowElement.classList.toggle('selected');
     
-    // 2. Refresh the button visibility
+    // 2. Refresh the action buttons (Trace/Purge)
     toggleButtons();
-}
 
+    // 3. Update the Inflow/Outflow based on selection
+    recalculateMetricsFromSelected();
+}
 let activeFilters = {};
 
 function toggleFilterDropdown(event, colIdx) {
@@ -783,22 +859,30 @@ function applyTableFilter() {
 }
 
 // Optional: Dynamic metrics update while filtering
-function recalculateMetricsFromVisible() {
+function recalculateMetricsFromSelected() {
     const table = document.getElementById('mainDataTable');
     if (!table) return;
 
-    const rows = Array.from(table.getElementsByClassName('data-row'))
-                      .filter(r => !r.classList.contains('row-hidden'));
+    // Look for rows that have the 'selected' class
+    const selectedRows = Array.from(table.getElementsByClassName('selected'));
     
-    // We need the headers to find correct indices
+    // If no rows are selected, default back to showing metrics for all VISIBLE rows
+    if (selectedRows.length === 0) {
+        recalculateMetricsFromVisible();
+        return;
+    }
+
     const headers = Array.from(table.querySelectorAll('th')).map(th => th.innerText);
     const inIdx = headers.findIndex(h => /deposit amount/i.test(h));
     const outIdx = headers.findIndex(h => /withdrawn amount/i.test(h));
 
     let inflow = 0, outflow = 0;
 
-    rows.forEach(row => {
+    selectedRows.forEach(row => {
         const cells = row.getElementsByTagName('td');
+        // We adjust the index by +1 if ID_REF column exists
+        const offset = table.querySelector('th').innerText === "ID_REF" ? 0 : 0; 
+        
         if (inIdx !== -1) {
             let val = cells[inIdx].innerText.replace(/[^0-9.-]/g, "");
             inflow += parseFloat(val) || 0;
@@ -809,8 +893,12 @@ function recalculateMetricsFromVisible() {
         }
     });
 
+    // Update the UI
     document.getElementById('bar-inflow').innerText = '₹' + inflow.toLocaleString('en-IN');
     document.getElementById('bar-outflow').innerText = '₹' + outflow.toLocaleString('en-IN');
+    
+    // Update the row count to show selection count
+    document.getElementById('rowCount').innerText = `${selectedRows.length} records selected`;
 }
     async function viewNamedRange(rangeName) {
 	currentViewType = rangeName;
@@ -911,7 +999,7 @@ console.log('STATEMENT ROWS:', data.rows.length);
         const grouped = await res.json();
         
         let finalHtml = `
-            <div style="margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
+            <div style="margin-bottom:20px; Margin display:flex; justify-content:space-between; align-items:center;">
                 <button class="btn-blue" onclick="loadMain()" style="background:var(--surface-accent); color:white;">← Back to Ledger</button>
                 <span class="label" style="font-size:14px; color:var(--primary)">Trace Results: ${ids.join(', ')}</span>
             </div>`;
