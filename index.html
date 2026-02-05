@@ -37,16 +37,91 @@
     font-size: 10px;
     background: rgba(14, 165, 233, 0.1);
     color: var(--primary);
-    padding: 4px 10px;
+    padding: 5px 12px;
     border-radius: 6px;
     border: 1px solid var(--primary-glow);
-    /* 🔥 Fix: Prevent text wrapping */
-    white-space: nowrap; 
+    white-space: nowrap; /* Prevents the ID from snapping into two lines */
     display: inline-block;
-    letter-spacing: 0.5px;
-    /* Optional: subtle glow effect */
-    box-shadow: 0 0 10px rgba(14, 165, 233, 0.1);
-}    
+}
+/* Custom Command Menu Styles */
+#custom-context-menu {
+    position: absolute; /* Changed from fixed to absolute to scroll with table if needed */
+    display: none;
+    z-index: 10000;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--primary);
+    border-radius: 8px;
+    min-width: 180px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    overflow: hidden;
+    /* Remove scale from animation to prevent jumping when flipped */
+    animation: menuFadeIn 0.15s ease-out;
+}
+.filter-option {
+    padding: 10px 14px;
+    margin-bottom: 4px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    font-size: 11px;
+    transition: all 0.2s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+}
+.filter-option.selected {
+    background: var(--primary);
+    color: var(--bg);
+    font-weight: 700;
+    box-shadow: 0 0 15px var(--primary-glow);
+    border-color: var(--primary);
+}
+.filter-option input {
+    display: none;
+}
+.filter-options-container {
+    max-height: 250px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+.filter-option:hover {
+    background: rgba(14, 165, 233, 0.1);
+    border-color: var(--primary-glow);
+}
+@keyframes menuFadeIn {
+    from { opacity: 0;}
+    to { opacity: 1;}
+}
+
+.menu-item {
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: 0.2s;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.menu-item:last-child { border-bottom: none; }
+
+.menu-item:hover {
+    background: var(--primary);
+    color: var(--bg);
+}
+
+.menu-item.danger:hover {
+    background: var(--danger);
+    color: white;
+}
+
+.menu-item i { font-size: 14px; opacity: 0.8; }
     /* Ensure Reference Data column stands out */
     .ref-data {
         color: var(--gold);
@@ -54,19 +129,30 @@
         font-size: 11px;
     }
     /* Fixed Dropdown Position */
- .filter-dropdown {
-        position: absolute;
-        top: 100%;     /* Directly below the header text */
-        right: 10px;   /* Small offset from the right edge of the header */
-        background: #1e293b !important;
-        border: 1px solid var(--primary);
-        padding: 12px;
-        display: none;
-        border-radius: 10px;
-        min-width: 180px;
-        z-index: 1000; /* Ensure it's on top of everything */
-        box-shadow: 0 15px 30px rgba(0,0,0,0.8);
-    }
+.filter-dropdown {
+    position: absolute;
+    top: 100%;
+    background: #1e293b !important;
+    border: 1px solid var(--primary);
+    padding: 12px;
+    display: none;
+    border-radius: 10px 0 10px 10px; /* Squared top-right for better alignment look */
+    min-width: 240px; /* Slightly wider for data clarity */
+    z-index: 2000;
+    box-shadow: -10px 20px 40px rgba(0,0,0,0.8);
+}
+
+/* Strict Right Anchor */
+.filter-dropdown.align-right {
+    right: 0 !important;
+    left: auto !important;
+}
+
+/* Emergency Left Anchor (only if screen is too narrow) */
+.filter-dropdown.align-left {
+    left: 0 !important;
+    right: auto !important;
+}
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             background: radial-gradient(circle at 50% 0%, #1e293b 0%, #030712 100%); 
@@ -81,8 +167,10 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--surface-bright); border-radius: 10px; }
 
-        .container { max-width: 1500px; margin: auto; }
-
+       .container { 
+    max-width: 98% !important; /* Increased from 1500px to near full-screen */
+    margin: auto; 
+}
         /* --- Header & Status --- */
         #status { 
             font-family: 'JetBrains Mono', monospace;
@@ -113,12 +201,17 @@
         }
 
 .header-content {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-        gap: 8px;
-    }        .stat-card::before {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Keeps text centered */
+    gap: 8px; /* Tightly couples text and filter button */
+    width: 100%;
+    cursor: default;
+}
+.header-content span {
+    white-space: nowrap; /* Prevents header text from wrapping */
+}
+        .stat-card::before {
             content: ""; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--primary); opacity: 0; transition: 0.3s;
         }
 
@@ -217,12 +310,23 @@ thead th {
     z-index: 50;
     box-shadow: 0 2px 0 rgba(0,0,0,0.4);
 }
+th {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: #1e293b !important;
+    padding: 18px 12px;
+    /* Anchor for the absolute dropdown */
+    position: relative; 
+}
 .table-wrap {
+    min-height: 400px; /* Adjust based on your preference */
     max-height: 60vh;
     overflow-y: auto;
-    overflow-x: auto; /* 🔥 Ensure this is set to auto */
+    overflow-x: auto;
     position: relative;
     border-radius: 0 0 24px 24px;
+    background: var(--surface); /* Ensures menu is readable against a background */
 }
 thead tr {
     position: sticky;
@@ -515,13 +619,8 @@ window.onload = async () => {
     // Shared table rendering logic
 function renderTable(headers, rows) {
     const isRegistry = currentTableMode === 'registry';
-    
-    // 1. Identify key columns dynamically
-    // We look for ID/Reference to use as the system key, and Ref_No for visual highlighting
     let idColIdx = headers.findIndex(h => /id|ref_id|reference/i.test(h));
     const dataRefIdx = headers.findIndex(h => /ref_no/i.test(h));
-
-    // Fallback: If no ID column found, assume the last column is the internal ID
     if (idColIdx === -1) idColIdx = headers.length - 1;
 
     let html = `
@@ -532,35 +631,29 @@ function renderTable(headers, rows) {
                 <span id="rowCount" style="font-family:'JetBrains Mono'; font-size:11px; color:var(--text-muted);">READY_</span>
             </div>
             <div style="display: flex; gap: 15px;">
-                <div class="metric-pill">
-                    <span class="pill-label">Inflow</span>
-                    <span class="pill-val" id="bar-inflow" style="color: var(--success);">₹0</span>
-                </div>
-                <div class="metric-pill">
-                    <span class="pill-label">Outflow</span>
-                    <span class="pill-val" id="bar-outflow" style="color: var(--danger);">₹0</span>
-                </div>
+                <div class="metric-pill"><span class="pill-label">Inflow</span><span class="pill-val" id="bar-inflow" style="color: var(--success);">₹0</span></div>
+                <div class="metric-pill"><span class="pill-label">Outflow</span><span class="pill-val" id="bar-outflow" style="color: var(--danger);">₹0</span></div>
             </div>
         </div>
-
-        <div class='table-wrap'>
-            <table id="mainDataTable">
+        <div class='table-wrap' id="tableWrap">
+           <table id="mainDataTable" style="width: 100%; min-width: 1300px; table-layout: auto;">
                 <thead>
                     <tr>
                         ${headers.map((h, i) => {
-                            // Generate a clean field name for the mapping logic
                             const fieldName = h.toLowerCase().replace(/\s+/g, '_');
                             return `
-                            <th data-col-name="${fieldName}" style="position: relative;">
+                            <th data-col-name="${fieldName}">
                                 <div class="header-content">
                                     <span>${h}</span>
                                     <span class="filter-trigger" onclick="toggleFilterDropdown(event, '${fieldName}')">▼</span>
                                 </div>
                                 <div id="filter-dropdown-${fieldName}" class="filter-dropdown">
-                                    <div id="options-container-${fieldName}" style="max-height:200px; overflow-y:auto; margin-bottom:10px;"></div>
-                                    <div style="display:flex; gap:5px; border-top:1px solid rgba(255,255,255,0.1); padding-top:8px;">
-                                        <button class="btn-blue" style="font-size:9px; flex:1; height:24px;" onclick="applyMultiFilter()">Apply</button>
-                                        <button class="btn-accent" style="font-size:9px; flex:1; height:24px;" onclick="clearFilter('${fieldName}')">Clear</button>
+                                    <div id="options-container-${fieldName}" class="filter-options-container"></div>
+                                    <div style="margin-top:10px; border-top:1px solid rgba(255,255,255,0.1); padding-top:8px;">
+                                        <button class="btn-accent" style="width:100%; font-size:10px; height:32px; justify-content:center;" 
+                                                onclick="clearFilter('${fieldName}')">
+                                            RESET COLUMN
+                                        </button>
                                     </div>
                                 </div>
                             </th>`;
@@ -569,41 +662,25 @@ function renderTable(headers, rows) {
                 </thead>
                 <tbody>
                     ${rows.map(row => {
-                        // 2. Extract and Clean the Reference ID for the row attribute
                         const rawId = row[idColIdx];
                         const rowId = (rawId !== undefined && rawId !== null) ? String(rawId).trim() : "";
-                        
-                        // Determine click behavior (Registry vs Statement)
-                        const clickAction = isRegistry 
-                            ? `filterLedgerByEntity('${row[0]}')` 
-                            : `handleRowClick(this)`;
+                        const clickAction = isRegistry ? `filterLedgerByEntity('${row[0]}')` : `handleRowClick(this)`;
 
                         return `
                             <tr class="data-row" data-id="${rowId}" onclick="${clickAction}">
                                 ${row.map((cell, idx) => {
                                     const fieldName = headers[idx].toLowerCase().replace(/\s+/g, '_');
                                     let content = cell ?? '';
-                                    
-                                    // 3. Apply Conditional Formatting
                                     const isIdCol = idx === idColIdx;
                                     const isRefData = idx === dataRefIdx;
                                     const isDate = /date/i.test(headers[idx]);
                                     const isAmount = /amount|withdrawn|deposit|total/i.test(headers[idx]);
 
-                                    if (isIdCol && !isRegistry) {
-                                        // Futuristic Badge for IDs
-                                        content = `<span class="id-badge">${cell}</span>`;
-                                    } else if (isRefData) {
-                                        // Gold text for external Bank References
-                                        content = `<span class="ref-data">${cell}</span>`;
-                                    } else if (isDate) {
-                                        content = formatTacticalDate(cell);
-                                    }
+                                    if (isIdCol && !isRegistry) content = `<span class="id-badge">${cell}</span>`;
+                                    else if (isRefData) content = `<span class="ref-data">${cell}</span>`;
+                                    else if (isDate) content = formatTacticalDate(cell);
 
-                                    return `
-                                        <td data-field="${fieldName}" style="${isAmount ? 'font-family:JetBrains Mono; font-weight:600;' : ''} ${isIdCol ? 'min-width:130px;' : ''}">
-                                            ${content}
-                                        </td>`;
+                                    return `<td data-field="${fieldName}" style="${isAmount ? 'font-family:JetBrains Mono; font-weight:600;' : ''} ${isIdCol ? 'min-width:140px;' : ''} text-align: center;">${content}</td>`;
                                 }).join('')}
                             </tr>`;
                     }).join('')}
@@ -612,12 +689,8 @@ function renderTable(headers, rows) {
         </div>
     </div>`;
 
-    // 4. Inject into DOM and run post-render scripts
     document.getElementById('displayArea').innerHTML = html;
     populateFilterOptions(headers, rows);
-    updateToolbarMetrics(headers, rows);
-    
-    // Auto-calculate the Inflow/Outflow for the loaded view
     recalculateMetricsFromVisible();
 }
 
@@ -679,49 +752,82 @@ function toggleFilterDropdown(event, fieldName) {
     const dropdown = document.getElementById(`filter-dropdown-${fieldName}`);
     const isVisible = dropdown.style.display === 'block';
     
-    // Hide all other dropdowns
+    // 1. Hide all other dropdowns
     document.querySelectorAll('.filter-dropdown').forEach(d => d.style.display = 'none');
     
-    // Toggle current
-    dropdown.style.display = isVisible ? 'none' : 'block';
+    if (!isVisible) {
+        // 2. Show the dropdown
+        dropdown.style.display = 'block';
+
+        // 3. Apply Right Alignment by default
+        dropdown.classList.remove('align-left', 'align-right');
+        dropdown.classList.add('align-right');
+
+        // 4. Boundary Protection: Check if it's bleeding off the LEFT edge
+        const rect = dropdown.getBoundingClientRect();
+        if (rect.left < 0) {
+            dropdown.classList.remove('align-right');
+            dropdown.classList.add('align-left');
+        }
+    } else {
+        dropdown.style.display = 'none';
+    }
 }
 function populateFilterOptions(headers, rows) {
     headers.forEach((h, i) => {
         const fieldName = h.toLowerCase().replace(/\s+/g, '_');
-        const uniqueValues = [...new Set(rows.map(r => r[i]))].sort();
+        const uniqueValues = [...new Set(rows.map(r => r[i]))].filter(v => v).sort();
         const container = document.getElementById(`options-container-${fieldName}`);
         
         if (container) {
             container.innerHTML = uniqueValues.map(val => `
-                <div style="display:flex; align-items:center; gap:8px; padding:4px; font-size:11px;">
-                    <input type="checkbox" class="col-filter-check" data-field-target="${fieldName}" value="${val}" onchange="applyMultiFilter()">
+                <div class="filter-option" 
+                     data-field-target="${fieldName}" 
+                     data-value="${val.toString().toLowerCase().trim()}" 
+                     onclick="toggleFilterChip(this)">
                     <span>${val}</span>
                 </div>`).join('');
         }
     });
 }
+function toggleFilterChip(element) {
+    // Toggle the visual class
+    element.classList.toggle('selected');
+    
+    // Immediately apply the filter logic
+    applyMultiFilter();
+}
 function applyMultiFilter() {
     const query = document.getElementById('tableFilter').value.toLowerCase();
     const table = document.getElementById('mainDataTable');
+    if (!table) return;
+
     const rows = Array.from(table.querySelectorAll('.data-row'));
     
-    // Gather all active filters by Field Name
+    // Gather all selected chips by field name
     const activeFilters = {};
-    document.querySelectorAll('.col-filter-check:checked').forEach(check => {
-        const field = check.getAttribute('data-field-target');
+    document.querySelectorAll('.filter-option.selected').forEach(chip => {
+        const field = chip.getAttribute('data-field-target');
+        const value = chip.getAttribute('data-value');
         if (!activeFilters[field]) activeFilters[field] = [];
-        activeFilters[field].push(check.value.toLowerCase().trim());
+        activeFilters[field].push(value);
     });
 
     let visibleCount = 0;
+
     rows.forEach(row => {
         const cells = Array.from(row.querySelectorAll('td'));
+        
+        // 1. Check Search Query
         const matchesQuery = query === "" || cells.some(c => c.textContent.toLowerCase().includes(query));
         
+        // 2. Check Active Chips
         let matchesFilters = true;
         for (const field in activeFilters) {
             const cell = row.querySelector(`td[data-field="${field}"]`);
             const cellText = cell ? cell.textContent.toLowerCase().trim() : "";
+            
+            // If the column has active chips, the cell must match one of them
             if (!activeFilters[field].includes(cellText)) {
                 matchesFilters = false;
                 break;
@@ -740,10 +846,10 @@ function applyMultiFilter() {
     recalculateMetricsFromVisible();
 }
 function clearFilter(fieldName) {
-    document
-        .querySelectorAll(`.col-filter-check[data-field-target="${fieldName}"]`)
-        .forEach(c => (c.checked = false));
-
+    // Deselect all chips in this specific dropdown
+    document.querySelectorAll(`.filter-option.selected[data-field-target="${fieldName}"]`)
+            .forEach(chip => chip.classList.remove('selected'));
+    
     applyMultiFilter();
 }
 
@@ -1027,28 +1133,13 @@ async function deleteRecords() {
     }
 }
 
-   function toggleButtons() {
-    const selectedRows = document.querySelectorAll('.data-row.selected');
+  // Remove the old toggleButtons function entirely as we don't need fixed buttons anymore
+function toggleButtons() {
+    // Left empty: buttons are now inside the Context Menu
     const holder = document.getElementById('action-buttons-holder');
-    const count = selectedRows.length;
-
-    if (count > 0) {
-        // If they don't exist yet, create them
-        if (!document.getElementById('fetchBtn')) {
-            holder.innerHTML = `
-                <button class="btn-accent" id="fetchBtn" onclick="fetchAssociated()">Trace ID (${count})</button>
-                <button class="btn-red" id="deleteBtn" onclick="deleteRecords()">Purge (${count})</button>
-            `;
-        } else {
-            // If they already exist, just update the numbers
-            document.getElementById('fetchBtn').innerText = `Trace ID (${count})`;
-            document.getElementById('deleteBtn').innerText = `Purge (${count})`;
-        }
-    } else {
-        // If no rows are selected, wipe them from the DOM entirely
-        holder.innerHTML = "";
-    }
+    if (holder) holder.innerHTML = ""; 
 }
+
 
 // Add this to your existing script section
 document.addEventListener('contextmenu', function(e) {
@@ -1142,6 +1233,123 @@ function recalculateMetricsFromVisible() {
     document.getElementById('rowCount').innerText = `MATCH: ${visibleCount}`;
 }
 
+let longPressTimer;
+
+// --- Context Menu Configuration ---
+function showContextMenu(e, rowElement) {
+    e.preventDefault();
+    
+    // Select the row if not already selected
+    if (!rowElement.classList.contains('selected')) {
+        document.querySelectorAll('.data-row.selected').forEach(r => r.classList.remove('selected'));
+        handleRowClick(rowElement);
+    }
+
+    const menu = document.getElementById('custom-context-menu');
+    const selectedRows = document.querySelectorAll('.data-row.selected');
+    const selectedCount = selectedRows.length;
+    
+    // Dynamic Menu Content
+    let menuHtml = ``;
+    if (selectedCount === 1) {
+        menuHtml += `<div class="menu-item" onclick="executeCommand('copy')"><span>📋</span> Copy Details</div>`;
+    }
+    menuHtml += `
+        <div class="menu-item" onclick="executeCommand('trace')"><span>🔍</span> Trace Sequence (${selectedCount})</div>
+        <div class="menu-item danger" onclick="executeCommand('purge')"><span>🔥</span> Global Purge (${selectedCount})</div>
+    `;
+    menu.innerHTML = menuHtml;
+
+    // Display temporarily to calculate height
+    menu.style.display = 'block';
+    menu.style.visibility = 'hidden';
+
+    // Positioning Logic
+    let x = e.pageX || (e.touches ? e.touches[0].pageX : 0);
+    let y = e.pageY || (e.touches ? e.touches[0].pageY : 0);
+
+    const menuWidth = menu.offsetWidth;
+    const menuHeight = menu.offsetHeight;
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    // 🔥 Fix: Prevent Right-side Overflow
+    if (x + menuWidth > viewportWidth) {
+        x = x - menuWidth;
+    }
+
+    // 🔥 Fix: Prevent Bottom Overflow (Flip menu up if near bottom)
+    // We use window.scrollY to account for page scrolling
+    if (y + menuHeight > window.scrollY + viewportHeight) {
+        y = y - menuHeight;
+    }
+
+    menu.style.left = `${x}px`;
+    menu.style.top = `${y}px`;
+    menu.style.visibility = 'visible';
+
+    document.addEventListener('click', hideContextMenu);
+}
+
+function hideContextMenu() {
+    document.getElementById('custom-context-menu').style.display = 'none';
+    document.removeEventListener('click', hideContextMenu);
+}
+
+// --- command Executor ---
+async function executeCommand(type) {
+    hideContextMenu();
+    const selectedRows = document.querySelectorAll('.data-row.selected');
+    
+    if (type === 'copy' && selectedRows.length === 1) {
+        copyRowToClipboard(selectedRows[0]);
+    } else if (type === 'trace') {
+        fetchAssociated();
+    } else if (type === 'purge') {
+        deleteRecords();
+    }
+}
+
+// --- Desktop: Right Click ---
+document.addEventListener('contextmenu', function(e) {
+    const row = e.target.closest('.data-row');
+    if (row) showContextMenu(e, row);
+});
+
+// --- Mobile: Long Press Logic ---
+document.addEventListener('touchstart', function(e) {
+    const row = e.target.closest('.data-row');
+    if (row) {
+        longPressTimer = setTimeout(() => showContextMenu(e, row), 600);
+    }
+}, {passive: true});
+
+document.addEventListener('touchend', function() {
+    clearTimeout(longPressTimer);
+});
+
+document.addEventListener('touchmove', function() {
+    clearTimeout(longPressTimer);
+});
+
+// Add these listeners to the bottom of your script
+document.addEventListener('contextmenu', function(e) {
+    const row = e.target.closest('.data-row');
+    if (row) showContextMenu(e, row);
+});
+
+// Mobile long-press detection
+let pressTimer;
+document.addEventListener('touchstart', function(e) {
+    const row = e.target.closest('.data-row');
+    if (row) {
+        pressTimer = window.setTimeout(() => showContextMenu(e, row), 600);
+    }
+}, {passive: true});
+
+document.addEventListener('touchend', () => clearTimeout(pressTimer));
+document.addEventListener('touchmove', () => clearTimeout(pressTimer));
 </script>
+<div id="custom-context-menu"></div>
 </body>
 </html>
