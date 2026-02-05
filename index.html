@@ -1103,6 +1103,68 @@ async function deleteRecords() {
         holder.innerHTML = "";
     }
 }
+
+// Add this to your existing script section
+document.addEventListener('contextmenu', function(e) {
+    const row = e.target.closest('.data-row');
+    if (row) {
+        e.preventDefault(); // Prevent the default browser menu
+        copyRowToClipboard(row);
+    }
+});
+
+async function copyRowToClipboard(rowElement) {
+    const table = document.getElementById('mainDataTable');
+    const headers = Array.from(table.querySelectorAll('th')).map(th => th.innerText.trim());
+    const cells = Array.from(rowElement.querySelectorAll('td')).map(td => td.innerText.trim());
+
+    // Mapping headers to indices
+    const getVal = (regex) => {
+        const idx = headers.findIndex(h => regex.test(h));
+        return idx !== -1 ? cells[idx] : "";
+    };
+
+    const date = getVal(/date/i);
+    const narration = getVal(/narration/i);
+    const spentFor = getVal(/spent for/i);
+    const withdrawn = getVal(/withdrawn amount/i).replace(/[^0-9.]/g, "");
+    const deposit = getVal(/deposit amount/i).replace(/[^0-9.]/g, "");
+    const account = getVal(/from\/ to/i);
+    const ref = getVal(/reference/i);
+
+    // Determine Logic
+    const isDebit = parseFloat(withdrawn) > 0;
+    const amount = isDebit ? withdrawn : deposit;
+    const type = isDebit ? "Debit" : "Credit";
+
+    const formattedText = 
+`📅 Date: ${date}
+👤 Name: ${spentFor}
+📝 Msg: ${narration}
+💰 Amount: ${amount}
+⇄ Type: ${type}
+🏢 Account: ${account}
+🔗 Ref: ${ref}`;
+
+    try {
+        await navigator.clipboard.writeText(formattedText);
+        
+        // Visual Feedback
+        const originalBg = rowElement.style.background;
+        rowElement.style.background = "var(--success)";
+        const statusMsg = document.getElementById('status');
+        const oldStatus = statusMsg.innerText;
+        statusMsg.innerText = "📋 ROW COPIED TO CLIPBOARD";
+        
+        setTimeout(() => {
+            rowElement.style.background = originalBg;
+            statusMsg.innerText = oldStatus;
+        }, 1500);
+    } catch (err) {
+        alert("Failed to copy text: " + err);
+    }
+}
+
 </script>
 </body>
 </html>
