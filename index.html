@@ -509,7 +509,21 @@ tbody {
     let navStack = []; // Global history tracker
     let currentViewType = 'Savings'; 
 	let currentTableMode = 'statement'; // 'registry' | 'statement'
+(function() {
+    const SECRET_KEY = "Bhaskar@1108"; // Change this to your password!
+    const sessionKey = "finance_auth_v3";
 
+    if (sessionStorage.getItem(sessionKey) !== "true") {
+      let attempt = prompt("SYSTEM ACCESS RESTRICTED: Enter Authorization Key");
+      if (attempt === SECRET_KEY) {
+        sessionStorage.setItem(sessionKey, "true");
+      } else {
+        alert("ACCESS DENIED: Unauthorized Node.");
+        document.body.innerHTML = "<h1 style='color:red; text-align:center; margin-top:100px;'>403: FORBIDDEN ACCESS</h1>";
+        window.stop();
+      }
+    }
+  })();
 function updateToolbarMetrics(headers, rows) {
   const inflowEl = document.getElementById('bar-inflow');
   const outflowEl = document.getElementById('bar-outflow');
