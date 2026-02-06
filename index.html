@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -517,14 +518,17 @@ tbody {
 </div>
 
 <script>
-     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxeyI-iKfYu216UnB-6HBW1uuIwTzjykzOdLXaWK2JzxEl7XUF5ytr9hYWKmq4Batdtgg/exec';
+// 1. Configuration
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxeyI-iKfYu216UnB-6HBW1uuIwTzjykzOdLXaWK2JzxEl7XUF5ytr9hYWKmq4Batdtgg/exec';
     let navStack = []; 
     let currentViewType = 'Savings'; 
     let currentTableMode = 'statement';
 
-    // --- 1. FIXED AUTHORIZATION SEQUENCE ---
+    // Helper to get token for every request
+    const getAuthParams = () => `&token=${sessionStorage.getItem("session_token")}`;
+
+    // --- 1. AUTHORIZATION SEQUENCE ---
     window.onload = async () => {
-        // Check if already authorized for this tab session
         if (sessionStorage.getItem("finance_auth_v3") === "true") {
             initializeDashboard();
             return;
@@ -533,7 +537,6 @@ tbody {
         setProcessing(true, "SECURE AUTH REQUIRED...");
         
         try {
-            // Request OTP via Telegram using fetch
             const res = await fetch(`${SCRIPT_URL}?action=requestNewOTP`);
             const data = await res.json();
 
@@ -542,31 +545,27 @@ tbody {
                 
                 if (!code) { accessDenied(); return; }
 
-                // Verify the entered code via fetch
                 const verifyRes = await fetch(`${SCRIPT_URL}?action=verifyOTP&code=${code}`);
                 const verifyData = await verifyRes.json();
 
                 if (verifyData.isValid) {
                     sessionStorage.setItem("finance_auth_v3", "true");
+                    sessionStorage.setItem("session_token", verifyData.token); // Store the issued token
                     setProcessing(false);
                     initializeDashboard();
                 } else {
-                    alert("INVALID AUTHENTICATION CODE. ACCESS DENIED.");
+                    alert("INVALID AUTHENTICATION CODE.");
                     accessDenied();
                 }
-            } else {
-                alert("Auth Node Offline. Check Apps Script logs.");
             }
         } catch (e) {
-            console.error(e);
-            alert("Connection Error: Check SCRIPT_URL permissions.");
+            alert("Auth Node Offline. Check SCRIPT_URL.");
         }
     };
-
-    // --- 2. DASHBOARD INITIALIZATION ---
+// --- 2. DASHBOARD INITIALIZATION (With Token) ---
     async function initializeDashboard() {
         try {
-            const res = await fetch(`${SCRIPT_URL}?action=getDashboard`);
+            const res = await fetch(`${SCRIPT_URL}?action=getDashboard${getAuthParams()}`);
             const data = await res.json();
             
             document.getElementById('net-val').innerText = '₹' + data.liquidity.toLocaleString('en-IN');
@@ -590,13 +589,60 @@ tbody {
             });
             document.getElementById('cash-grid').innerHTML = html;
             document.getElementById('status').innerText = "System Online // Authorized";
+            adjustTableHeight();
             
         } catch(e) { 
-            document.getElementById('status').innerText = "Sync Failed: Data Access Denied"; 
+            document.getElementById('status').innerText = "Sync Failed: Token Invalid"; 
         }
     }
 
-    // --- 3. ACCESS DENIED UI ---
+// --- 3. EXECUTE SEARCH (With Token) ---
+    async function loadMain() {
+        const s = document.getElementById('start').value, e = document.getElementById('end').value;
+        if(!s || !e) return alert("Select dates");
+        
+        setProcessing(true, "Retrieving Ledger Data...");
+        try {
+            const res = await fetch(`${SCRIPT_URL}?action=getList&start=${s}&end=${e}${getAuthParams()}`);
+            const data = await res.json();
+            renderTable(data.headers, data.rows);
+            updateToolbarMetrics(data.headers, data.rows);
+            setProcessing(false);
+            document.getElementById('status').innerText = "Sync Complete";
+        } catch(e) { 
+            setProcessing(false);
+            document.getElementById('status').innerText = "Sync Error"; 
+        }
+    }    
+
+// --- 4. VIEW REGISTRY (With Token) ---
+    async function viewNamedRange(rangeName) {
+        currentViewType = rangeName;
+        currentTableMode = 'registry';
+        setProcessing(true, `Accessing ${rangeName} Vault...`);
+        
+        try {
+            const res = await fetch(`${SCRIPT_URL}?action=fetchNamedRange&range=${rangeName}${getAuthParams()}`);
+            const data = await res.json();
+            
+            let html = `<div style="margin-bottom:15px; border-left:4px solid var(--primary); padding-left:15px;">
+                            <h3 style="margin:0; font-size:16px;">${rangeName === 'Savings' ? 'Active Assets' : 'Credit Accounts'}</h3>
+                        </div><div class="card-grid">`;
+            
+            data.rows.forEach(row => {
+                const color = rangeName === 'Savings' ? 'var(--success)' : 'var(--danger)';
+                html += `
+                    <div class="fin-panel" style="border-right: 4px solid ${color};" onclick="filterLedgerByEntity('${rangeName}', '${row[0]}')">
+                        <div class="label">${rangeName === 'Savings' ? 'Type: Asset' : 'Type: Liability'}</div>
+                        <div style="font-size:15px; font-weight:700;">${row[0]}</div>
+                        <div style="font-size:24px; font-weight:800; color:${color}; margin:12px 0;">₹${(Number(row[2]) || 0).toLocaleString('en-IN')}</div>
+                    </div>`;
+            });
+            document.getElementById('displayArea').innerHTML = html + `</div>`;
+            setProcessing(false);
+        } catch(e) { setProcessing(false); }
+    }
+
     function accessDenied() {
         document.body.innerHTML = `
             <div style="background:radial-gradient(circle at 50% 0%, #1e293b 0%, #030712 100%); height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:'JetBrains Mono'; color: white;">
@@ -606,6 +652,19 @@ tbody {
             </div>`;
         window.stop();
     }
+// --- 5. ENTITY FILTER (With Token) ---
+    async function filterLedgerByEntity(type, query) {
+        currentTableMode = 'statement';
+        setProcessing(true, `Accessing Logs for ${query}...`);
+        try {
+            const res = await fetch(`${SCRIPT_URL}?action=searchStatementByEntity&type=${type}&query=${encodeURIComponent(query)}${getAuthParams()}`);
+            const data = await res.json();
+            renderTable(data.headers, data.rows);
+            setProcessing(false);
+        } catch(e) { setProcessing(false); }
+    }
+
+
 
  function updateToolbarMetrics(headers, rows) {
   const inflowEl = document.getElementById('bar-inflow');
@@ -699,23 +758,7 @@ function setProcessing(isProcessing, message = "EXECUTING...") {
 }
   
 
-    async function loadMain() {
-    const s = document.getElementById('start').value, e = document.getElementById('end').value;
-    if(!s || !e) return alert("Select dates");
-    
-    setProcessing(true, "Retrieving Ledger Data...");
-    try {
-        const res = await fetch(`${SCRIPT_URL}?action=getList&start=${s}&end=${e}`);
-        const data = await res.json();
-        renderTable(data.headers, data.rows);
-        updateToolbarMetrics(data.headers, data.rows);
-        setProcessing(false);
-        document.getElementById('status').innerText = "Sync Complete";
-    } catch(e) { 
-        setProcessing(false);
-        document.getElementById('status').innerText = "Sync Error"; 
-    }
-}
+   
 
     // Shared table rendering logic
 function renderTable(headers, rows) {
@@ -1032,114 +1075,20 @@ function recalculateMetricsFromSelected() {
     document.getElementById('rowCount').innerText = `${selectedRows.length} RECORDS SELECTED`;
 }
 
-    async function viewNamedRange(rangeName) {
-	currentViewType = rangeName;
- currentTableMode = 'registry'; // 🔥 IMPORTANT
-    setProcessing(true, `Accessing ${rangeName} Vault...`);
-    
-    try {
-        const res = await fetch(`${SCRIPT_URL}?action=fetchNamedRange&range=${rangeName}`);
-        const data = await res.json();
-        
-        let html = `<div style="margin-bottom:15px; border-left:4px solid var(--primary); padding-left:15px;">
-                        <h3 style="margin:0; font-size:16px;">${rangeName === 'Savings' ? 'Active Assets' : 'Credit Accounts'}</h3>
-                    </div>`;
-        
-        html += `<div class="card-grid">`;
-        
-        data.rows.forEach(row => {
-            const isSavings = rangeName === 'Savings';
-            const color = isSavings ? 'var(--success)' : 'var(--danger)';
-            
-            html += `
-                <div class="fin-panel" style="border-right: 4px solid ${color};" onclick="filterLedgerByEntity('${rangeName}', '${row[0]}')">
-                    <div class="label" style="margin-bottom:8px;">${isSavings ? 'Type: Asset' : 'Type: Liability'}</div>
-                    <div style="font-size:15px; font-weight:700;">${row[0]}</div>
-                    <div style="font-size:24px; font-weight:800; color:${color}; margin:12px 0;">₹${(Number(row[2]) || 0).toLocaleString('en-IN')}</div>
-                    
-                    <div style="display:flex; justify-content:space-between; border-top:1px solid var(--border); padding-top:12px;">
-                        <div style="font-size:11px; color:var(--text-muted); line-height:1.4;">
-                            ${isSavings ? 'OPENING BALANCE' : 'TOTAL LIMIT'}<br>
-                            <span style="color:var(--text); font-weight:700; font-size:18px;">₹${(Number(row[3])||0).toLocaleString('en-IN')}</span>
-                        </div>
-                        ${!isSavings ? `
-                        <div style="font-size:11px; color:var(--text-muted); text-align:right; line-height:1.4;">
-                            AVAILABLE<br>
-                            <span style="color:var(--success); font-weight:700; font-size:14px;">₹${(Number(row[1])||0).toLocaleString('en-IN')}</span>
-                        </div>` : ''}
-                    </div>
-                </div>`;
-        });
-        
-        document.getElementById('displayArea').innerHTML = html + `</div>`;
-        setProcessing(false);
-        document.getElementById('status').innerText = "Matrix Decoded";
-    } catch(e) { 
-        setProcessing(false);
-        document.getElementById('status').innerText = "Access Denied";
-    }
-}
 
 
-   async function filterLedgerByEntity(type, query) {
- currentTableMode = 'statement';
-    setProcessing(true, `Accessing Logs for ${query}...`);
-    
-    try {
-        const res = await fetch(`${SCRIPT_URL}?action=searchStatementByEntity&type=${type}&query=${encodeURIComponent(query)}`);
-        const data = await res.json();
-        
-        if (!data.rows || data.rows.length === 0) {
-            setProcessing(false);
-            document.getElementById('status').innerText = "No Records Found";
-            alert(`No statement entries found for ${query}. Check if the name in the 'Savings/CC' sheet matches the 'Full Statement' exactly.`);
-            return;
-        }
-        
-        updateToolbarMetrics(data.headers, data.rows);
-        
-        let backBtn = `<div style="margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
-            <button class="btn-blue" onclick="viewNamedRange('${type}')" style="background:var(--surface-accent); color:white;">← Back to Matrix</button>
-            <span class="label" style="font-size:14px;">Entity Log: ${query}</span>
-        </div>`;
-        console.log('STATEMENT HEADERS:', data.headers);
-console.log('STATEMENT ROWS:', data.rows.length);
-        renderTable(data.headers, data.rows);
-        document.getElementById('displayArea').insertAdjacentHTML('afterbegin', backBtn);
-        
-        setProcessing(false);
-        document.getElementById('status').innerText = "Filter Optimized";
-    } catch(e) { 
-        setProcessing(false);
-        document.getElementById('status').innerText = "Filter Error";
-    }
-}
+
 
 
     // --- ADDED MISSING LOGIC BELOW ---
 
 async function fetchAssociated() {
-    const selectedRows = document.querySelectorAll('.data-row.selected');
-    
-    // Extract IDs and clean them
-    const ids = Array.from(selectedRows)
-        .map(r => r.getAttribute('data-id'))
-        .filter(id => id && id !== "null" && id !== "undefined" && id.length > 0);
-    
-    if (!ids.length) {
-        alert("CRITICAL: No valid Reference IDs found.");
-        return;
-    }
-
-    setProcessing(true, "TRACING SYSTEM REFERENCES...");
-    
-    // 🔥 FIX: Hide action buttons immediately when entering Trace View
-    document.getElementById('action-buttons-holder').innerHTML = "";
-
-    try {
-        const res = await fetch(`${SCRIPT_URL}?action=fetchAssociated&ids=${encodeURIComponent(ids.join(','))}`);
-        const grouped = await res.json();
-        
+        const ids = Array.from(document.querySelectorAll('.data-row.selected')).map(r => r.getAttribute('data-id'));
+        if (!ids.length) return;
+        setProcessing(true, "TRACING SYSTEM REFERENCES...");
+        try {
+            const res = await fetch(`${SCRIPT_URL}?action=fetchAssociated&ids=${encodeURIComponent(ids.join(','))}${getAuthParams()}`);
+            const grouped = await res.json();        
         let finalHtml = `
             <div style="margin-bottom:24px; display:flex; justify-content:space-between; align-items:center;">
                 <button class="btn-blue" onclick="loadMain()" style="background:var(--surface-bright); color:white; border: 1px solid var(--primary);">
@@ -1206,35 +1155,23 @@ async function fetchAssociated() {
 }
 
 async function deleteRecords() {
-    const ids = Array.from(document.querySelectorAll('.data-row.selected')).map(r => r.getAttribute('data-id'));
-    if (!ids.length || !confirm(`GLOBAL PURGE: Delete ${ids.length} records?`)) return;
-
-    setProcessing(true, "Executing Purge...");
-
-    try {
-        await fetch(SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            body: JSON.stringify({ action: 'deleteRows', ids: ids })
-        });
-
-        // Simulating sync time for animation effect
-        setTimeout(async () => {
-            await window.onload(); 
-            const s = document.getElementById('start').value;
-            const e = document.getElementById('end').value;
-            if (s && e) await loadMain();
-            
-            setProcessing(false);
-            document.getElementById('status').innerText = "Terminal Synced.";
-        }, 1500);
-
-    } catch(e) { 
-        setProcessing(false);
-        document.getElementById('status').innerText = "Purge Failed"; 
+        const ids = Array.from(document.querySelectorAll('.data-row.selected')).map(r => r.getAttribute('data-id'));
+        if (!ids.length || !confirm(`GLOBAL PURGE: Delete ${ids.length} records?`)) return;
+        setProcessing(true, "Executing Purge...");
+        try {
+            await fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify({ action: 'deleteRows', ids: ids, token: sessionStorage.getItem("session_token") })
+            });
+            setTimeout(initializeDashboard, 1500);
+        } catch(e) { setProcessing(false); }
     }
-}
 
+    function accessDenied() {
+        document.body.innerHTML = `<div style="background:var(--bg); height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; color:white; font-family:'JetBrains Mono';"><h1>403</h1><p>ACCESS RESTRICTED</p><button class="btn-blue" onclick="location.reload()">RE-AUTHENTICATE</button></div>`;
+        window.stop();
+    }
   // Remove the old toggleButtons function entirely as we don't need fixed buttons anymore
 function toggleButtons() {
     // Left empty: buttons are now inside the Context Menu
