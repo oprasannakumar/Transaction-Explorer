@@ -359,13 +359,12 @@ th {
 }
 
 .table-wrap {
-    min-height: 400px; /* Adjust based on your preference */
-    max-height: 60vh;
+    height: auto; /* JS will control height */
     overflow-y: auto;
     overflow-x: auto;
     position: relative;
     border-radius: 0 0 24px 24px;
-    background: var(--surface); /* Ensures menu is readable against a background */
+    background: var(--surface);
 }
 thead tr {
     position: sticky;
@@ -391,7 +390,20 @@ tbody {
 }
 
         td { padding: 14px 20px; font-size: 13px; border-bottom: 1px solid var(--border); }
-
+/* Increase width of first column */
+#mainDataTable th:first-child,
+#mainDataTable td:first-child {
+    min-width: 100px;   /* Adjust this value */
+    width: 100px;
+}
+/* Increase width of 8th and 9th columns */
+#mainDataTable th:nth-child(8),
+#mainDataTable td:nth-child(8),
+#mainDataTable th:nth-child(9),
+#mainDataTable td:nth-child(9) {
+    min-width: 40px;   /* Adjust as needed */
+    width: 40px;
+}
         .data-row { transition: 0.2s; }
         .data-row:hover { background: rgba(255,255,255,0.03); }
         .data-row.selected { background: rgba(14, 165, 233, 0.15) !important; color: var(--primary); }
@@ -505,26 +517,97 @@ tbody {
 </div>
 
 <script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxeyI-iKfYu216UnB-6HBW1uuIwTzjykzOdLXaWK2JzxEl7XUF5ytr9hYWKmq4Batdtgg/exec';
-    let navStack = []; // Global history tracker
+     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxKAGEA92uCJ8TiHFB5jxpzPVcDK9OqnSxw-7-4jrsmW2sKQcdHVMiC83fofZAbJ5m1XA/exec';
+    let navStack = []; 
     let currentViewType = 'Savings'; 
-	let currentTableMode = 'statement'; // 'registry' | 'statement'
-(function() {
-    const SECRET_KEY = "Bhaskar@1108"; // Change this to your password!
-    const sessionKey = "finance_auth_v3";
+    let currentTableMode = 'statement';
 
-    if (sessionStorage.getItem(sessionKey) !== "true") {
-      let attempt = prompt("SYSTEM ACCESS RESTRICTED: Enter Authorization Key");
-      if (attempt === SECRET_KEY) {
-        sessionStorage.setItem(sessionKey, "true");
-      } else {
-        alert("ACCESS DENIED: Unauthorized Node.");
-        document.body.innerHTML = "<h1 style='color:red; text-align:center; margin-top:100px;'>403: FORBIDDEN ACCESS</h1>";
-        window.stop();
-      }
+    // --- 1. FIXED AUTHORIZATION SEQUENCE ---
+    window.onload = async () => {
+        // Check if already authorized for this tab session
+        if (sessionStorage.getItem("finance_auth_v3") === "true") {
+            initializeDashboard();
+            return;
+        }
+
+        setProcessing(true, "SECURE AUTH REQUIRED...");
+        
+        try {
+            // Request OTP via Telegram using fetch
+            const res = await fetch(`${SCRIPT_URL}?action=requestNewOTP`);
+            const data = await res.json();
+
+            if (data.status === "success") {
+                let code = prompt("🔐 SECURITY CHECK\nA 6-digit code has been sent to your Telegram.\n\nPlease enter it to authorize this node:");
+                
+                if (!code) { accessDenied(); return; }
+
+                // Verify the entered code via fetch
+                const verifyRes = await fetch(`${SCRIPT_URL}?action=verifyOTP&code=${code}`);
+                const verifyData = await verifyRes.json();
+
+                if (verifyData.isValid) {
+                    sessionStorage.setItem("finance_auth_v3", "true");
+                    setProcessing(false);
+                    initializeDashboard();
+                } else {
+                    alert("INVALID AUTHENTICATION CODE. ACCESS DENIED.");
+                    accessDenied();
+                }
+            } else {
+                alert("Auth Node Offline. Check Apps Script logs.");
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Connection Error: Check SCRIPT_URL permissions.");
+        }
+    };
+
+    // --- 2. DASHBOARD INITIALIZATION ---
+    async function initializeDashboard() {
+        try {
+            const res = await fetch(`${SCRIPT_URL}?action=getDashboard`);
+            const data = await res.json();
+            
+            document.getElementById('net-val').innerText = '₹' + data.liquidity.toLocaleString('en-IN');
+            document.getElementById('debt-val').innerText = '₹' + data.debt.toLocaleString('en-IN');
+            
+            const netPosition = data.liquidity - data.debt;
+            const netEl = document.getElementById('total-available');
+            netEl.innerText = '₹' + netPosition.toLocaleString('en-IN');
+            netEl.style.color = netPosition < 0 ? 'var(--danger)' : 'var(--primary)';
+
+            document.getElementById('cash-total').innerText = '₹' + data.cashBreakdown[10].toLocaleString('en-IN');
+            
+            const denoms = [500, 200, 100, 50, 20, 10, 5, 2, 1];
+            let html = "";
+            denoms.forEach((v, i) => {
+                const count = data.cashBreakdown[i+1] || 0;
+                html += `<div class="denom-tile" data-v="${v}">
+                            <span class="denom-value">₹${v}</span>
+                            <span class="denom-count">${count}</span>
+                        </div>`;
+            });
+            document.getElementById('cash-grid').innerHTML = html;
+            document.getElementById('status').innerText = "System Online // Authorized";
+            
+        } catch(e) { 
+            document.getElementById('status').innerText = "Sync Failed: Data Access Denied"; 
+        }
     }
-  })();
-function updateToolbarMetrics(headers, rows) {
+
+    // --- 3. ACCESS DENIED UI ---
+    function accessDenied() {
+        document.body.innerHTML = `
+            <div style="background:radial-gradient(circle at 50% 0%, #1e293b 0%, #030712 100%); height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:'JetBrains Mono'; color: white;">
+                <h1 style="color:var(--danger); font-size:48px; margin:0;">403</h1>
+                <p style="color:var(--text-muted); letter-spacing:2px;">UNAUTHORIZED_ACCESS_DETECTED</p>
+                <button class="btn-blue" onclick="location.reload()" style="margin-top:20px;">RE-AUTHENTICATE</button>
+            </div>`;
+        window.stop();
+    }
+
+ function updateToolbarMetrics(headers, rows) {
   const inflowEl = document.getElementById('bar-inflow');
   const outflowEl = document.getElementById('bar-outflow');
 
@@ -616,41 +699,6 @@ function setProcessing(isProcessing, message = "EXECUTING...") {
 }
   
 
-window.onload = async () => {
-    try {
-        const res = await fetch(`${SCRIPT_URL}?action=getDashboard`);
-        const data = await res.json();
-        
-        // Update raw values
-        document.getElementById('net-val').innerText = '₹' + data.liquidity.toLocaleString('en-IN');
-        document.getElementById('debt-val').innerText = '₹' + data.debt.toLocaleString('en-IN');
-        
-        // Calculate Net Position (Liquidity - Debt)
-        const netPosition = data.liquidity - data.debt;
-        const netEl = document.getElementById('total-available');
-        netEl.innerText = '₹' + netPosition.toLocaleString('en-IN');
-        
-        // Dynamic color for Net Position (Red if negative, blue/green if positive)
-        netEl.style.color = netPosition < 0 ? 'var(--danger)' : 'var(--primary)';
-
-        // Update Cash
-        document.getElementById('cash-total').innerText = '₹' + data.cashBreakdown[10].toLocaleString('en-IN');
-        
-        const denoms = [500, 200, 100, 50, 20, 10, 5, 2, 1];
-        let html = "";
-        denoms.forEach((v, i) => {
-            const count = data.cashBreakdown[i+1] || 0;
-           html += `<div class="denom-tile" data-v="${v}">
-                        <span class="denom-value">₹${v}</span>
-                        <span class="denom-count">${count}</span>
-                    </div>`;
-        });
-        document.getElementById('cash-grid').innerHTML = html;
-        
-    } catch(e) { 
-        document.getElementById('status').innerText = "Sync Failed"; 
-    }
-};
     async function loadMain() {
     const s = document.getElementById('start').value, e = document.getElementById('end').value;
     if(!s || !e) return alert("Select dates");
@@ -743,6 +791,7 @@ function renderTable(headers, rows) {
     </div>`;
 
     document.getElementById('displayArea').innerHTML = html;
+    setTimeout(adjustTableHeight, 50);
     populateFilterOptions(headers, rows);
     recalculateMetricsFromVisible();
 }
@@ -1285,7 +1334,22 @@ function recalculateMetricsFromVisible() {
     document.getElementById('bar-outflow').innerText = '₹' + outflow.toLocaleString('en-IN');
     document.getElementById('rowCount').innerText = `MATCH: ${visibleCount}`;
 }
+function adjustTableHeight() {
+    const tableWrap = document.getElementById("tableWrap");
+    if (!tableWrap) return;
 
+    const viewportHeight = window.innerHeight;
+
+    const dashboardHeight = document.querySelector(".dashboard")?.offsetHeight || 0;
+    const toolbarHeight = document.querySelector(".toolbar")?.offsetHeight || 0;
+
+    const paddingAllowance = 120; 
+
+    const calculatedHeight =
+        viewportHeight - dashboardHeight - toolbarHeight - paddingAllowance;
+
+    tableWrap.style.maxHeight = calculatedHeight + "px";
+}
 let longPressTimer;
 
 // --- Context Menu Configuration ---
@@ -1402,6 +1466,8 @@ document.addEventListener('touchstart', function(e) {
 
 document.addEventListener('touchend', () => clearTimeout(pressTimer));
 document.addEventListener('touchmove', () => clearTimeout(pressTimer));
+window.addEventListener("resize", adjustTableHeight);
+window.addEventListener("load", adjustTableHeight);
 </script>
 <div id="custom-context-menu"></div>
 </body>
