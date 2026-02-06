@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -32,6 +33,36 @@
         background: var(--primary);
         color: var(--bg);
     }
+/* Trace View specific: Remove fixed height constraints */
+.trace-card {
+    margin-bottom: 32px;
+    border: 1px solid var(--primary-glow);
+    animation: menuFadeIn 0.4s ease-out;
+}
+
+.trace-table-wrap {
+    overflow-x: auto;
+    /* This allows the table to grow vertically based on content */
+    height: auto; 
+    max-height: none !important; 
+    border-radius: 0 0 24px 24px;
+}
+.trace-table-wrap table {
+    width: 100%;
+    text-align: center;
+}
+.trace-amount {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: var(--gold);
+    text-align: center;
+}
+
+.trace-table-wrap th,
+.trace-table-wrap td {
+    text-align: center !important;
+    vertical-align: middle;
+}
 .id-badge {
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
@@ -319,6 +350,14 @@ th {
     /* Anchor for the absolute dropdown */
     position: relative; 
 }
+.trace-table-wrap {
+    overflow-x: auto;
+    overflow-y: visible;
+    height: auto;
+    max-height: none !important;
+    border-radius: 0 0 24px 24px;
+}
+
 .table-wrap {
     min-height: 400px; /* Adjust based on your preference */
     max-height: 60vh;
@@ -1064,7 +1103,7 @@ async function fetchAssociated() {
                                 <span class="pill-val" style="font-size:18px;">${sheet.rows.length}</span>
                             </div>
                         </div>
-                        <div class="table-wrap" style="max-height: 400px; overflow:auto;">
+                        <div class="trace-table-wrap">
                             <table>
                                 <thead style="position:sticky; top:0; z-index:10;">
                                     <tr>${sheet.headers.map(h => `<th>${h}</th>`).join('')}</tr>
@@ -1074,7 +1113,7 @@ async function fetchAssociated() {
                                         <tr class="data-row-static"> ${r.map((cell, idx) => {
                                                 const isDate = /date/i.test(sheet.headers[idx]);
                                                 const isAmount = /amount|total|balance|deposit|withdrawn/i.test(sheet.headers[idx]);
-                                                return `<td style="${isAmount ? 'font-family:JetBrains Mono; font-weight:700; color:var(--gold);' : ''}">
+                                                return `<td class="${isAmount ? 'trace-amount' : ''}">
                                                             ${isDate ? formatTacticalDate(cell) : (cell ?? "")}
                                                         </td>`;
                                             }).join('')}
