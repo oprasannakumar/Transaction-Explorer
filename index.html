@@ -219,13 +219,14 @@
             grid-template-columns: repeat(4, 1fr); 
             gap: 16px; 
             margin-bottom: 24px;
+            max-width:5000px;
         }
 
         .stat-card {
             background: var(--surface);
             backdrop-filter: var(--glass-blur);
             border: 1px solid var(--border);
-            border-radius: 16px;
+            border-radius: 5px;min-width:300px
             padding: 20px;
             position: relative;
             overflow: hidden;
@@ -262,12 +263,12 @@
        #cash-grid { 
     display: grid; 
     grid-template-columns: repeat(3, 1fr); /* 3 narrow columns */
-    gap: 6px; 
-    margin-top: 12px; 
+    gap: 3px; 
+    margin-top: 12px; min-width:5px;
 }
         .denom-tile {
     background: rgba(0, 0, 0, 0.3);
-    padding: 6px 10px;
+    padding: 6px 3px;
     border-radius: 6px;
     display: flex;
     justify-content: space-between;
@@ -275,9 +276,9 @@
     font-size: 11px;
     font-family: 'JetBrains Mono', monospace;
     border: 1px solid var(--border);
-    transition: 0.2s;
+    transition: 0.2s;gap:10px;
     /* This makes the card narrow and clean */
-    min-width: 80px; 
+    min-width:5px; 
 }/* Color Coding for specific denominations */
 .denom-tile[data-v="500"] { border-left: 3px solid #fbbf24; } /* Gold */
 .denom-tile[data-v="200"] { border-left: 3px solid #f472b6; } /* Pink */
