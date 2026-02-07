@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,6 +8,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Finance Command Center | v3.0</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <style>
         :root {
             --bg: #030712;
@@ -217,7 +220,7 @@
         .dashboard { 
             display: grid; 
             grid-template-columns: repeat(4, 1fr); 
-            gap: 16px; 
+            gap: 5px; 
             margin-bottom: 24px;
             max-width:5000px;
         }
@@ -255,9 +258,17 @@
         }
 
         .stat-card.interactive:hover::before { opacity: 1; }
-
-        .stat-card .label { font-size: 10px; font-weight: 800; color: var(--text-muted); letter-spacing: 1px; margin-bottom: 8px; }
-        .stat-card .value { font-size: 26px; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+#cash-total {
+    position: absolute;
+    top: 8px;      /* Adjust this to bring it further DOWN */
+    right: 8px;    /* Adjust this to bring it further LEFT */
+    color: var(--gold) !important;
+    font-size: 15px;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+}
+        .stat-card .label { font-size: 10px; font-weight: 800; color: var(--text-muted); letter-spacing: 1px; margin-bottom: 8px; padding-left:10px;}
+        .stat-card .value { font-size: 26px; font-weight: 800; font-family: 'JetBrains Mono', monospace; padding-left:10px;}
 
         /* Cash Breakdown Grid */
        #cash-grid { 
@@ -306,8 +317,36 @@
         }
 
         .controls-group { display: flex; align-items: center; gap: 12px; flex-grow: 1; }
+        .range-input {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border);
+    color: white;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    transition: 0.2s;
+    min-width: 220px;
+    cursor: pointer;
+}
+.range-input {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border);
+    color: white;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    transition: 0.2s;
+    min-width: 220px;
+    cursor: pointer;
+}
 
-        select, input[type="date"], input[type="number"], .table-search-box input {
+/* Focus effect */
+.range-input:focus {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: 0 0 0 3px var(--primary-glow);
+}
+        select, .table-search-box input {
             background: rgba(0,0,0,0.3);
             border: 1px solid var(--border);
             color: white;
@@ -315,6 +354,8 @@
             border-radius: 10px;
             font-size: 13px;
             transition: 0.2s;
+            width:125px;
+            
         }
 
         select:focus, input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px var(--primary-glow); }
@@ -453,6 +494,12 @@ tbody {
         .metric-pill { background: rgba(0,0,0,0.3); padding: 8px 16px; border-radius: 12px; border: 1px solid var(--border); }
         .pill-label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 2px; display: block; }
         .pill-val { font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 700; }
+#yearSelect {
+    width: 40px !important;
+    padding: 10px 8px; /* Slightly less horizontal padding */
+    text-align: center;
+    padding-left:1px;
+}
 
         /* Grid for Accounts (Registry View) */
         .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; padding: 20px 0; }
@@ -464,6 +511,7 @@ tbody {
             transition: 0.3s;
         }
         .fin-panel:hover { border-color: var(--primary); background: var(--surface-bright); transform: scale(1.02); }
+
 
     </style>
 </head>
@@ -497,20 +545,16 @@ tbody {
 
     <div class="toolbar">
         <div class="controls-group">
-            <select id="monthSelect" onchange="autoFillDates()">
-                <option value="">Select Month</option>
-                <option value="0">January</option><option value="1">February</option>
-                <option value="2">March</option><option value="3">April</option>
-                <option value="4">May</option><option value="5">June</option>
-                <option value="6">July</option><option value="7">August</option>
-                <option value="8">September</option><option value="9">October</option>
-                <option value="10">November</option><option value="11">December</option>
-            </select>
-            <input type="number" id="yearSelect" value="2026" onchange="autoFillDates()" style="width: 70px;">
-            <input type="date" id="start">
-            <input type="date" id="end">
+        <select id="sheetSelect" style="border-color: var(--primary); min-width: 150px;">
+        <option value="">📁 Select Module</option>
+    </select>
+
+       <input type="text" id="dateRange" class="range-input"
+       placeholder="Select Date Range"
+       readonly>
             <button class="btn-blue" onclick="loadMain()">Execute Search</button>
             <button class="btn-accent" onclick="loadFullStatement()">Full History</button>
+	    <button class="btn-red" onclick="logout()">Logout</button>
         </div>
         <div id="action-buttons-holder" style="display: flex; gap: 8px;"></div>
     </div>
@@ -520,10 +564,35 @@ tbody {
 
 <script>
 // 1. Configuration
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz9tbGHR-0SYfmnBi_GPiEmXe6jA8NcMraIqBKVyAQu5yYt0zkx3vUjzSLuFLYZgGcMPQ/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby7mScNHdFB_3IOQkO8WSLQIpFqif_etSjoqFcdrPNuBHzG908djhS_WRash-rgM-AMcg/exec';
     let navStack = []; 
     let currentViewType = 'Savings'; 
     let currentTableMode = 'statement';
+    let selectedStart = "";
+    let selectedEnd = "";
+document.addEventListener("DOMContentLoaded", function () {
+    flatpickr("#dateRange", {
+        mode: "range",
+        dateFormat: "Y-m-d",
+        onClose: function(selectedDates) {
+
+            if (selectedDates.length === 2) {
+
+                const toLocalISO = (date) => {
+                    const y = date.getFullYear();
+                    const m = String(date.getMonth() + 1).padStart(2, '0');
+                    const d = String(date.getDate()).padStart(2, '0');
+                    return `${y}-${m}-${d}`;
+                };
+
+                selectedStart = toLocalISO(selectedDates[0]);
+                selectedEnd   = toLocalISO(selectedDates[1]);
+
+                console.log("Selected Range:", selectedStart, "to", selectedEnd);
+            }
+        }
+    });
+});
 
     // Helper to get token for every request
     const getAuthParams = () => `&token=${sessionStorage.getItem("session_token")}`;
@@ -579,7 +648,7 @@ tbody {
 
             document.getElementById('cash-total').innerText = '₹' + data.cashBreakdown[10].toLocaleString('en-IN');
             
-            const denoms = [500, 200, 100, 50, 20, 10, 5, 2, 1];
+            const denoms = [500, 50, 5, 200, 20, 2, 100, 10, 1];
             let html = "";
             denoms.forEach((v, i) => {
                 const count = data.cashBreakdown[i+1] || 0;
@@ -590,37 +659,124 @@ tbody {
             });
             document.getElementById('cash-grid').innerHTML = html;
             document.getElementById('status').innerText = "System Online // Authorized";
+            loadSheetList()
             adjustTableHeight();
             
         } catch(e) { 
             document.getElementById('status').innerText = "Sync Failed: Token Invalid"; 
         }
     }
+async function loadSheetList() {
+    try {
+        const res = await fetch(`${SCRIPT_URL}?action=getSheets${getAuthParams()}`);
+        const sheets = await res.json();
+        const select = document.getElementById('sheetSelect');
+        
+        sheets.forEach(name => {
+            let opt = document.createElement('option');
+            opt.value = name;
+            opt.innerHTML = name;
+            select.appendChild(opt);
+        });
+    } catch(e) { console.error("Failed to load sheets"); }
+}
 
 // --- 3. EXECUTE SEARCH (With Token) ---
-    async function loadMain() {
-        const s = document.getElementById('start').value, e = document.getElementById('end').value;
-        if(!s || !e) return alert("Select dates");
-        
-        setProcessing(true, "Retrieving Ledger Data...");
-        try {
-            const res = await fetch(`${SCRIPT_URL}?action=getList&start=${s}&end=${e}${getAuthParams()}`);
-            const data = await res.json();
-            renderTable(data.headers, data.rows);
-            updateToolbarMetrics(data.headers, data.rows);
-            setProcessing(false);
-            document.getElementById('status').innerText = "Sync Complete";
-        } catch(e) { 
-            setProcessing(false);
-            document.getElementById('status').innerText = "Sync Error"; 
-        }
-    }    
+async function loadMain() {
 
-// --- 4. VIEW REGISTRY (With Token) ---
-    // --- 4. VIEW REGISTRY (With Token Handshake) ---
-// --- 4. VIEW REGISTRY (With Token Handshake & Opening Balances) ---
-// --- 4. VIEW REGISTRY (Optimized Bar Placement) ---
-// --- 4. VIEW REGISTRY (With Over-Capacity Logic & Security Handshake) ---
+    const selectedSheet = document.getElementById('sheetSelect').value;
+    const s = selectedStart;
+    const e = selectedEnd;
+
+    // CASE 1: Sheet + Date Range
+    if (selectedSheet !== "" && s && e) {
+        setProcessing(true, `ACCESSING ${selectedSheet} // FILTERING RANGE...`);
+
+        try {
+            const res = await fetch(
+                `${SCRIPT_URL}?action=fetchSheetWithDate` +
+                `&sheetName=${encodeURIComponent(selectedSheet)}` +
+                `&start=${s}&end=${e}` +
+                getAuthParams()
+            );
+
+            const data = await res.json();
+
+            currentTableMode = 'registry';
+            renderTable(data.headers, data.rows);
+
+            setProcessing(false);
+            document.getElementById('status').innerText =
+                `Source: ${selectedSheet} // Range Applied`;
+
+        } catch (e) {
+            setProcessing(false);
+            document.getElementById('status').innerText =
+                "Sync Error: Date Filter Failed";
+        }
+
+        return;
+    }
+
+    // CASE 2: Only Sheet
+    if (selectedSheet !== "") {
+        setProcessing(true, `ACCESSING MODULE: ${selectedSheet.toUpperCase()}...`);
+
+        try {
+            const res = await fetch(
+                `${SCRIPT_URL}?action=fetchRawSheet` +
+                `&sheetName=${encodeURIComponent(selectedSheet)}` +
+                getAuthParams()
+            );
+
+            const data = await res.json();
+
+            currentTableMode = 'registry';
+            renderTable(data.headers, data.rows);
+
+            setProcessing(false);
+            document.getElementById('status').innerText =
+                `Source: ${selectedSheet}`;
+
+        } catch (e) {
+            setProcessing(false);
+            document.getElementById('status').innerText =
+                "Sync Error: Sheet Unreachable";
+        }
+
+        return;
+    }
+
+    // CASE 3: Only Date (Ledger Mode)
+    if (!s || !e) {
+        return alert("Select a Sheet or a Date Range.");
+    }
+
+    setProcessing(true, "RETRIEVING LEDGER DATA...");
+
+    try {
+        const res = await fetch(
+            `${SCRIPT_URL}?action=getList&start=${s}&end=${e}` +
+            getAuthParams()
+        );
+
+        const data = await res.json();
+
+        currentTableMode = 'statement';
+        renderTable(data.headers, data.rows);
+        updateToolbarMetrics(data.headers, data.rows);
+
+        setProcessing(false);
+        document.getElementById('status').innerText =
+            "Ledger View // Range Applied";
+
+    } catch (e) {
+        setProcessing(false);
+        document.getElementById('status').innerText =
+            "Sync Error: Ledger Data Offline";
+    }
+}
+
 async function viewNamedRange(rangeName) {
     currentViewType = rangeName;
     currentTableMode = 'registry';
@@ -820,19 +976,10 @@ function autoFillDates() {
 }
 
 function loadFullStatement() {
-    const startInput = document.getElementById('start');
-    const endInput = document.getElementById('end');
-    
-    // Set range to a wide window
-    startInput.value = "2020-01-01";
-    
-    const today = new Date().toISOString().split('T')[0];
-    endInput.value = today;
-
-    // Reuse your existing main fetch logic
+    selectedStart = "2020-01-01";
+    selectedEnd = new Date().toISOString().split('T')[0];
     loadMain();
 }
-
 function setProcessing(isProcessing, message = "EXECUTING...") {
     const overlay = document.getElementById('processing-overlay');
     const status = document.getElementById('status');
@@ -900,7 +1047,7 @@ function renderTable(headers, rows) {
                     ${rows.map(row => {
                         const rawId = row[idColIdx];
                         const rowId = (rawId !== undefined && rawId !== null) ? String(rawId).trim() : "";
-                        const clickAction = isRegistry ? `filterLedgerByEntity('${row[0]}')` : `handleRowClick(this)`;
+                       const clickAction = `handleRowClick(this)`;
 
                         return `
                             <tr class="data-row" data-id="${rowId}" onclick="${clickAction}">
@@ -1552,6 +1699,88 @@ document.addEventListener('touchend', () => clearTimeout(pressTimer));
 document.addEventListener('touchmove', () => clearTimeout(pressTimer));
 window.addEventListener("resize", adjustTableHeight);
 window.addEventListener("load", adjustTableHeight);
+
+function showLogoutScreen() {
+
+    document.body.innerHTML = `
+    <div style="
+        height:100vh;
+        background: radial-gradient(circle at 50% 0%, #1e293b 0%, #030712 100%);
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+        font-family:'JetBrains Mono';
+        color:white;
+        overflow:hidden;
+        position:relative;
+    ">
+
+        <div id="floating-transactions"></div>
+
+        <h1 style="
+            font-size:42px;
+            letter-spacing:4px;
+            margin-bottom:20px;
+            color:var(--primary);
+        ">
+            NODE LOCKED
+        </h1>
+
+        <button class="btn-blue" onclick="location.reload()">
+            🔐 LOGIN
+        </button>
+
+    </div>
+    `;
+
+    startTransactionAnimation();
+}
+function startTransactionAnimation() {
+
+    const container = document.getElementById("floating-transactions");
+
+    const transactions = [
+        "₹5,000 Credit",
+        "₹1,250 Debit",
+        "₹15,000 Deposit",
+        "₹3,200 Withdrawal",
+        "₹22,000 Credit",
+        "₹780 Debit"
+    ];
+
+    setInterval(() => {
+        const div = document.createElement("div");
+        div.innerText = transactions[Math.floor(Math.random() * transactions.length)];
+
+        div.style.position = "absolute";
+        div.style.left = Math.random() * 100 + "vw";
+        div.style.bottom = "-40px";
+        div.style.fontSize = "14px";
+        div.style.opacity = "0.7";
+        div.style.color = "rgba(14,165,233,0.7)";
+        div.style.transition = "transform 6s linear, opacity 6s linear";
+
+        container.appendChild(div);
+
+        setTimeout(() => {
+            div.style.transform = "translateY(-110vh)";
+            div.style.opacity = "0";
+        }, 50);
+
+        setTimeout(() => {
+            div.remove();
+        }, 6000);
+
+    }, 800);
+}
+
+
+function logout() {
+    sessionStorage.removeItem("finance_auth_v3");
+    sessionStorage.removeItem("session_token");
+    showLogoutScreen();
+}
 </script>
 <div id="custom-context-menu"></div>
 </body>
