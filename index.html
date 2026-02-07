@@ -618,44 +618,100 @@ tbody {
 // --- 4. VIEW REGISTRY (With Token) ---
     // --- 4. VIEW REGISTRY (With Token Handshake) ---
 // --- 4. VIEW REGISTRY (With Token Handshake & Opening Balances) ---
+// --- 4. VIEW REGISTRY (Optimized Bar Placement) ---
+// --- 4. VIEW REGISTRY (With Over-Capacity Logic & Security Handshake) ---
 async function viewNamedRange(rangeName) {
     currentViewType = rangeName;
     currentTableMode = 'registry';
     setProcessing(true, `Accessing ${rangeName} Vault...`);
     
     try {
+        // Fetch data with security token
         const res = await fetch(`${SCRIPT_URL}?action=fetchNamedRange&range=${rangeName}${getAuthParams()}`);
         const data = await res.json();
         
         let html = `<div style="margin-bottom:15px; border-left:4px solid var(--primary); padding-left:15px;">
                         <h3 style="margin:0; font-size:16px;">${rangeName === 'Savings' ? 'Active Assets' : 'Credit Accounts'}</h3>
-                    </div>`;
-        
-        html += `<div class="card-grid">`;
+                    </div><div class="card-grid">`;
         
         data.rows.forEach(row => {
             const isSavings = rangeName === 'Savings';
-            const color = isSavings ? 'var(--success)' : 'var(--danger)';
+            const themeColor = isSavings ? 'var(--success)' : 'var(--danger)';
             
-            // Logic to handle labels based on account type
-            const secondaryLabel = isSavings ? 'OPENING BALANCE' : 'TOTAL LIMIT';
-            const secondaryValue = (Number(row[1]) || 0).toLocaleString('en-IN');
+            const name = row[0];
+            const openingOrAvailable = Number(row[1]) || 0; // Savings: Col B (Opening) | CC: Col B (Available)
+            const currentBalance = Number(row[2]) || 0;     // Col C (Utilized/Current)
+            const totalLimit = !isSavings ? (Number(row[3]) || 0) : 0; // CC: Col D (Total Limit)
+
+            let progressBarHTML = "";
             
+            if (!isSavings && totalLimit > 0) {
+                // --- Credit Card Utilization logic ---
+                const percent = Math.round((currentBalance / totalLimit) * 100);
+                const displayWidth = Math.min(Math.max(percent, 0), 100);
+                const isOverLimit = percent > 100;
+                
+                // Color Logic: Blue -> Gold -> Red -> Purple (Over-Limit)
+                let barColor = 'var(--primary)';
+                if (percent > 80) barColor = 'var(--danger)';
+                else if (percent > 50) barColor = 'var(--gold)';
+                if (isOverLimit) barColor = '#a855f7'; 
+
+                progressBarHTML = `
+                    <div style="margin: 4px 0 16px 0;">
+                        <div style="display:flex; justify-content:space-between; font-size:9px; margin-bottom:4px; font-weight:800; letter-spacing:1px;">
+                            <span style="color:var(--text-muted);">${isOverLimit ? '⚠️ OVER LIMIT' : 'UTILIZATION'}</span>
+                            <span style="color:${barColor};">${percent}%</span>
+                        </div>
+                        <div style="width:100%; height:4px; background:rgba(255,255,255,0.05); border-radius:4px; overflow:visible;">
+                            <div style="width:${displayWidth}%; height:100%; background:${barColor}; 
+                                 box-shadow: 0 0 10px ${barColor}aa; border-radius:4px; transition:1s ease-in-out;">
+                            </div>
+                        </div>
+                    </div>`;
+
+            } else if (isSavings && openingOrAvailable > 0) {
+                // --- Savings Growth logic (Current vs Opening) ---
+                const ratio = Math.round((currentBalance / openingOrAvailable) * 100);
+                const displayWidth = Math.min(ratio, 100);
+                const isGrowth = ratio > 100;
+                const barColor = isGrowth ? '#22c55e' : 'var(--success)';
+
+                progressBarHTML = `
+                    <div style="margin: 4px 0 16px 0;">
+                        <div style="display:flex; justify-content:space-between; font-size:9px; margin-bottom:4px; font-weight:800; letter-spacing:1px;">
+                            <span style="color:var(--text-muted);">${isGrowth ? '✨ GROWTH' : 'ASSET FILL'}</span>
+                            <span style="color:${barColor};">${ratio}%</span>
+                        </div>
+                        <div style="width:100%; height:4px; background:rgba(255,255,255,0.05); border-radius:4px; overflow:visible;">
+                            <div style="width:${displayWidth}%; height:100%; background:${barColor}; 
+                                 box-shadow: 0 0 12px ${isGrowth ? '#22c55e' : 'var(--success)88'}; 
+                                 border-radius:4px; transition:1s ease-in-out;">
+                            </div>
+                        </div>
+                    </div>`;
+            }
+
             html += `
-                <div class="fin-panel" style="border-right: 4px solid ${color};" onclick="filterLedgerByEntity('${rangeName}', '${row[0]}')">
-                    <div class="label" style="margin-bottom:8px;">${isSavings ? 'Type: Asset' : 'Type: Liability'}</div>
-                    <div style="font-size:15px; font-weight:700;">${row[0]}</div>
-                    <div style="font-size:24px; font-weight:800; color:${color}; margin:12px 0;">₹${(Number(row[2]) || 0).toLocaleString('en-IN')}</div>
+                <div class="fin-panel" style="border-right: 4px solid ${themeColor};" onclick="filterLedgerByEntity('${rangeName}', '${name}')">
+                    <div class="label" style="margin-bottom:4px;">${isSavings ? 'ASSET' : 'LIABILITY'}</div>
+                    <div style="font-size:16px; font-weight:700; letter-spacing:0.5px;">${name}</div>
+                    
+                    <div style="font-size:28px; font-weight:800; color:${themeColor}; margin:8px 0 2px 0; font-family:'JetBrains Mono';">
+                        ₹${currentBalance.toLocaleString('en-IN')}
+                    </div>
+
+                    ${progressBarHTML}
                     
                     <div style="display:flex; justify-content:space-between; border-top:1px solid var(--border); padding-top:12px;">
-                        <div style="font-size:11px; color:var(--text-muted); line-height:1.4;">
-                            ${secondaryLabel}<br>
-                            <span style="color:var(--text); font-weight:700; font-size:16px;">₹${secondaryValue}</span>
+                        <div style="font-size:10px; color:var(--text-muted); line-height:1.4;">
+                            ${isSavings ? 'OPENING' : 'TOTAL LIMIT'}<br>
+                            <span style="color:var(--text); font-weight:700; font-size:15px;">₹${(isSavings ? openingOrAvailable : totalLimit).toLocaleString('en-IN')}</span>
                         </div>
                         ${!isSavings ? `
-                        <div style="font-size:11px; color:var(--text-muted); text-align:right; line-height:1.4;">
+                        <div style="font-size:10px; color:var(--text-muted); text-align:right; line-height:1.4;">
                             AVAILABLE<br>
-                            <span style="color:var(--success); font-weight:700; font-size:14px;">₹${(Number(row[1])||0).toLocaleString('en-IN')}</span>
+                            <span style="color:var(--success); font-weight:700; font-size:15px;">₹${openingOrAvailable.toLocaleString('en-IN')}</span>
                         </div>` : ''}
                     </div>
                 </div>`;
@@ -663,12 +719,18 @@ async function viewNamedRange(rangeName) {
         
         document.getElementById('displayArea').innerHTML = html + `</div>`;
         setProcessing(false);
-        document.getElementById('status').innerText = "Vault Decoded // Authorized";
+        
+        // Adjust layout for dynamic height
+        if (typeof adjustTableHeight === "function") adjustTableHeight();
+        
     } catch(e) { 
+        console.error("Vault Error:", e);
         setProcessing(false);
-        document.getElementById('status').innerText = "Vault Access Denied";
+        document.getElementById('status').innerText = "Vault Access Error";
     }
 }
+
+
 
 
 
@@ -1184,18 +1246,55 @@ async function fetchAssociated() {
 }
 
 async function deleteRecords() {
-        const ids = Array.from(document.querySelectorAll('.data-row.selected')).map(r => r.getAttribute('data-id'));
-        if (!ids.length || !confirm(`GLOBAL PURGE: Delete ${ids.length} records?`)) return;
-        setProcessing(true, "Executing Purge...");
-        try {
-            await fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify({ action: 'deleteRows', ids: ids, token: sessionStorage.getItem("session_token") })
-            });
-            setTimeout(initializeDashboard, 1500);
-        } catch(e) { setProcessing(false); }
+    const ids = Array.from(document.querySelectorAll('.data-row.selected')).map(r => r.getAttribute('data-id'));
+    const token = sessionStorage.getItem("session_token");
+    
+    if (!ids.length || !confirm(`GLOBAL PURGE: Delete ${ids.length} records?`)) return;
+
+    setProcessing(true, "EXECUTING PURGE SEQUENCE...");
+
+    try {
+        // We use the default 'cors' mode and handle the response properly
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({ 
+                action: 'deleteRows', 
+                ids: ids, 
+                token: token // Passing the HMAC token for authorization
+            })
+        });
+
+        // Even if Apps Script returns a text response, we wait for it to finish
+        await response.text();
+
+        setProcessing(true, "PURGE SUCCESSFUL. SYNCING...");
+
+        // Small delay for Google Sheets to finish internal calculations
+        setTimeout(async () => {
+            // Refresh the dashboard data
+            await initializeDashboard();
+            
+            // If we were looking at a specific date range, refresh that list
+            const s = document.getElementById('start').value;
+            const e = document.getElementById('end').value;
+            if (s && e) {
+                await loadMain();
+            } else {
+                document.getElementById('displayArea').innerHTML = "";
+            }
+            
+            setProcessing(false);
+            document.getElementById('status').innerText = "TERMINAL SYNCED.";
+        }, 1500);
+
+    } catch(e) { 
+        console.error("Purge Error:", e);
+        setProcessing(false);
+        document.getElementById('status').innerText = "PURGE FAILED: CONNECTION ERROR";
+        alert("System was unable to verify the deletion. Please check the ledger manually.");
     }
+}
+
 
     function accessDenied() {
         document.body.innerHTML = `<div style="background:var(--bg); height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; color:white; font-family:'JetBrains Mono';"><h1>403</h1><p>ACCESS RESTRICTED</p><button class="btn-blue" onclick="location.reload()">RE-AUTHENTICATE</button></div>`;
@@ -1223,13 +1322,33 @@ async function copyRowToClipboard(rowElement) {
     const headers = Array.from(table.querySelectorAll('th')).map(th => th.innerText.trim());
     const cells = Array.from(rowElement.querySelectorAll('td')).map(td => td.innerText.trim());
 
-    // Mapping headers to indices
+    // Helper to format date string from "07-Feb-2026" to "07-02-2026"
+    const convertToNumericalDate = (dateStr) => {
+        if (!dateStr || dateStr === "-") return dateStr;
+        const parts = dateStr.split('-');
+        if (parts.length !== 3) return dateStr;
+
+        const months = {
+            'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04', 'May': '05', 'Jun': '06',
+            'Jul': '07', 'Aug': '08', 'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
+        };
+
+        const day = parts[0].padStart(2, '0');
+        const month = months[parts[1]] || parts[1];
+        const year = parts[2];
+
+        return `${day}-${month}-${year}`;
+    };
+
     const getVal = (regex) => {
         const idx = headers.findIndex(h => regex.test(h));
         return idx !== -1 ? cells[idx] : "";
     };
 
-    const date = getVal(/date/i);
+    // Format the date specifically for numerical output
+    const rawDate = getVal(/date/i);
+    const date = convertToNumericalDate(rawDate);
+    
     const narration = getVal(/narration/i);
     const spentFor = getVal(/spent for/i);
     const withdrawn = getVal(/withdrawn amount/i).replace(/[^0-9.]/g, "");
@@ -1237,7 +1356,6 @@ async function copyRowToClipboard(rowElement) {
     const account = getVal(/from\/ to/i);
     const ref = getVal(/reference/i);
 
-    // Determine Logic
     const isDebit = parseFloat(withdrawn) > 0;
     const amount = isDebit ? withdrawn : deposit;
     const type = isDebit ? "Debit" : "Credit";
@@ -1254,12 +1372,11 @@ async function copyRowToClipboard(rowElement) {
     try {
         await navigator.clipboard.writeText(formattedText);
         
-        // Visual Feedback
         const originalBg = rowElement.style.background;
         rowElement.style.background = "var(--success)";
         const statusMsg = document.getElementById('status');
         const oldStatus = statusMsg.innerText;
-        statusMsg.innerText = "📋 ROW COPIED TO CLIPBOARD";
+        statusMsg.innerText = "📋 COPIED AS NUMERICAL DATE";
         
         setTimeout(() => {
             rowElement.style.background = originalBg;
@@ -1269,6 +1386,7 @@ async function copyRowToClipboard(rowElement) {
         alert("Failed to copy text: " + err);
     }
 }
+
 function recalculateMetricsFromVisible() {
     const table = document.getElementById('mainDataTable');
     if (!table) return;
