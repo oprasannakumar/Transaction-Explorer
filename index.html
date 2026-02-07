@@ -250,7 +250,7 @@
         .stat-card {
             background: var(--surface);
             backdrop-filter: var(--glass-blur);
-            border: 1px solid var(--border);
+            border: 0.5px solid #10b981;
             border-radius: 5px;min-width:300px
             padding: 20px;
             position: relative;
@@ -310,7 +310,7 @@
     align-items: center;
     font-size: 11px;
     font-family: 'JetBrains Mono', monospace;
-    border: 1px solid var(--border);
+    border: 1px solid var(--border);margin-bottom:10px;
     transition: 0.2s;gap:6px;min-widht:5px;
     /* This makes the card narrow and clean */
 }/* Color Coding for specific denominations */
@@ -691,25 +691,33 @@ document.addEventListener("DOMContentLoaded", function () {
             netEl.style.color = netPosition < 0 ? 'var(--danger)' : 'var(--primary)';
 
             document.getElementById('cash-total').innerText = '₹' + data.cashBreakdown[10].toLocaleString('en-IN');
-            
-            const denoms = [500, 50, 5, 200, 20, 2, 100, 10, 1];
-            let html = "";
-            denoms.forEach((v, i) => {
-                const count = data.cashBreakdown[i+1] || 0;
-                html += `<div class="denom-tile" data-v="${v}">
-                            <span class="denom-value">₹${v}</span>
-                            <span class="denom-count">${count}</span>
-                        </div>`;
-            });
-            document.getElementById('cash-grid').innerHTML = html;
-            document.getElementById('status').innerText = "System Online // Authorized";
-            loadSheetList()
-            adjustTableHeight();
-            
-        } catch(e) { 
-            document.getElementById('status').innerText = "Sync Failed: Token Invalid"; 
-        }
+        
+        // Reordered to create vertical columns: 500/50/5, 200/20/2, 100/10/1
+        const denoms = [500, 50, 5, 200, 20, 2, 100, 10, 1];
+        
+        // Mapping key for data retrieval since the source array is likely still [500, 200, 100...]
+        // Adjust the index lookup to match the original index of these values in your Apps Script data
+        const sourceMap = { 500:1, 200:2, 100:3, 50:4, 20:5, 10:6, 5:7, 2:8, 1:9 };
+
+        let html = "";
+        denoms.forEach((v) => {
+            const dataIndex = sourceMap[v]; 
+            const count = data.cashBreakdown[dataIndex] || 0;
+            html += `<div class="denom-tile" data-v="${v}">
+                        <span class="denom-value">₹${v}</span>
+                        <span class="denom-count">${count}</span>
+                    </div>`;
+        });
+        
+        document.getElementById('cash-grid').innerHTML = html;
+        document.getElementById('status').innerText = "System Online // Authorized";
+        loadSheetList();
+        adjustTableHeight();
+        
+    } catch(e) { 
+        document.getElementById('status').innerText = "Sync Failed: Token Invalid"; 
     }
+}
 async function loadSheetList() {
     try {
         const res = await fetch(`${SCRIPT_URL}?action=getSheets${getAuthParams()}`);
