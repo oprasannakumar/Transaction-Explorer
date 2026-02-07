@@ -616,32 +616,61 @@ tbody {
     }    
 
 // --- 4. VIEW REGISTRY (With Token) ---
-    async function viewNamedRange(rangeName) {
-        currentViewType = rangeName;
-        currentTableMode = 'registry';
-        setProcessing(true, `Accessing ${rangeName} Vault...`);
+    // --- 4. VIEW REGISTRY (With Token Handshake) ---
+// --- 4. VIEW REGISTRY (With Token Handshake & Opening Balances) ---
+async function viewNamedRange(rangeName) {
+    currentViewType = rangeName;
+    currentTableMode = 'registry';
+    setProcessing(true, `Accessing ${rangeName} Vault...`);
+    
+    try {
+        const res = await fetch(`${SCRIPT_URL}?action=fetchNamedRange&range=${rangeName}${getAuthParams()}`);
+        const data = await res.json();
         
-        try {
-            const res = await fetch(`${SCRIPT_URL}?action=fetchNamedRange&range=${rangeName}${getAuthParams()}`);
-            const data = await res.json();
-            
-            let html = `<div style="margin-bottom:15px; border-left:4px solid var(--primary); padding-left:15px;">
-                            <h3 style="margin:0; font-size:16px;">${rangeName === 'Savings' ? 'Active Assets' : 'Credit Accounts'}</h3>
-                        </div><div class="card-grid">`;
-            
-            data.rows.forEach(row => {
-                const color = rangeName === 'Savings' ? 'var(--success)' : 'var(--danger)';
-                html += `
-                    <div class="fin-panel" style="border-right: 4px solid ${color};" onclick="filterLedgerByEntity('${rangeName}', '${row[0]}')">
-                        <div class="label">${rangeName === 'Savings' ? 'Type: Asset' : 'Type: Liability'}</div>
-                        <div style="font-size:15px; font-weight:700;">${row[0]}</div>
-                        <div style="font-size:24px; font-weight:800; color:${color}; margin:12px 0;">₹${(Number(row[2]) || 0).toLocaleString('en-IN')}</div>
+        let html = `<div style="margin-bottom:15px; border-left:4px solid var(--primary); padding-left:15px;">
+                        <h3 style="margin:0; font-size:16px;">${rangeName === 'Savings' ? 'Active Assets' : 'Credit Accounts'}</h3>
                     </div>`;
-            });
-            document.getElementById('displayArea').innerHTML = html + `</div>`;
-            setProcessing(false);
-        } catch(e) { setProcessing(false); }
+        
+        html += `<div class="card-grid">`;
+        
+        data.rows.forEach(row => {
+            const isSavings = rangeName === 'Savings';
+            const color = isSavings ? 'var(--success)' : 'var(--danger)';
+            
+            // Logic to handle labels based on account type
+            const secondaryLabel = isSavings ? 'OPENING BALANCE' : 'TOTAL LIMIT';
+            const secondaryValue = (Number(row[1]) || 0).toLocaleString('en-IN');
+            
+            html += `
+                <div class="fin-panel" style="border-right: 4px solid ${color};" onclick="filterLedgerByEntity('${rangeName}', '${row[0]}')">
+                    <div class="label" style="margin-bottom:8px;">${isSavings ? 'Type: Asset' : 'Type: Liability'}</div>
+                    <div style="font-size:15px; font-weight:700;">${row[0]}</div>
+                    <div style="font-size:24px; font-weight:800; color:${color}; margin:12px 0;">₹${(Number(row[2]) || 0).toLocaleString('en-IN')}</div>
+                    
+                    <div style="display:flex; justify-content:space-between; border-top:1px solid var(--border); padding-top:12px;">
+                        <div style="font-size:11px; color:var(--text-muted); line-height:1.4;">
+                            ${secondaryLabel}<br>
+                            <span style="color:var(--text); font-weight:700; font-size:16px;">₹${secondaryValue}</span>
+                        </div>
+                        ${!isSavings ? `
+                        <div style="font-size:11px; color:var(--text-muted); text-align:right; line-height:1.4;">
+                            AVAILABLE<br>
+                            <span style="color:var(--success); font-weight:700; font-size:14px;">₹${(Number(row[1])||0).toLocaleString('en-IN')}</span>
+                        </div>` : ''}
+                    </div>
+                </div>`;
+        });
+        
+        document.getElementById('displayArea').innerHTML = html + `</div>`;
+        setProcessing(false);
+        document.getElementById('status').innerText = "Vault Decoded // Authorized";
+    } catch(e) { 
+        setProcessing(false);
+        document.getElementById('status').innerText = "Vault Access Denied";
     }
+}
+
+
 
     function accessDenied() {
         document.body.innerHTML = `
