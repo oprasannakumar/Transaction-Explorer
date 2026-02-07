@@ -61,7 +61,29 @@
     color: var(--gold);
     text-align: center;
 }
+.filter-search-input {
+    width: 95%;
+    box-sizing: border-box;   /* 🔥 important */
+    margin-bottom: 8px;
+    font-size: 11px;
+    height: 30px;
+    padding: 6px 8px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    
+}
 
+.filter-options-container {
+    max-height: 250px;
+    overflow-y: auto;
+    margin-top: 4px;
+}
+.filter-search-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px var(--primary-glow);
+}
 .trace-table-wrap th,
 .trace-table-wrap td {
     text-align: center !important;
@@ -273,32 +295,35 @@
         /* Cash Breakdown Grid */
        #cash-grid { 
     display: grid; 
-    grid-template-columns: repeat(3, 1fr); /* 3 narrow columns */
-    gap: 3px; 
-    margin-top: 12px; min-width:5px;
+    grid-template-columns: repeat(3, 1fr);
+    justify-content: center;
+    gap: 6px; 
+    margin-top: 12px;
+	padding-left:10px;padding-right:10px;
 }
         .denom-tile {
     background: rgba(0, 0, 0, 0.3);
-    padding: 6px 3px;
+    padding: 4px 6px;
     border-radius: 6px;
     display: flex;
-    justify-content: space-between;
+    justify-content:space-between;
     align-items: center;
     font-size: 11px;
     font-family: 'JetBrains Mono', monospace;
     border: 1px solid var(--border);
-    transition: 0.2s;gap:10px;
+    transition: 0.2s;gap:6px;min-widht:5px;
     /* This makes the card narrow and clean */
-    min-width:5px; 
 }/* Color Coding for specific denominations */
-.denom-tile[data-v="500"] { border-left: 3px solid #fbbf24; } /* Gold */
-.denom-tile[data-v="200"] { border-left: 3px solid #f472b6; } /* Pink */
-.denom-tile[data-v="100"] { border-left: 3px solid #60a5fa; } /* Blue */
-.denom-tile[data-v="50"]  { border-left: 3px solid #4ade80; } /* Green */
-.denom-tile[data-v="20"]  { border-left: 3px solid #a78bfa; } /* Purple */
-.denom-tile:not([data-v="500"]):not([data-v="200"]):not([data-v="100"]):not([data-v="50"]):not([data-v="20"]) { 
-    border-left: 3px solid var(--text-muted); 
-}
+.denom-tile[data-v="500"] { border: 3px solid #fbbf24; } /* Gold */
+.denom-tile[data-v="200"] { border: 3px solid #fbbf24; } /* Gold */
+.denom-tile[data-v="100"] { border: 3px solid #fbbf24; } /* Gold */
+.denom-tile[data-v="50"]  { border: 3px solid #C0C0C0; } /* Silver */
+.denom-tile[data-v="20"]  { border: 3px solid #C0C0C0; } /* Silver*/
+.denom-tile[data-v="10"]  { border: 3px solid #C0C0C0; } /* Silver */
+.denom-tile[data-v="5"]  { border: 3px solid #B87333; } /* Copper */
+.denom-tile[data-v="2"]  { border: 3px solid #B87333; } /* Copper */
+.denom-tile[data-v="1"]  { border: 3px solid #B87333; } /* Copper */
+
 
         /* --- Unified Toolbar --- */
         .toolbar {
@@ -375,7 +400,7 @@
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: space-between;max-widht:120px;
         }
 thead th {
     position: sticky;
@@ -438,6 +463,25 @@ tbody {
 #mainDataTable td:first-child {
     min-width: 100px;   /* Adjust this value */
     width: 100px;
+}
+#tableFilter {
+    width: 30%;
+    padding-left: 36px;
+    position: relative;
+}
+
+.table-search-box {
+    position: relative;
+}
+
+.table-search-box::before {
+    content: "🔎";
+    position: absolute;
+    left: 30px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    opacity: 0.6;
 }
 /* Increase width of 8th and 9th columns */
 #mainDataTable th:nth-child(8),
@@ -1010,7 +1054,7 @@ function renderTable(headers, rows) {
     <div class='sheet-card'>
         <div class="table-search-box">
             <div style="display:flex; align-items:center; gap:15px; flex-grow:1;">
-                <input type="text" id="tableFilter" placeholder="Search Terminal..." onkeyup="applyMultiFilter()" style="max-width:300px;">
+                <input type="text" id="tableFilter" placeholder="Search Terminal..." onkeyup="applyMultiFilter()">
                 <span id="rowCount" style="font-family:'JetBrains Mono'; font-size:11px; color:var(--text-muted);">READY_</span>
             </div>
             <div style="display: flex; gap: 15px;">
@@ -1030,15 +1074,33 @@ function renderTable(headers, rows) {
                                     <span>${h}</span>
                                     <span class="filter-trigger" onclick="toggleFilterDropdown(event, '${fieldName}')">▼</span>
                                 </div>
-                                <div id="filter-dropdown-${fieldName}" class="filter-dropdown">
-                                    <div id="options-container-${fieldName}" class="filter-options-container"></div>
-                                    <div style="margin-top:10px; border-top:1px solid rgba(255,255,255,0.1); padding-top:8px;">
-                                        <button class="btn-accent" style="width:100%; font-size:10px; height:32px; justify-content:center;" 
-                                                onclick="clearFilter('${fieldName}')">
-                                            RESET COLUMN
-                                        </button>
-                                    </div>
-                                </div>
+                               <div id="filter-dropdown-${fieldName}" class="filter-dropdown">
+
+    <!-- 🔎 Search inside filter -->
+    <input type="text"
+       class="filter-search-input"
+       placeholder="Search..."
+       onkeyup="filterColumnOptions('${fieldName}', this.value)">
+
+
+    <div id="options-container-${fieldName}" 
+         class="filter-options-container"></div>
+
+    <div style="margin-top:10px; border-top:1px solid rgba(255,255,255,0.1); padding-top:8px; display:flex; gap:6px;">
+        <button class="btn-blue"
+                style="flex:1; font-size:10px; height:32px; justify-content:center;"
+                onclick="confirmFilter('${fieldName}')">
+            CONFIRM
+        </button>
+        <button class="btn-accent"
+                style="flex:1; font-size:10px; height:32px; justify-content:center;"
+                onclick="clearFilter('${fieldName}')">
+            RESET
+        </button>
+    </div>
+
+</div>
+
                             </th>`;
                         }).join('')}
                     </tr>
@@ -1076,6 +1138,33 @@ function renderTable(headers, rows) {
     setTimeout(adjustTableHeight, 50);
     populateFilterOptions(headers, rows);
     recalculateMetricsFromVisible();
+}
+
+function filterColumnOptions(fieldName, query) {
+    query = query.toLowerCase().trim();
+
+    const container = document.getElementById(`options-container-${fieldName}`);
+    if (!container) return;
+
+    const options = container.querySelectorAll('.filter-option');
+
+    options.forEach(opt => {
+        const value = opt.getAttribute('data-value');
+        if (!query || value.includes(query)) {
+            opt.style.display = '';
+        } else {
+            opt.style.display = 'none';
+        }
+    });
+}
+
+
+function confirmFilter(fieldName) {
+    applyMultiFilter();
+    
+    // Optional: auto-close dropdown after confirm
+    const dropdown = document.getElementById(`filter-dropdown-${fieldName}`);
+    if (dropdown) dropdown.style.display = 'none';
 }
 
 function applyMultiFilter() {
@@ -1175,11 +1264,7 @@ function populateFilterOptions(headers, rows) {
     });
 }
 function toggleFilterChip(element) {
-    // Toggle the visual class
     element.classList.toggle('selected');
-    
-    // Immediately apply the filter logic
-    applyMultiFilter();
 }
 function applyMultiFilter() {
     const query = document.getElementById('tableFilter').value.toLowerCase();
@@ -1237,9 +1322,19 @@ function clearFilter(fieldName) {
     applyMultiFilter();
 }
 
-// Close dropdowns when clicking outside
-document.addEventListener('click', () => {
-    document.querySelectorAll('.filter-dropdown').forEach(d => d.style.display = 'none');
+document.addEventListener('click', function(e) {
+
+    // If click is inside dropdown or on filter trigger → do nothing
+    if (
+        e.target.closest('.filter-dropdown') ||
+        e.target.closest('.filter-trigger')
+    ) {
+        return;
+    }
+
+    // Otherwise close all dropdowns
+    document.querySelectorAll('.filter-dropdown')
+            .forEach(d => d.style.display = 'none');
 });
 
 function applyTableFilter() {
@@ -1456,13 +1551,6 @@ function toggleButtons() {
 }
 
 
-// Add this to your existing script section
-document.addEventListener('contextmenu', function(e) {
-    const row = e.target.closest('.data-row');
-    if (row) {
-        e.preventDefault(); // Prevent the default browser menu
-    }
-});
 
 async function copyRowToClipboard(rowElement) {
     const table = document.getElementById('mainDataTable');
@@ -1657,12 +1745,6 @@ async function executeCommand(type) {
         deleteRecords();
     }
 }
-
-// --- Desktop: Right Click ---
-document.addEventListener('contextmenu', function(e) {
-    const row = e.target.closest('.data-row');
-    if (row) showContextMenu(e, row);
-});
 
 // --- Mobile: Long Press Logic ---
 document.addEventListener('touchstart', function(e) {
