@@ -1984,21 +1984,26 @@ async function deleteRecords() {
 
         // Small delay for Google Sheets to finish internal calculations
         setTimeout(async () => {
-            // Refresh the dashboard data
-            await initializeDashboard();
-            
-            // If we were looking at a specific date range, refresh that list
-            const s = document.getElementById('start').value;
-            const e = document.getElementById('end').value;
-            if (s && e) {
-                await loadMain();
-            } else {
-                document.getElementById('displayArea').innerHTML = "";
-            }
-            
-            setProcessing(false);
-            document.getElementById('status').innerText = "TERMINAL SYNCED.";
-        }, 1500);
+    try {
+
+        await initializeDashboard();
+
+        if (selectedStart && selectedEnd) {
+            await loadMain();
+        } else {
+            document.getElementById('displayArea').innerHTML = "";
+        }
+
+        document.getElementById('status').innerText = "TERMINAL SYNCED.";
+
+    } catch (err) {
+        console.error("Resync Error:", err);
+        document.getElementById('status').innerText = "SYNC ERROR";
+    } finally {
+        setProcessing(false);
+    }
+
+}, 1500);
 
     } catch(e) { 
         console.error("Purge Error:", e);
