@@ -1428,23 +1428,56 @@ async function viewNamedRange(rangeName) {
 
 
 
- function updateToolbarMetrics(headers, rows) {
-  const inflowEl = document.getElementById('bar-inflow');
-  const outflowEl = document.getElementById('bar-outflow');
+function updateToolbarMetrics(headers, rows) {
 
-  if (!inflowEl || !outflowEl) return; // ← PREVENT CRASH
+    const inflowEl = document.getElementById('bar-inflow');
+    const outflowEl = document.getElementById('bar-outflow');
+    if (!inflowEl || !outflowEl) return;
 
-  let inflow = 0, outflow = 0;
-  const inIdx = headers.findIndex(h => /deposit amount/i.test(h));
-  const outIdx = headers.findIndex(h => /withdrawn amount/i.test(h));
+    const inflowKeywords = [
+        "deposit",
+        "received",
+        "credit",
+        "incoming"
+    ];
 
-  rows.forEach(row => {
-    if (inIdx !== -1) inflow += parseFloat(row[inIdx]?.toString().replace(/[^0-9.-]/g, "") || 0);
-    if (outIdx !== -1) outflow += parseFloat(row[outIdx]?.toString().replace(/[^0-9.-]/g, "") || 0);
-  });
+    const outflowKeywords = [
+        "withdrawn",
+        "given",
+        "debit",
+        "paid",
+        "expense"
+    ];
 
-  inflowEl.innerText = '₹' + inflow.toLocaleString('en-IN');
-  outflowEl.innerText = '₹' + outflow.toLocaleString('en-IN');
+    const headerLower = headers.map(h => h.toLowerCase());
+
+    const inflowIndexes = headerLower
+        .map((h, i) => inflowKeywords.some(k => h.includes(k)) ? i : -1)
+        .filter(i => i !== -1);
+
+    const outflowIndexes = headerLower
+        .map((h, i) => outflowKeywords.some(k => h.includes(k)) ? i : -1)
+        .filter(i => i !== -1);
+
+    let inflow = 0;
+    let outflow = 0;
+
+    rows.forEach(row => {
+        inflowIndexes.forEach(i => {
+            inflow += parseFloat(
+                (row[i] || "0").toString().replace(/[^0-9.-]/g, "")
+            ) || 0;
+        });
+
+        outflowIndexes.forEach(i => {
+            outflow += parseFloat(
+                (row[i] || "0").toString().replace(/[^0-9.-]/g, "")
+            ) || 0;
+        });
+    });
+
+    inflowEl.innerText = formatINR(inflow);
+    outflowEl.innerText = formatINR(outflow);
 }
 
     function formatTacticalDate(dateStr) {
@@ -1510,12 +1543,72 @@ function setProcessing(isProcessing, message = "EXECUTING...") {
     }
 }
   
+//sort by dates logic
+function sortRowsByDate(headers, rows) {
+    const dateIndex = headers.findIndex(h => /date/i.test(h));
+    if (dateIndex === -1) return rows;
 
-   
+    return rows.sort((a, b) => {
+        const parseDate = (val) => {
+            if (!val) return 0;
+
+            // Handle formats like:
+            // 2026-02-08
+            // 08-02-2026
+            // 8-Feb-2026
+            // 08-Feb-2026
+
+            const cleaned = val.toString().trim();
+
+            // Try ISO first
+            let d = new Date(cleaned);
+            if (!isNaN(d)) return d.getTime();
+
+            // Handle DD-MMM-YYYY (08-Feb-2026)
+            const parts = cleaned.split("-");
+            if (parts.length === 3) {
+                const months = {
+                    Jan:0, Feb:1, Mar:2, Apr:3, May:4, Jun:5,
+                    Jul:6, Aug:7, Sep:8, Oct:9, Nov:10, Dec:11
+                };
+
+                const day = parseInt(parts[0], 10);
+                const month = months[parts[1]];
+                const year = parseInt(parts[2], 10);
+
+                if (!isNaN(day) && month !== undefined && !isNaN(year)) {
+                    return new Date(year, month, day).getTime();
+                }
+            }
+
+            return 0;
+        };
+
+        return parseDate(a[dateIndex]) - parseDate(b[dateIndex]);
+    });
+}
+
+   function formatINR(value) {
+    if (value === null || value === undefined || value === "") return "";
+
+    const num = parseFloat(value.toString().replace(/[^0-9.-]/g, ""));
+    if (isNaN(num)) return value;
+
+    return "₹" + num.toLocaleString("en-IN", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+
 
     // Shared table rendering logic
 function renderTable(headers, rows) {
+
+    // 🔹 Sort by date first
+    rows = sortRowsByDate(headers, rows);
+
     const isRegistry = currentTableMode === 'registry';
+
     let idColIdx = headers.findIndex(h => /id|ref_id|reference/i.test(h));
     const dataRefIdx = headers.findIndex(h => /ref_no/i.test(h));
     if (idColIdx === -1) idColIdx = headers.length - 1;
@@ -1528,15 +1621,22 @@ function renderTable(headers, rows) {
                 <span id="rowCount" style="font-family:'JetBrains Mono'; font-size:11px; color:var(--text-muted);">READY_</span>
             </div>
             <div style="display: flex; gap: 15px;">
-                <div class="metric-pill"><span class="pill-label">Inflow</span><span class="pill-val" id="bar-inflow" style="color: var(--success);">₹0</span></div>
-                <div class="metric-pill"><span class="pill-label">Outflow</span><span class="pill-val" id="bar-outflow" style="color: var(--danger);">₹0</span></div>
+                <div class="metric-pill">
+                    <span class="pill-label">Inflow</span>
+                    <span class="pill-val" id="bar-inflow" style="color: var(--success);">₹0</span>
+                </div>
+                <div class="metric-pill">
+                    <span class="pill-label">Outflow</span>
+                    <span class="pill-val" id="bar-outflow" style="color: var(--danger);">₹0</span>
+                </div>
             </div>
         </div>
+
         <div class='table-wrap' id="tableWrap">
            <table id="mainDataTable" style="width: 100%; min-width: 1300px; table-layout: auto;">
                 <thead>
                     <tr>
-                        ${headers.map((h, i) => {
+                        ${headers.map((h) => {
                             const fieldName = h.toLowerCase().replace(/\s+/g, '_');
                             return `
                             <th data-col-name="${fieldName}">
@@ -1544,71 +1644,120 @@ function renderTable(headers, rows) {
                                     <span>${h}</span>
                                     <span class="filter-trigger" onclick="toggleFilterDropdown(event, '${fieldName}')">▼</span>
                                 </div>
-                               <div id="filter-dropdown-${fieldName}" class="filter-dropdown">
-
-    <!-- 🔎 Search inside filter -->
-    <input type="text"
-       class="filter-search-input"
-       placeholder="Search..."
-       onkeyup="filterColumnOptions('${fieldName}', this.value)">
-
-
-    <div id="options-container-${fieldName}" 
-         class="filter-options-container"></div>
-
-    <div style="margin-top:10px; border-top:1px solid rgba(255,255,255,0.1); padding-top:8px; display:flex; gap:6px;">
-        <button class="btn-blue"
-                style="flex:1; font-size:10px; height:32px; justify-content:center;"
-                onclick="confirmFilter('${fieldName}')">
-            CONFIRM
-        </button>
-        <button class="btn-accent"
-                style="flex:1; font-size:10px; height:32px; justify-content:center;"
-                onclick="clearFilter('${fieldName}')">
-            RESET
-        </button>
-    </div>
-
-</div>
-
+                                <div id="filter-dropdown-${fieldName}" class="filter-dropdown">
+                                    <input type="text"
+                                           class="filter-search-input"
+                                           placeholder="Search..."
+                                           onkeyup="filterColumnOptions('${fieldName}', this.value)">
+                                    <div id="options-container-${fieldName}" 
+                                         class="filter-options-container"></div>
+                                    <div style="margin-top:10px; border-top:1px solid rgba(255,255,255,0.1); padding-top:8px; display:flex; gap:6px;">
+                                        <button class="btn-blue"
+                                                style="flex:1; font-size:10px; height:32px; justify-content:center;"
+                                                onclick="confirmFilter('${fieldName}')">
+                                            CONFIRM
+                                        </button>
+                                        <button class="btn-accent"
+                                                style="flex:1; font-size:10px; height:32px; justify-content:center;"
+                                                onclick="clearFilter('${fieldName}')">
+                                            RESET
+                                        </button>
+                                    </div>
+                                </div>
                             </th>`;
                         }).join('')}
                     </tr>
                 </thead>
+
                 <tbody>
                     ${rows.map(row => {
+
                         const rawId = row[idColIdx];
-                        const rowId = (rawId !== undefined && rawId !== null) ? String(rawId).trim() : "";
-                       const clickAction = `handleRowClick(this)`;
+                        const rowId = rawId ? String(rawId).trim() : "";
+                        const clickAction = `handleRowClick(this)`;
 
                         return `
-                            <tr class="data-row" data-id="${rowId}" onclick="${clickAction}">
-                                ${row.map((cell, idx) => {
-                                    const fieldName = headers[idx].toLowerCase().replace(/\s+/g, '_');
-                                    let content = cell ?? '';
-                                    const isIdCol = idx === idColIdx;
-                                    const isRefData = idx === dataRefIdx;
-                                    const isDate = /date/i.test(headers[idx]);
-                                    const isAmount = /amount|withdrawn|deposit|total/i.test(headers[idx]);
+                        <tr class="data-row" data-id="${rowId}" onclick="${clickAction}">
+                            ${row.map((cell, idx) => {
 
-                                    if (isIdCol && !isRegistry) content = `<span class="id-badge">${cell}</span>`;
-                                    else if (isRefData) content = `<span class="ref-data">${cell}</span>`;
-                                    else if (isDate) content = formatTacticalDate(cell);
+                                const headerName = headers[idx].toLowerCase();
+                                const fieldName = headers[idx].toLowerCase().replace(/\s+/g, '_');
 
-                                    return `<td data-field="${fieldName}" style="${isAmount ? 'font-family:JetBrains Mono; font-weight:600;' : ''} ${isIdCol ? 'min-width:140px;' : ''} text-align: center;">${content}</td>`;
-                                }).join('')}
-                            </tr>`;
+                                const isIdCol = idx === idColIdx;
+                                const isRefData = idx === dataRefIdx;
+                                const isDate = /date/i.test(headers[idx]);
+
+                                // 💚 Inflow keywords
+                                const inflowKeywords = [
+                                    "deposit",
+                                    "received",
+                                    "credit",
+                                    "inflow",
+                                    "incoming"
+                                ];
+
+                                // ❤️ Outflow keywords
+                                const outflowKeywords = [
+                                    "withdrawn",
+                                    "given",
+                                    "debit",
+                                    "paid",
+                                    "outflow",
+                                    "expense"
+                                ];
+
+                                const isInflow = inflowKeywords.some(k => headerName.includes(k));
+                                const isOutflow = outflowKeywords.some(k => headerName.includes(k));
+                                const isAmount = isInflow || isOutflow || 
+                                                 headerName.includes("total") || 
+                                                 headerName.includes("balance");
+
+                                let content = cell ?? '';
+				if (isAmount) {
+ 				   content = formatINR(cell);
+				}
+                                if (isIdCol && !isRegistry) {
+                                    content = `<span class="id-badge">${cell}</span>`;
+                                }
+                                else if (isRefData) {
+                                    content = `<span class="ref-data">${cell}</span>`;
+                                }
+                                else if (isDate) {
+                                    content = formatTacticalDate(cell);
+                                }
+
+                                let amountStyle = "";
+
+                                if (isInflow) {
+                                    amountStyle = "color: var(--success); font-family:JetBrains Mono; font-weight:700;";
+                                } 
+                                else if (isOutflow) {
+                                    amountStyle = "color: var(--danger); font-family:JetBrains Mono; font-weight:700;";
+                                }
+                                else if (isAmount) {
+                                    amountStyle = "font-family:JetBrains Mono; font-weight:600;";
+                                }
+
+                                return `
+                                    <td data-field="${fieldName}"
+                                        style="${amountStyle} ${isIdCol ? 'min-width:140px;' : ''} text-align:center;">
+                                        ${content}
+                                    </td>`;
+                            }).join('')}
+                        </tr>`;
                     }).join('')}
                 </tbody>
-            </table>
+           </table>
         </div>
     </div>`;
 
     document.getElementById('displayArea').innerHTML = html;
+
     setTimeout(adjustTableHeight, 50);
     populateFilterOptions(headers, rows);
     recalculateMetricsFromVisible();
 }
+
 
 function filterColumnOptions(fieldName, query) {
     query = query.toLowerCase().trim();
@@ -1843,41 +1992,68 @@ function applyTableFilter() {
 }
 
 // Optional: Dynamic metrics update while filtering
-function recalculateMetricsFromSelected() {
+function recalculateMetricsFromVisible() {
+
     const table = document.getElementById('mainDataTable');
     if (!table) return;
 
-    const selectedRows = Array.from(table.getElementsByClassName('selected'));
-    
-    // 🔥 FIX: If no rows are selected, fallback to calculating total visible data
-    if (selectedRows.length === 0) {
-        recalculateMetricsFromVisible();
-        return;
-    }
+    const rows = Array.from(table.querySelectorAll('.data-row'));
+    const headers = Array.from(table.querySelectorAll('th'))
+        .map(th => th.innerText.toLowerCase());
 
-    const headers = Array.from(table.querySelectorAll('th')).map(th => th.innerText.toLowerCase());
-    const inIdx = headers.findIndex(h => h.includes('deposit'));
-    const outIdx = headers.findIndex(h => h.includes('withdrawn'));
+    const inflowKeywords = [
+        "deposit",
+        "received",
+        "credit",
+        "incoming"
+    ];
 
-    let inflow = 0, outflow = 0;
+    const outflowKeywords = [
+        "withdrawn",
+        "given",
+        "debit",
+        "paid",
+        "expense"
+    ];
 
-    selectedRows.forEach(row => {
-        const cells = row.getElementsByTagName('td');
-        if (inIdx !== -1) {
-            let val = cells[inIdx].innerText.replace(/[^0-9.-]/g, "");
-            inflow += parseFloat(val) || 0;
-        }
-        if (outIdx !== -1) {
-            let val = cells[outIdx].innerText.replace(/[^0-9.-]/g, "");
-            outflow += parseFloat(val) || 0;
+    const inflowIndexes = headers
+        .map((h, i) => inflowKeywords.some(k => h.includes(k)) ? i : -1)
+        .filter(i => i !== -1);
+
+    const outflowIndexes = headers
+        .map((h, i) => outflowKeywords.some(k => h.includes(k)) ? i : -1)
+        .filter(i => i !== -1);
+
+    let inflow = 0;
+    let outflow = 0;
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        if (row.style.display !== "none") {
+
+            visibleCount++;
+
+            const cells = row.querySelectorAll('td');
+
+            inflowIndexes.forEach(i => {
+                inflow += parseFloat(
+                    (cells[i]?.innerText || "0").replace(/[^0-9.-]/g, "")
+                ) || 0;
+            });
+
+            outflowIndexes.forEach(i => {
+                outflow += parseFloat(
+                    (cells[i]?.innerText || "0").replace(/[^0-9.-]/g, "")
+                ) || 0;
+            });
         }
     });
 
-    // Update UI
-    document.getElementById('bar-inflow').innerText = '₹' + inflow.toLocaleString('en-IN');
-    document.getElementById('bar-outflow').innerText = '₹' + outflow.toLocaleString('en-IN');
-    document.getElementById('rowCount').innerText = `${selectedRows.length} RECORDS SELECTED`;
+    document.getElementById('bar-inflow').innerText = formatINR(inflow);
+    document.getElementById('bar-outflow').innerText = formatINR(outflow);
+    document.getElementById('rowCount').innerText = `MATCH: ${visibleCount}`;
 }
+
 
 
 
@@ -2157,37 +2333,7 @@ document.addEventListener("click", function(e) {
     }
 });
 
-function recalculateMetricsFromVisible() {
-    const table = document.getElementById('mainDataTable');
-    if (!table) return;
 
-    const rows = Array.from(table.querySelectorAll('.data-row'));
-    const headers = Array.from(table.querySelectorAll('th')).map(th => th.innerText.toLowerCase());
-    
-    const inIdx = headers.findIndex(h => h.includes('deposit'));
-    const outIdx = headers.findIndex(h => h.includes('withdrawn'));
-
-    let inflow = 0, outflow = 0, visibleCount = 0;
-
-    rows.forEach(row => {
-        if (row.style.display !== "none") {
-            visibleCount++;
-            const cells = row.getElementsByTagName('td');
-            if (inIdx !== -1) {
-                let val = cells[inIdx].innerText.replace(/[^0-9.-]/g, "");
-                inflow += parseFloat(val) || 0;
-            }
-            if (outIdx !== -1) {
-                let val = cells[outIdx].innerText.replace(/[^0-9.-]/g, "");
-                outflow += parseFloat(val) || 0;
-            }
-        }
-    });
-
-    document.getElementById('bar-inflow').innerText = '₹' + inflow.toLocaleString('en-IN');
-    document.getElementById('bar-outflow').innerText = '₹' + outflow.toLocaleString('en-IN');
-    document.getElementById('rowCount').innerText = `MATCH: ${visibleCount}`;
-}
 function adjustTableHeight() {
     const tableWrap = document.getElementById("tableWrap");
     if (!tableWrap) return;
