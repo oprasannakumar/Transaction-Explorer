@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -244,6 +245,75 @@
     margin-bottom: 30px;
     position: relative;
 }
+/* ===== FLOATING ACTION BUTTON ===== */
+
+#fab-container {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    z-index: 9999;
+}
+
+/* Main Circle Button */
+#fab-button {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    cursor: pointer;
+    box-shadow: 0 0 25px var(--primary-glow);
+    transition: 0.3s ease;
+}
+
+#fab-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 40px var(--primary-glow);
+}
+
+/* Dropdown Menu */
+#fab-menu {
+    position: absolute;
+    bottom: 75px;
+    right: 0;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 220px;
+}
+
+/* Menu Items */
+.fab-item {
+    background: rgba(15,23,42,0.95);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--primary);
+    padding: 12px 18px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.25s;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+}
+
+.fab-item:hover {
+    background: var(--primary);
+    color: var(--bg);
+}
+
+.fab-item.danger {
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+.fab-item.danger:hover {
+    background: var(--danger);
+    color: white;
+}
+
 
 dashboard::before {
     content: "";
@@ -848,8 +918,6 @@ tbody {
        readonly>
             <button class="btn-future" onclick="loadMain()">Execute Search</button>
             <button class="btn-future" onclick="loadFullStatement()">Full History</button>
-	    <button class="btn-future" onclick="toggleFormsMenu(event)">Forms</button>
-	    <button class="btn-future-danger" onclick="logout()">Logout</button>
         </div>
         <div id="action-buttons-holder" style="display: flex; gap: 8px;"></div>
     </div>
@@ -1880,6 +1948,17 @@ async function copyRowToClipboard(rowElement) {
         alert("Failed to copy text: " + err);
     }
 }
+function toggleFab() {
+    const menu = document.getElementById("fab-menu");
+    menu.style.display = menu.style.display === "flex" ? "none" : "flex";
+}
+
+document.addEventListener("click", function(e) {
+    const fabContainer = document.getElementById("fab-container");
+    if (!fabContainer.contains(e.target)) {
+        document.getElementById("fab-menu").style.display = "none";
+    }
+});
 
 function recalculateMetricsFromVisible() {
     const table = document.getElementById('mainDataTable');
@@ -2157,22 +2236,33 @@ function logout() {
     showLogoutScreen();
 }
 </script>
+
 <div id="custom-context-menu"></div>
-<div id="forms-menu" style="
-    position:absolute;
-    display:none;
-    background:rgba(15,23,42,0.95);
-    backdrop-filter:blur(12px);
-    border:1px solid var(--primary);
-    border-radius:12px;
-    padding:10px 0;
-    min-width:220px;
-    box-shadow:0 20px 40px rgba(0,0,0,0.8);
-    z-index:10000;
-">
-    <div class="menu-item" onclick="openFormLink('monthly')">📊 Monthly Transaction</div>
-    <div class="menu-item" onclick="openFormLink('loan')">💳 Loan Entry</div>
-    <div class="menu-item" onclick="openFormLink('self')">🔁 Self Transfer</div>
+<!-- ===== Floating Action Button ===== -->
+<div id="fab-container">
+
+    <div id="fab-menu">
+        <div class="fab-item" onclick="openFormLink('monthly')">
+            📊 Monthly Transaction
+        </div>
+
+        <div class="fab-item" onclick="openFormLink('loan')">
+            💳 Loan Entry
+        </div>
+
+        <div class="fab-item" onclick="openFormLink('self')">
+            🔁 Self Transfer
+        </div>
+
+        <div class="fab-item danger" onclick="logout()">
+            🔐 Logout
+        </div>
+    </div>
+
+    <div id="fab-button" onclick="toggleFab()">
+        ☰
+    </div>
+
 </div>
 
 </body>
