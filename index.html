@@ -24,6 +24,68 @@
             --card-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
             --glass-blur: blur(12px);
         }
+#fab-menu {
+    position: absolute;
+    bottom: 75px;
+    right: 0;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 220px;
+    opacity: 0;
+    transform: scale(0.8);
+    transform-origin: bottom right;
+    transition: 0.3s cubic-bezier(.34,1.56,.64,1);
+    pointer-events: none;
+}
+
+#fab-menu.open {
+    display: flex;
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+}
+/* Reset default positioning */
+#fab-menu {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 220px;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: 0.3s cubic-bezier(.34,1.56,.64,1);
+    pointer-events: none;
+}
+
+/* When active */
+#fab-menu.open {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+}
+
+/* Directional positioning */
+
+#fab-menu.open-left {
+    right: 70px;
+    left: auto;
+}
+
+#fab-menu.open-right {
+    left: 70px;
+    right: auto;
+}
+
+#fab-menu.open-up {
+    bottom: 0;
+    top: auto;
+}
+
+#fab-menu.open-down {
+    top: 0;
+    bottom: auto;
+}
+
 .filter-trigger {
         font-size: 9px;
         padding: 4px;
@@ -259,30 +321,92 @@
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background: var(--primary);
+
+    /* Glass surface */
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(18px);
+
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 22px;
+
+    font-size: 20px;
+    color: var(--primary);
+
     cursor: pointer;
-    box-shadow: 0 0 25px var(--primary-glow);
-    transition: 0.3s ease;
+
+    border: 3px solid rgba(14,165,233,1.5);
+
+    box-shadow:
+        0 0 20px rgba(14,165,233,0.15),
+        inset 0 0 15px rgba(14,165,233,0.08);
+
+    transition:
+        transform 0.35s cubic-bezier(.34,1.56,.64,1),
+        box-shadow 0.3s ease,
+        background 0.3s ease,
+        color 0.3s ease;
 }
 
+/* Subtle hover */
 #fab-button:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 40px var(--primary-glow);
+    transform: translateY(-4px) scale(1.05);
+    box-shadow:
+        0 0 35px rgba(14,165,233,0.35),
+        inset 0 0 20px rgba(14,165,233,0.15);
+}
+
+/* Active (menu open) */
+#fab-button.active {
+    color: white;
+    background: linear-gradient(
+        135deg,
+        rgba(14,165,233,0.8),
+        rgba(56,189,248,0.9)
+    );
+
+    box-shadow:
+        0 0 45px rgba(14,165,233,0.6),
+        inset 0 0 20px rgba(255,255,255,0.2);
+
+    transform: rotate(90deg) scale(1.08);
+}
+#fab-button::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background-image:
+        linear-gradient(rgba(14,165,233,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(14,165,233,0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
+    opacity: 0.3;
+    pointer-events: none;
 }
 
 /* Dropdown Menu */
 #fab-menu {
     position: absolute;
-    bottom: 75px;
-    right: 0;
-    display: none;
+    display: flex;
     flex-direction: column;
     gap: 10px;
     min-width: 220px;
+
+    opacity: 0;
+    transform: scale(0.6) translateY(10px);
+    transform-origin: bottom right;
+    pointer-events: none;
+
+    transition:
+        opacity 0.25s ease,
+        transform 0.35s cubic-bezier(.34,1.56,.64,1);
+}
+
+/* Open state */
+#fab-menu.open {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    pointer-events: auto;
 }
 
 /* Menu Items */
@@ -295,9 +419,28 @@
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
-    transition: 0.25s;
     box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+
+    opacity: 0;
+    transform: translateY(10px);
+    transition: 
+        opacity 0.25s ease,
+        transform 0.25s ease,
+        background 0.25s ease;
 }
+
+/* When menu open → animate items */
+#fab-menu.open .fab-item {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Stagger delay */
+#fab-menu.open .fab-item:nth-child(1) { transition-delay: 0.05s; }
+#fab-menu.open .fab-item:nth-child(2) { transition-delay: 0.1s; }
+#fab-menu.open .fab-item:nth-child(3) { transition-delay: 0.15s; }
+#fab-menu.open .fab-item:nth-child(4) { transition-delay: 0.2s; }
+
 
 .fab-item:hover {
     background: var(--primary);
@@ -431,7 +574,7 @@ dashboard::before {
     font-size: 11px;
     font-family: 'JetBrains Mono', monospace;
     border: 1px solid var(--border);margin-bottom:10px;
-    transition: 0.2s;gap:6px;min-widht:5px;
+    transition: 0.2s;gap:6px;min-widhth:5px;
     /* This makes the card narrow and clean */
 }/* Color Coding for specific denominations */
 .denom-tile[data-v="500"] { border: 3px solid #fbbf24; } /* Gold */
@@ -1866,10 +2009,7 @@ async function deleteRecords() {
 }
 
 
-    function accessDenied() {
-        document.body.innerHTML = `<div style="background:var(--bg); height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; color:white; font-family:'JetBrains Mono';"><h1>403</h1><p>ACCESS RESTRICTED</p><button class="btn-blue" onclick="location.reload()">RE-AUTHENTICATE</button></div>`;
-        window.stop();
-    }
+   
   // Remove the old toggleButtons function entirely as we don't need fixed buttons anymore
 function toggleButtons() {
     // Left empty: buttons are now inside the Context Menu
@@ -1948,15 +2088,67 @@ async function copyRowToClipboard(rowElement) {
         alert("Failed to copy text: " + err);
     }
 }
-function toggleFab() {
-    const menu = document.getElementById("fab-menu");
-    menu.style.display = menu.style.display === "flex" ? "none" : "flex";
-}
 
+let wasDragged = false;
+
+function toggleFab() {
+
+    const menu = document.getElementById("fab-menu");
+    const button = document.getElementById("fab-button");
+    const fabContainer = document.getElementById("fab-container");
+
+    if (!menu || !button || !fabContainer) return;
+
+    const isOpening = !menu.classList.contains("open");
+
+    // Get position
+    const rect = fabContainer.getBoundingClientRect();
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+
+    // Reset all directional classes first
+    menu.classList.remove(
+        "open-left",
+        "open-right",
+        "open-up",
+        "open-down"
+    );
+
+    if (isOpening) {
+
+        // ---- HORIZONTAL LOGIC ----
+        if (rect.left < screenWidth / 2) {
+            menu.classList.add("open-right");
+        } else {
+            menu.classList.add("open-left");
+        }
+
+        // ---- VERTICAL LOGIC ----
+        if (rect.top < screenHeight / 2) {
+            menu.classList.add("open-down");
+        } else {
+            menu.classList.add("open-up");
+        }
+
+        // Small delay ensures CSS direction applies before animation
+        requestAnimationFrame(() => {
+            menu.classList.add("open");
+            button.classList.add("active");
+        });
+
+    } else {
+
+        menu.classList.remove("open");
+        button.classList.remove("active");
+
+    }
+}
 document.addEventListener("click", function(e) {
     const fabContainer = document.getElementById("fab-container");
+    const fabMenu = document.getElementById("fab-menu");
+
     if (!fabContainer.contains(e.target)) {
-        document.getElementById("fab-menu").style.display = "none";
+        fabMenu.classList.remove("open");
     }
 });
 
@@ -2235,6 +2427,127 @@ function logout() {
     sessionStorage.removeItem("session_token");
     showLogoutScreen();
 }
+// ===== ELITE FAB SYSTEM =====
+window.addEventListener("load", function () {
+
+    const fabContainer = document.getElementById("fab-container");
+    const fabButton = document.getElementById("fab-button");
+    const fabMenu = document.getElementById("fab-menu");
+
+    if (!fabContainer) return;
+
+    let isDragging = false;
+    let offsetX = 0;
+    let offsetY = 0;
+    let lastScroll = 0;
+    let longPressTimer = null;
+    let wasDragged = false;
+
+    // Restore position
+    const savedPos = localStorage.getItem("fab_position");
+    if (savedPos) {
+        const { x, y } = JSON.parse(savedPos);
+        fabContainer.style.left = x + "px";
+        fabContainer.style.top = y + "px";
+        fabContainer.style.right = "auto";
+        fabContainer.style.bottom = "auto";
+        fabContainer.style.position = "fixed";
+    }
+
+    // ===== DRAG START =====
+    function startDrag(e) {
+        isDragging = true;
+        wasDragged = false;
+
+        const rect = fabContainer.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+        offsetX = clientX - rect.left;
+        offsetY = clientY - rect.top;
+
+        fabContainer.style.transition = "none";
+    }
+
+    function onDrag(e) {
+        if (!isDragging) return;
+
+        wasDragged = true;
+
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+        let newX = clientX - offsetX;
+        let newY = clientY - offsetY;
+
+        const maxX = window.innerWidth - fabContainer.offsetWidth;
+        const maxY = window.innerHeight - fabContainer.offsetHeight;
+
+        newX = Math.max(0, Math.min(newX, maxX));
+        newY = Math.max(0, Math.min(newY, maxY));
+
+        fabContainer.style.left = newX + "px";
+        fabContainer.style.top = newY + "px";
+        fabContainer.style.right = "auto";
+        fabContainer.style.bottom = "auto";
+        fabContainer.style.position = "fixed";
+    }
+
+    function stopDrag() {
+        if (!isDragging) return;
+        isDragging = false;
+
+        // 🧲 SNAP TO EDGE
+        const rect = fabContainer.getBoundingClientRect();
+        const midpoint = window.innerWidth / 2;
+        const snapX = rect.left < midpoint ? 20 : window.innerWidth - rect.width - 20;
+
+        fabContainer.style.transition = "all 0.3s cubic-bezier(.34,1.56,.64,1)";
+        fabContainer.style.left = snapX + "px";
+
+        localStorage.setItem("fab_position", JSON.stringify({
+            x: snapX,
+            y: rect.top
+        }));
+    }
+
+    // Desktop
+    fabContainer.addEventListener("mousedown", startDrag);
+    document.addEventListener("mousemove", onDrag);
+    document.addEventListener("mouseup", stopDrag);
+
+    // Mobile Drag
+    fabContainer.addEventListener("touchstart", startDrag, { passive: true });
+    document.addEventListener("touchmove", onDrag, { passive: true });
+    document.addEventListener("touchend", stopDrag);
+
+    // 🎯 LONG PRESS TO OPEN MENU (Mobile)
+    fabButton.addEventListener("touchstart", function (e) {
+        longPressTimer = setTimeout(() => {
+            fabMenu.classList.toggle("open");
+        }, 500);
+    });
+
+    fabButton.addEventListener("touchend", function () {
+        clearTimeout(longPressTimer);
+    });
+
+    // 👻 AUTO HIDE ON SCROLL
+    window.addEventListener("scroll", function () {
+        const currentScroll = window.scrollY;
+
+        if (currentScroll > lastScroll) {
+            fabContainer.style.transform = "translateY(120px)";
+        } else {
+            fabContainer.style.transform = "translateY(0)";
+        }
+
+        lastScroll = currentScroll;
+    });
+
+});
+
+
 </script>
 
 <div id="custom-context-menu"></div>
