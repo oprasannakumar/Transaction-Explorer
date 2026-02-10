@@ -86,7 +86,7 @@
 /* Options */
 .sheet-options {
     max-height: 240px;
-    overflow-y: auto;
+overflow-y:auto;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -123,7 +123,7 @@
     transform: translateY(-8px);
     transition: 0.25s ease;
     pointer-events: none;
-	width:auto;
+	width:160px;
 }
 
 .sheet-selector.open .sheet-selector-dropdown {
@@ -382,6 +382,22 @@
     border-color: var(--primary-glow);
     transform: translateX(3px);
 }
+/* Highlight state for selected filter chips */
+.filter-option.selected {
+    background: var(--primary) !important;
+    color: var(--bg) !important;
+    border-color: var(--primary);
+    box-shadow: 0 0 10px var(--primary-glow);
+    font-weight: 700;
+}
+
+/* Add a checkmark icon to selected items */
+.filter-option.selected::after {
+    content: "✓";
+    font-size: 10px;
+    margin-left: 8px;
+}
+
 @keyframes menuFadeIn {
     from { opacity: 0;}
     to { opacity: 1;}
@@ -421,17 +437,18 @@
     }
     /* Fixed Dropdown Position */
 .filter-dropdown {
-    position: absolute;
-    top: 100%;
-    background: #1e293b !important;
+    position: absolute; /* Changed to handle dynamic positioning */
+    background: #1e293b;
     border: 1px solid var(--primary);
-    padding: 12px;
+    padding: 16px;
+    border-radius: 12px;
+    width: 260px;
+    z-index: 99999; /* Ensure it stays above the toolbar and cards */
+    box-shadow: 0 10px 40px rgba(0,0,0,0.8);
     display: none;
-    border-radius: 10px 0 10px 10px; /* Squared top-right for better alignment look */
-    min-width: 240px; /* Slightly wider for data clarity */
-    z-index: 2000;
-    box-shadow: -10px 20px 40px rgba(0,0,0,0.8);
 }
+
+
 
 /* Strict Right Anchor */
 .filter-dropdown.align-right {
@@ -476,7 +493,7 @@
         .dashboard {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
+    gap: 8px;
     margin-bottom: 30px;
     position: relative;
 }
@@ -646,8 +663,8 @@ dashboard::before {
        .header-content {
     display: flex;
     align-items: center;
-    justify-content: center; /* Keeps text centered */
-    gap: 8px; /* Tightly couples text and filter button */
+    justify-content: center; 
+    gap: 8px; 
     width: 100%;
     cursor: default;
 }
@@ -661,7 +678,7 @@ dashboard::before {
     backdrop-filter: blur(18px);
     border: 1px solid rgba(14,165,233,0.2);
     border-radius: 20px;
-    padding: 24px;
+    padding: 10px;
     overflow: hidden;
     transition: all 0.4s ease;
 }
@@ -1365,7 +1382,7 @@ liquidityCard.innerHTML = `
     </div>
 
     <div style="
-        font-size:36px;
+        font-size:26px;
         font-family:'JetBrains Mono';
         font-weight:900;
         color:var(--success);
@@ -1380,7 +1397,7 @@ liquidityCard.innerHTML = `
         border-top:1px solid var(--border);
     ">
         <div style="
-            font-size:18px;
+            font-size:16px;
             font-family:'JetBrains Mono';
             font-weight:700;
             color:var(--ledger);
@@ -1413,7 +1430,7 @@ creditCard.innerHTML = `
     </div>
 
     <div style="
-        font-size:32px;
+        font-size:26px;
         font-family:'JetBrains Mono';
         font-weight:800;
         color:var(--gold);
@@ -1423,7 +1440,7 @@ creditCard.innerHTML = `
     </div>
 
     <div style="
-        font-size:10px;
+        font-size:16px;
         letter-spacing:2px;
         color:var(--text-muted);
         margin-bottom:16px;
@@ -1441,14 +1458,14 @@ creditCard.innerHTML = `
 
         <div>
             <div style="
-                font-size:18px;
+                font-size:10px;
                 font-weight:700;
                 color:var(--danger);
             ">
                 ₹${data.debt.toLocaleString('en-IN')}
             </div>
             <div style="
-                font-size:9px;
+                font-size:10px;
                 letter-spacing:2px;
                 color:var(--text-muted);
             ">
@@ -1458,14 +1475,14 @@ creditCard.innerHTML = `
 
         <div style="text-align:right;">
             <div style="
-                font-size:18px;
+                font-size:10px;
                 font-weight:700;
                 color:var(--success);
             ">
                 ₹${data.availableLimit.toLocaleString('en-IN')}
             </div>
             <div style="
-                font-size:9px;
+                font-size:10px;
                 letter-spacing:2px;
                 color:var(--text-muted);
             ">
@@ -2087,7 +2104,7 @@ function renderTable(headers, rows) {
     <div class='sheet-card'>
         <div class="table-search-box">
             <div style="display:flex; align-items:center; gap:15px; flex-grow:1;">
-                <input type="text" id="tableFilter" placeholder="Search Terminal..." onkeyup="applyMultiFilter()">
+                <input type="text" id="tableFilter" placeholder="Search Terminal..." onkeyup="applyFilters()">
                 <span id="rowCount" style="font-family:'JetBrains Mono'; font-size:11px; color:var(--text-muted);">READY_</span>
             </div>
             <div style="display: flex; gap: 15px;">
@@ -2255,24 +2272,37 @@ function renderTable(headers, rows) {
 }
 
 function selectAllOptions(fieldName) {
-    document.querySelectorAll(`.filter-option[data-field-target="${fieldName}"]`)
-        .forEach(opt => opt.classList.add('selected'));
+    const container = document.getElementById(`options-container-${fieldName}`);
+    if (!container) return;
+
+    const options = container.querySelectorAll('.filter-option');
+    options.forEach(opt => {
+        // Only select items that are visible (matches the current search)
+        if (opt.style.display !== 'none') {
+            opt.classList.add('selected');
+        }
+    });
 }
+
+
+
+
+
 
 
 
 function filterColumnOptions(fieldName, query) {
     query = query.toLowerCase().trim();
-
     const container = document.getElementById(`options-container-${fieldName}`);
     if (!container) return;
 
     const options = container.querySelectorAll('.filter-option');
-
+    
     options.forEach(opt => {
-        const value = opt.getAttribute('data-value');
-        if (!query || value.includes(query)) {
-            opt.style.display = '';
+        const val = opt.getAttribute('data-value').toLowerCase();
+        // If search is empty, show all. If typing, show only matches.
+        if (query === "" || val.includes(query)) {
+            opt.style.display = 'flex';
         } else {
             opt.style.display = 'none';
         }
@@ -2280,126 +2310,157 @@ function filterColumnOptions(fieldName, query) {
 }
 
 
+
+
 function confirmFilter(fieldName) {
-    applyMultiFilter();
-    
-    // Optional: auto-close dropdown after confirm
+    // 🔥 This triggers the main table update
+    applyFilters(); 
+
+    // Hide the dropdown
     const dropdown = document.getElementById(`filter-dropdown-${fieldName}`);
     if (dropdown) dropdown.style.display = 'none';
+    
+    // Optional: Update the status bar
+    document.getElementById('status').innerText = "Filter Applied // Logic Updated";
 }
 
-function applyMultiFilter() {
-    const query = document.getElementById('tableFilter').value.toLowerCase();
-    const table = document.getElementById('mainDataTable');
-    const rows = Array.from(table.querySelectorAll('.data-row'));
 
-    const activeFilters = {};
-    document.querySelectorAll('.col-filter-check:checked').forEach(check => {
-        const field = check.getAttribute('data-field-target'); // ✅ CORRECT
-        if (!activeFilters[field]) activeFilters[field] = [];
-        activeFilters[field].push(check.value.toLowerCase().trim());
-    });
 
-    let visibleCount = 0;
 
-    rows.forEach(row => {
-        const cells = Array.from(row.querySelectorAll('td'));
-        const matchesQuery =
-            query === "" ||
-            cells.some(c => c.textContent.toLowerCase().includes(query));
-
-        let matchesFilters = true;
-        for (const field in activeFilters) {
-            const cell = row.querySelector(`td[data-field="${field}"]`);
-            const cellText = cell ? cell.textContent.toLowerCase().trim() : "";
-            if (!activeFilters[field].includes(cellText)) {
-                matchesFilters = false;
-                break;
-            }
-        }
-
-        if (matchesQuery && matchesFilters) {
-            row.style.display = "";
-            visibleCount++;
-        } else {
-            row.style.display = "none";
-        }
-    });
-
-    document.getElementById('rowCount').innerText = `MATCH: ${visibleCount}`;
-}
 
 function handleRowClick(rowElement) {
-    // 1. Toggle the visual class
+    // 1. Toggle selection
     rowElement.classList.toggle('selected');
     
-    // 2. Refresh the action buttons (Trace/Purge)
-    toggleButtons();
+    // 2. Clear status or update context menu (if you have logic for it)
+    if (typeof toggleButtons === "function") toggleButtons();
 
-    // 3. Update the Inflow/Outflow based on selection
+    // 3. Update Metrics
     recalculateMetricsFromSelected();
 }
+
 let activeFilters = {};
 
 function toggleFilterDropdown(event, fieldName) {
     event.stopPropagation();
+    
+    // The button that was clicked
+    const trigger = event.currentTarget; 
     const dropdown = document.getElementById(`filter-dropdown-${fieldName}`);
     const isVisible = dropdown.style.display === 'block';
     
-    // 1. Hide all other dropdowns
+    // 1. Close all other dropdowns first
     document.querySelectorAll('.filter-dropdown').forEach(d => d.style.display = 'none');
     
     if (!isVisible) {
-        // 2. Show the dropdown
+        // 2. Attach dropdown to body if it's currently inside the table (prevents clipping)
+        document.body.appendChild(dropdown);
+        
         dropdown.style.display = 'block';
 
-        // 3. Apply Right Alignment by default
-        dropdown.classList.remove('align-left', 'align-right');
-        dropdown.classList.add('align-right');
+        // 3. Get exact coordinates of the trigger button relative to the viewport
+        const rect = trigger.getBoundingClientRect();
+        
+        // 4. Position logic: Bottom-aligned to the button, shifted left to stay on screen
+        let topPos = rect.bottom + window.scrollY + 5;
+        let leftPos = rect.left + window.scrollX - 200; // Shift left so it doesn't go off-screen
 
-        // 4. Boundary Protection: Check if it's bleeding off the LEFT edge
-        const rect = dropdown.getBoundingClientRect();
-        if (rect.left < 0) {
-            dropdown.classList.remove('align-right');
-            dropdown.classList.add('align-left');
+        // Boundary Check: If it's too far left
+        if (leftPos < 10) leftPos = 10;
+        
+        // Boundary Check: If it's too far right
+        if (leftPos + 260 > window.innerWidth) {
+            leftPos = window.innerWidth - 270;
         }
+
+        dropdown.style.top = topPos + "px";
+        dropdown.style.left = leftPos + "px";
+        dropdown.style.position = "absolute"; // Absolute to body avoids table constraints
     } else {
         dropdown.style.display = 'none';
     }
 }
+
+
 function populateFilterOptions(headers, rows) {
+
     headers.forEach((h, i) => {
+
         const fieldName = h.toLowerCase().replace(/\s+/g, '_');
-        const uniqueValues = [...new Set(rows.map(r => r[i]))].filter(v => v).sort();
+
+       // Inside populateFilterOptions
+const uniqueValues = [...new Set(
+    rows.map(r => {
+        let raw = r[i] ?? "";
+        // Clean the data for the chips as well
+        return raw.toString()
+            .replace(/[₹,\s]/g, '')
+            .split('.')[0] 
+            .trim();
+    })
+)]
+.filter(v => v !== "" && v !== "0") // Filter out empty or zero values if preferred
+.sort((a, b) => parseFloat(a) - parseFloat(b)); // Sort amounts numerically
+
+
         const container = document.getElementById(`options-container-${fieldName}`);
-        
-        if (container) {
-            container.innerHTML = uniqueValues.map(val => `
-                <div class="filter-option" 
-                     data-field-target="${fieldName}" 
-                     data-value="${val.toString().toLowerCase().trim()}" 
-                     onclick="toggleFilterChip(this)">
-                    <span>${val}</span>
-                </div>`).join('');
-        }
+
+        if (!container) return;
+
+        container.innerHTML = uniqueValues.map(val => `
+            <div class="filter-option"
+                 data-field-target="${fieldName}"
+                 data-value="${val}"
+                 onclick="toggleFilterChip(this)">
+                <span>${val}</span>
+            </div>
+        `).join('');
     });
 }
 function toggleFilterChip(element) {
+    // Toggle the visual state
     element.classList.toggle('selected');
+    
+    // Optional: Add a subtle haptic-like animation
+    element.style.transform = "scale(0.95)";
+    setTimeout(() => {
+        element.style.transform = "translateX(3px) scale(1)";
+    }, 100);
 }
-function applyMultiFilter() {
-    const query = document.getElementById('tableFilter').value.toLowerCase();
+
+
+
+
+function clearFilter(fieldName) {
+    // 1. Unselect all chips
+    const options = document.querySelectorAll(`.filter-option[data-field-target="${fieldName}"]`);
+    options.forEach(opt => opt.classList.remove('selected'));
+
+    // 2. Clear the search input for that dropdown
+    const searchInput = document.querySelector(`#filter-dropdown-${fieldName} .filter-search-input`);
+    if (searchInput) {
+        searchInput.value = "";
+        filterColumnOptions(fieldName, ""); // Refresh visibility
+    }
+}
+
+
+function applyFilters() {
+    const query = document.getElementById('tableFilter').value.toLowerCase().trim();
     const table = document.getElementById('mainDataTable');
     if (!table) return;
 
     const rows = Array.from(table.querySelectorAll('.data-row'));
-    
-    // Gather all selected chips by field name
     const activeFilters = {};
+
+    // 1. Collect all selected chips across all columns
     document.querySelectorAll('.filter-option.selected').forEach(chip => {
         const field = chip.getAttribute('data-field-target');
-        const value = chip.getAttribute('data-value');
-        if (!activeFilters[field]) activeFilters[field] = [];
+        const value = chip.getAttribute('data-value').toLowerCase().trim();
+
+        if (!activeFilters[field]) {
+            activeFilters[field] = [];
+        }
         activeFilters[field].push(value);
     });
 
@@ -2408,19 +2469,30 @@ function applyMultiFilter() {
     rows.forEach(row => {
         const cells = Array.from(row.querySelectorAll('td'));
         
-        // 1. Check Search Query
-        const matchesQuery = query === "" || cells.some(c => c.textContent.toLowerCase().includes(query));
-        
-        // 2. Check Active Chips
+        // Check Global Search
+        const matchesQuery = !query || cells.some(c => c.textContent.toLowerCase().includes(query));
+
+        // Check Column Filters
         let matchesFilters = true;
         for (const field in activeFilters) {
+            const selectedValues = activeFilters[field];
+            if (selectedValues.length === 0) continue;
+
             const cell = row.querySelector(`td[data-field="${field}"]`);
-            const cellText = cell ? cell.textContent.toLowerCase().trim() : "";
-            
-            // If the column has active chips, the cell must match one of them
-            if (!activeFilters[field].includes(cellText)) {
-                matchesFilters = false;
-                break;
+            if (cell) {
+                // 🔥 THE FIX: Strip symbols like ₹ and , before matching
+                const cellText = cell.textContent
+                    .toLowerCase()
+                    .replace(/[₹,\s]/g, '') // Removes currency, commas, and spaces
+                    .split('.')[0]         // Removes decimal parts for cleaner matching
+                    .trim();
+
+                const normalizedSelected = selectedValues.map(v => v.split('.')[0]);
+
+                if (!normalizedSelected.includes(cellText)) {
+                    matchesFilters = false;
+                    break;
+                }
             }
         }
 
@@ -2431,130 +2503,58 @@ function applyMultiFilter() {
             row.style.display = "none";
         }
     });
-    
+
     document.getElementById('rowCount').innerText = `MATCH: ${visibleCount}`;
-    recalculateMetricsFromVisible();
-}
-function clearFilter(fieldName) {
-    // Deselect all chips in this specific dropdown
-    document.querySelectorAll(`.filter-option.selected[data-field-target="${fieldName}"]`)
-            .forEach(chip => chip.classList.remove('selected'));
     
-    applyMultiFilter();
-}
-
-document.addEventListener('click', function(e) {
-
-    // If click is inside dropdown or on filter trigger → do nothing
-    if (
-        e.target.closest('.filter-dropdown') ||
-        e.target.closest('.filter-trigger')
-    ) {
-        return;
+    // Ensure the Inflow/Outflow bars update based on what remains visible
+    if (typeof recalculateMetricsFromVisible === "function") {
+        recalculateMetricsFromVisible();
     }
-
-    // Otherwise close all dropdowns
-    document.querySelectorAll('.filter-dropdown')
-            .forEach(d => d.style.display = 'none');
-});
-
-function applyTableFilter() {
-    const input = document.getElementById('tableFilter');
-    const filter = input.value.toLowerCase();
-    const table = document.getElementById('mainDataTable');
-    const rows = table.getElementsByClassName('data-row');
-    let visibleCount = 0;
-
-    for (let i = 0; i < rows.length; i++) {
-        const cells = rows[i].getElementsByTagName('td');
-        let found = false;
-        
-        // Start loop from index 1 to skip the checkbox column
-        for (let j = 1; j < cells.length; j++) {
-            const content = cells[j].textContent || cells[j].innerText;
-            if (content.toLowerCase().indexOf(filter) > -1) {
-                found = true;
-                break;
-            }
-        }
-
-        if (found) {
-            rows[i].classList.remove('row-hidden');
-            visibleCount++;
-        } else {
-            rows[i].classList.add('row-hidden');
-        }
-    }
-    
-    // Update the row count display
-    document.getElementById('rowCount').innerText = `Showing ${visibleCount} records`;
-    
-    // Recalculate Toolbar Metrics based on VISIBLE rows only
-    recalculateMetricsFromVisible();
 }
 
-// Optional: Dynamic metrics update while filtering
+// Function to sum values from rows currently visible (after filtering)
 function recalculateMetricsFromVisible() {
-
-    const table = document.getElementById('mainDataTable');
-    if (!table) return;
-
-    const rows = Array.from(table.querySelectorAll('.data-row'));
-    const headers = Array.from(table.querySelectorAll('th'))
-        .map(th => th.innerText.toLowerCase());
-
-    const inflowKeywords = [
-        "deposit",
-        "received",
-        "credit",
-        "incoming"
-    ];
-
-    const outflowKeywords = [
-        "withdrawn",
-        "given",
-        "debit",
-        "paid",
-        "expense"
-    ];
-
-    const inflowIndexes = headers
-        .map((h, i) => inflowKeywords.some(k => h.includes(k)) ? i : -1)
-        .filter(i => i !== -1);
-
-    const outflowIndexes = headers
-        .map((h, i) => outflowKeywords.some(k => h.includes(k)) ? i : -1)
-        .filter(i => i !== -1);
-
-    let inflow = 0;
-    let outflow = 0;
-    let visibleCount = 0;
+    const rows = Array.from(document.querySelectorAll('#mainDataTable tbody tr'));
+    let totalInflow = 0;
+    let totalOutflow = 0;
 
     rows.forEach(row => {
-        if (row.style.display !== "none") {
-
-            visibleCount++;
-
-            const cells = row.querySelectorAll('td');
-
-            inflowIndexes.forEach(i => {
-                inflow += parseFloat(
-                    (cells[i]?.innerText || "0").replace(/[^0-9.-]/g, "")
-                ) || 0;
-            });
-
-            outflowIndexes.forEach(i => {
-                outflow += parseFloat(
-                    (cells[i]?.innerText || "0").replace(/[^0-9.-]/g, "")
-                ) || 0;
-            });
+        if (row.style.display !== 'none') {
+            const inflowCell = row.querySelector('td[style*="color: var(--success)"]');
+            const outflowCell = row.querySelector('td[style*="color: var(--danger)"]');
+            
+            if (inflowCell) totalInflow += parseFloat(inflowCell.innerText.replace(/[^0-9.-]/g, "")) || 0;
+            if (outflowCell) totalOutflow += parseFloat(outflowCell.innerText.replace(/[^0-9.-]/g, "")) || 0;
         }
     });
 
-    document.getElementById('bar-inflow').innerText = formatINR(inflow);
-    document.getElementById('bar-outflow').innerText = formatINR(outflow);
-    document.getElementById('rowCount').innerText = `MATCH: ${visibleCount}`;
+    document.getElementById('bar-inflow').innerText = formatINR(totalInflow);
+    document.getElementById('bar-outflow').innerText = formatINR(totalOutflow);
 }
+
+// Function to sum values from rows manually selected (by clicking)
+function recalculateMetricsFromSelected() {
+    const selectedRows = document.querySelectorAll('.data-row.selected');
+    if (selectedRows.length === 0) {
+        recalculateMetricsFromVisible(); // Revert to visible sum if nothing is selected
+        return;
+    }
+
+    let totalInflow = 0;
+    let totalOutflow = 0;
+
+    selectedRows.forEach(row => {
+        const inflowCell = row.querySelector('td[style*="color: var(--success)"]');
+        const outflowCell = row.querySelector('td[style*="color: var(--danger)"]');
+        
+        if (inflowCell) totalInflow += parseFloat(inflowCell.innerText.replace(/[^0-9.-]/g, "")) || 0;
+        if (outflowCell) totalOutflow += parseFloat(outflowCell.innerText.replace(/[^0-9.-]/g, "")) || 0;
+    });
+
+    document.getElementById('bar-inflow').innerText = formatINR(totalInflow);
+    document.getElementById('bar-outflow').innerText = formatINR(totalOutflow);
+}
+
 
 
 
@@ -3199,6 +3199,19 @@ window.addEventListener("load", function () {
     });
 
 });
+// Close dropdown if the user scrolls the table or clicks outside
+document.addEventListener('scroll', function(e) {
+    if (e.target.id === 'tableWrap') {
+        document.querySelectorAll('.filter-dropdown').forEach(d => d.style.display = 'none');
+    }
+}, true);
+
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.filter-dropdown') && !e.target.closest('.filter-trigger')) {
+        document.querySelectorAll('.filter-dropdown').forEach(d => d.style.display = 'none');
+    }
+});
+
 // Close Sheet Selector when clicking outside
 document.addEventListener("click", function (e) {
 
