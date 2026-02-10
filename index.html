@@ -1495,13 +1495,18 @@ creditCard.innerHTML = `
 
 
 
-        // =========================
-        // 🔹 NET POSITION CARD
-        // =========================
-        const netPosition = data.liquidity - data.debt;
-        const netEl = document.getElementById('total-available');
-        netEl.innerText = '₹' + netPosition.toLocaleString('en-IN');
-        netEl.style.color = netPosition < 0 ? 'var(--danger)' : 'var(--primary)';
+// =========================
+// 🔹 NET POSITION CARD (FIXED)
+// =========================
+// Calculation should be Assets (Liquidity) minus Liabilities (Debt)
+const netPosition = totalCurrent - data.debt; 
+
+const netEl = document.getElementById('total-available');
+netEl.innerText = '₹' + netPosition.toLocaleString('en-IN');
+
+// Dynamic styling: Red if you owe more than you have, Blue if positive
+netEl.style.color = netPosition < 0 ? 'var(--danger)' : 'var(--primary)';
+
 
         // =========================
         // 🔹 CASH BREAKDOWN
