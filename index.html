@@ -1295,6 +1295,14 @@ tbody {
     let globalRawHeaders = [];
     let globalRawRows = [];
 let activeFilters = {};
+function normalizeValue(val) {
+    return (val ?? "")
+        .toString()
+        .toLowerCase()
+        .replace(/[₹,\s]/g, '')
+        .split('.')[0]
+        .trim();
+}
 document.addEventListener("DOMContentLoaded", function () {
     flatpickr("#dateRange", {
         mode: "range",
@@ -2152,6 +2160,8 @@ function calculateLoanNet(headers, rows) {
 
     // Shared table rendering logic
 function renderTable(headers, rows) {
+	 activeFilters = {};
+	
 	globalRawHeaders = headers; // Store for filter reference
     globalRawRows = rows;       // Store for filter reference
     // 🔹 Sort by date first
@@ -2348,38 +2358,73 @@ document.getElementById('displayArea').innerHTML = finalHTML;
     setTimeout(adjustTableHeight, 50);
     populateFilterOptions();
     recalculateMetricsFromVisible();
+	updateLoanNetFromBars();
 // 🔥 Inject Loan Net beside inflow/outflow
 if (selectedSheetName &&
     selectedSheetName.toLowerCase().includes("loan")) {
 
-    const net = calculateLoanNet(headers, rows);
-    const netColor = net < 0 ? "var(--danger)" : "var(--gold)";
-    const pill = document.getElementById("loan-net-pill");
-    const netEl = document.getElementById("bar-loan-net");
-
-    if (pill && netEl) {
-        pill.style.display = "block";
-        netEl.innerText = formatINR(net);
-        netEl.style.color = netColor;
-    }
+    
 } else {
     const pill = document.getElementById("loan-net-pill");
     if (pill) pill.style.display = "none";
 }
 }
+function updateLoanNetFromBars() {
+
+    const pill = document.getElementById("loan-net-pill");
+    const netEl = document.getElementById("bar-loan-net");
+
+    if (!selectedSheetName ||
+        !selectedSheetName.toLowerCase().includes("loan")) {
+
+        if (pill) pill.style.display = "none";
+        return;
+    }
+
+    const inflowText = document.getElementById("bar-inflow")?.innerText || "0";
+    const outflowText = document.getElementById("bar-outflow")?.innerText || "0";
+
+    const inflow = parseFloat(inflowText.replace(/[^0-9.-]/g, "")) || 0;
+    const outflow = parseFloat(outflowText.replace(/[^0-9.-]/g, "")) || 0;
+
+    const net = inflow - outflow;
+
+    if (pill && netEl) {
+        pill.style.display = "block";
+        netEl.innerText = formatINR(net);
+        netEl.style.color = net < 0
+            ? "var(--danger)"
+            : "var(--gold)";
+    }
+}
 
 function selectAllOptions(fieldName) {
+
     const container = document.getElementById(`options-container-${fieldName}`);
     if (!container) return;
 
     const options = container.querySelectorAll('.filter-option');
+
+    let values = [];
+
     options.forEach(opt => {
-        // Only select items that are visible (matches the current search)
+
         if (opt.style.display !== 'none') {
+
             opt.classList.add('selected');
+
+            const val = opt.getAttribute('data-value');
+            values.push(normalizeValue(val));
         }
     });
+
+    // 🔥 Update filter engine
+    activeFilters[fieldName] = values;
+
+    // 🔥 Immediately re-run filtering
+    applyFilters();
 }
+
 
 
 function filterColumnOptions(fieldName, query) {
@@ -2427,7 +2472,7 @@ function confirmFilter(fieldName) {
     // 🔥 Partial selection → apply filter
     else {
         activeFilters[fieldName] = Array.from(selectedChips)
-            .map(chip => chip.getAttribute("data-value").toLowerCase().trim());
+            .map(chip => normalizeValue(chip.getAttribute("data-value")));
     }
 
     applyFilters();
@@ -2482,15 +2527,10 @@ function populateFilterOptions() {
     const table = document.getElementById('mainDataTable');
     if (!table) return;
 
-    const visibleRows = Array.from(
-        table.querySelectorAll('.data-row')
-    ).filter(r => r.style.display !== 'none');
-
     globalRawHeaders.forEach((header, colIndex) => {
 
-        const fieldName = header
-            .toLowerCase()
-            .replace(/\s+/g, '_');
+        const isDateColumn = /date/i.test(header);
+        const fieldName = header.toLowerCase().replace(/\s+/g, '_');
 
         const container = document.getElementById(
             `options-container-${fieldName}`
@@ -2500,45 +2540,35 @@ function populateFilterOptions() {
 
         const valueSet = new Set();
 
-        const sourceRows = visibleRows.length > 0
-            ? visibleRows
-            : globalRawRows;
+        // ✅ Collect values properly
+        globalRawRows.forEach(row => {
 
-        sourceRows.forEach(row => {
+            let rawValue = row[colIndex];
+            rawValue = (rawValue ?? "").toString().trim();
 
-            let value;
-
-            if (row.querySelectorAll) {
-                // From table DOM
-                const cell = row.querySelectorAll('td')[colIndex];
-                value = cell ? cell.textContent : "";
-            } else {
-                // From raw data
-                value = row[colIndex];
-            }
-
-            value = (value ?? "")
-                .toString()
-                .replace(/[₹,\s]/g, '')
-                .split('.')[0]
-                .trim();
-
-            if (value !== "" && value !== "0") {
-                valueSet.add(value);
+            if (rawValue !== "") {
+                valueSet.add(rawValue);
             }
         });
 
         const sorted = Array.from(valueSet).sort((a, b) => {
-            return isNaN(a)
-                ? a.localeCompare(b)
-                : parseFloat(a) - parseFloat(b);
+
+            if (isDateColumn) {
+                return new Date(a) - new Date(b);
+            }
+
+            if (!isNaN(a) && !isNaN(b)) {
+                return parseFloat(a) - parseFloat(b);
+            }
+
+            return a.localeCompare(b);
         });
 
         const selected = activeFilters[fieldName] || [];
 
         container.innerHTML = sorted.map(val => `
             <div class="filter-option 
-                ${selected.includes(val.toLowerCase()) ? 'selected' : ''}"
+                ${selected.includes(normalizeValue(val)) ? 'selected' : ''}"
                 data-field-target="${fieldName}"
                 data-value="${val}"
                 onclick="toggleFilterChip(this)">
@@ -2547,11 +2577,12 @@ function populateFilterOptions() {
         `).join('');
     });
 }
+
 function resetAllFilters() {
 
     // 🔥 Clear filter state
     activeFilters = {};
-
+	
     // 🔥 Clear search box
     const searchBox = document.getElementById('tableFilter');
     if (searchBox) searchBox.value = "";
@@ -2576,7 +2607,7 @@ function resetAllFilters() {
 
     // 🔥 Recalculate dashboard metrics
     recalculateMetricsFromVisible();
-
+	updateLoanNetFromBars();
     // 🔥 Rebuild dropdown options
     populateFilterOptions();
 
@@ -2589,9 +2620,9 @@ function resetAllFilters() {
 function toggleFilterChip(element) {
 
     const field = element.getAttribute('data-field-target');
-    const value = element.getAttribute('data-value')
-        .toLowerCase()
-        .trim();
+    const value = normalizeValue(
+    element.getAttribute('data-value')
+);
 
     element.classList.toggle('selected');
 
@@ -2655,14 +2686,12 @@ function applyFilters() {
             if (!selectedValues || selectedValues.length === 0) continue;
 
             const cell = row.querySelector(`td[data-field="${field}"]`);
-            if (!cell) continue;
+            if (!cell) {
+   		 matchesFilters = false;
+   		 break;
+		}
 
-            const cellText = cell.textContent
-                .toLowerCase()
-                .replace(/[₹,\s]/g, '')
-                .split('.')[0]
-                .trim();
-
+            const cellText = normalizeValue(cell.textContent);
             if (!selectedValues.includes(cellText)) {
                 matchesFilters = false;
                 break;
@@ -2682,9 +2711,7 @@ function applyFilters() {
 
     // 🔄 Update metrics
     recalculateMetricsFromVisible();
-
-    // 🔄 Update dropdown options (cascading like Excel)
-    populateFilterOptions();
+	updateLoanNetFromBars();
 }
 
 // Function to sum values from rows currently visible (after filtering)
@@ -2711,7 +2738,7 @@ function recalculateMetricsFromVisible() {
 function recalculateMetricsFromSelected() {
     const selectedRows = document.querySelectorAll('.data-row.selected');
     if (selectedRows.length === 0) {
-        recalculateMetricsFromVisible(); // Revert to visible sum if nothing is selected
+        recalculateMetricsFromVisible();// Revert to visible sum if nothing is selected
         return;
     }
 
@@ -2728,6 +2755,7 @@ function recalculateMetricsFromSelected() {
 
     document.getElementById('bar-inflow').innerText = formatINR(totalInflow);
     document.getElementById('bar-outflow').innerText = formatINR(totalOutflow);
+  updateLoanNetFromBars();
 }
 
 
@@ -2841,11 +2869,7 @@ async function deleteRecords() {
 
         await initializeDashboard();
 
-        if (selectedStart && selectedEnd) {
-            await loadMain();
-        } else {
-            document.getElementById('displayArea').innerHTML = "";
-        }
+        await loadMain();
 
         document.getElementById('status').innerText = "TERMINAL SYNCED.";
 
@@ -2938,10 +2962,34 @@ async function copyRowToClipboard(rowElement) {
         const oldStatus = statusMsg.innerText;
         statusMsg.innerText = "📋 COPIED AS NUMERICAL DATE";
         
-        setTimeout(() => {
-            rowElement.style.background = originalBg;
-            statusMsg.innerText = oldStatus;
-        }, 1500);
+        setTimeout(async () => {
+    try {
+
+        await initializeDashboard();
+
+        // 🔥 Always reload current view properly
+        if (selectedSheetName) {
+            await loadMain();
+        }
+        else if (selectedStart && selectedEnd) {
+            await loadMain();
+        }
+        else {
+            // Default fallback → reload current sheet if exists
+            await loadMain();
+        }
+
+        document.getElementById('status').innerText = "TERMINAL SYNCED.";
+
+    } catch (err) {
+        console.error("Resync Error:", err);
+        document.getElementById('status').innerText = "SYNC ERROR";
+    } finally {
+        setProcessing(false);
+    }
+
+}, 1500);
+
     } catch (err) {
         alert("Failed to copy text: " + err);
     }
