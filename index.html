@@ -1856,17 +1856,21 @@ async function viewNamedRange(rangeName) {
         // 🔥 If Savings account → calculate running balance
         if (type === "Savings") {
 
-            const openingBalance = await fetchOpeningBalance(query);
+    const openingBalance = await fetchOpeningBalance(query);
 
-            const enhanced = injectRunningBalance(
-                data.headers,
-                data.rows,
-                openingBalance
-            );
+    // 1️⃣ Sort first
+    const sortedRows = sortRowsByDate(data.headers, data.rows);
 
-            renderTable(enhanced.headers, enhanced.rows);
+    // 2️⃣ Then calculate running balance
+    const enhanced = injectRunningBalance(
+        data.headers,
+        sortedRows,
+        openingBalance
+    );
 
-        } else {
+    renderTable(enhanced.headers, enhanced.rows);
+}
+ else {
             renderTable(data.headers, data.rows);
         }
 
@@ -2111,6 +2115,40 @@ function sortRowsByDate(headers, rows) {
     });
 }
 
+function calculateLoanNet(headers, rows) {
+
+    const inflowKeywords = ["deposit","received","credit","incoming"];
+    const outflowKeywords = ["withdrawn","paid","debit","expense","given"];
+
+    const headerLower = headers.map(h => h.toLowerCase());
+
+    const inflowIndexes = headerLower
+        .map((h, i) => inflowKeywords.some(k => h.includes(k)) ? i : -1)
+        .filter(i => i !== -1);
+
+    const outflowIndexes = headerLower
+        .map((h, i) => outflowKeywords.some(k => h.includes(k)) ? i : -1)
+        .filter(i => i !== -1);
+
+    let totalInflow = 0;
+    let totalOutflow = 0;
+
+    rows.forEach(row => {
+        inflowIndexes.forEach(i => {
+            totalInflow += parseFloat(
+                (row[i] || "0").toString().replace(/[^0-9.-]/g, "")
+            ) || 0;
+        });
+
+        outflowIndexes.forEach(i => {
+            totalOutflow += parseFloat(
+                (row[i] || "0").toString().replace(/[^0-9.-]/g, "")
+            ) || 0;
+        });
+    });
+
+    return totalInflow - totalOutflow;
+}
 
     // Shared table rendering logic
 function renderTable(headers, rows) {
@@ -2133,16 +2171,23 @@ function renderTable(headers, rows) {
 		  <button class="btn-future-danger" style="height:36px; font-size:11px;"onclick="resetAllFilters()">RESET</button>
                 <span id="rowCount" style="font-family:'JetBrains Mono'; font-size:11px; color:var(--text-muted);">READY_</span>
             </div>
-            <div style="display: flex; gap: 15px;">
-                <div class="metric-pill">
-                    <span class="pill-label">Inflow</span>
-                    <span class="pill-val" id="bar-inflow" style="color: var(--success);">₹0</span>
-                </div>
-                <div class="metric-pill">
-                    <span class="pill-label">Outflow</span>
-                    <span class="pill-val" id="bar-outflow" style="color: var(--danger);">₹0</span>
-                </div>
-            </div>
+           <div style="display: flex; gap: 15px;">
+    <div class="metric-pill">
+        <span class="pill-label">Inflow</span>
+        <span class="pill-val" id="bar-inflow" style="color: var(--success);">₹0</span>
+    </div>
+
+    <div class="metric-pill">
+        <span class="pill-label">Outflow</span>
+        <span class="pill-val" id="bar-outflow" style="color: var(--danger);">₹0</span>
+    </div>
+
+    <div class="metric-pill" id="loan-net-pill" style="display:none;">
+        <span class="pill-label">Loan Net</span>
+        <span class="pill-val" id="bar-loan-net">₹0</span>
+    </div>
+</div>
+
         </div>
 
         <div class='table-wrap' id="tableWrap">
@@ -2290,11 +2335,37 @@ function renderTable(headers, rows) {
         </div>
     </div>`;
 
-    document.getElementById('displayArea').innerHTML = html;
+    let finalHTML = "";
+
+// 🔥 Loan Sheet Detection
+
+// Append Table
+finalHTML += html;
+
+document.getElementById('displayArea').innerHTML = finalHTML;
+
 
     setTimeout(adjustTableHeight, 50);
     populateFilterOptions();
     recalculateMetricsFromVisible();
+// 🔥 Inject Loan Net beside inflow/outflow
+if (selectedSheetName &&
+    selectedSheetName.toLowerCase().includes("loan")) {
+
+    const net = calculateLoanNet(headers, rows);
+    const netColor = net < 0 ? "var(--danger)" : "var(--gold)";
+    const pill = document.getElementById("loan-net-pill");
+    const netEl = document.getElementById("bar-loan-net");
+
+    if (pill && netEl) {
+        pill.style.display = "block";
+        netEl.innerText = formatINR(net);
+        netEl.style.color = netColor;
+    }
+} else {
+    const pill = document.getElementById("loan-net-pill");
+    if (pill) pill.style.display = "none";
+}
 }
 
 function selectAllOptions(fieldName) {
@@ -2344,12 +2415,13 @@ function confirmFilter(fieldName) {
     const total = allChips.length;
     const selected = selectedChips.length;
 
-    // 🔥 If nothing selected → show nothing
+    // 🚫 If nothing selected → DO NOTHING
     if (selected === 0) {
-        activeFilters[fieldName] = ["__NO_MATCH__"];
+        return;
     }
+
     // 🔥 If all selected → remove filter (Excel behavior)
-    else if (selected === total) {
+    if (selected === total) {
         activeFilters[fieldName] = [];
     }
     // 🔥 Partial selection → apply filter
@@ -2366,13 +2438,6 @@ function confirmFilter(fieldName) {
 
     if (dropdown) dropdown.style.display = "none";
 }
-
-
-
-
-
-
-
 function handleRowClick(rowElement) {
     // 1. Toggle selection
     rowElement.classList.toggle('selected');
