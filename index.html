@@ -1285,7 +1285,7 @@ tbody {
 <script>
 
 // 1. Configuration
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby7mScNHdFB_3IOQkO8WSLQIpFqif_etSjoqFcdrPNuBHzG908djhS_WRash-rgM-AMcg/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxMoMIKcjc0GHe59XS3cZzZZnKHY_iphv3J2YcyREf3C--zI7OF0ItQ7hCn4idFKUJeIw/exec';
 	
     let navStack = []; 
     let currentViewType = 'Savings'; 
@@ -3094,8 +3094,17 @@ function showContextMenu(e, rowElement) {
     // Dynamic Menu Content
     let menuHtml = ``;
     if (selectedCount === 1) {
-        menuHtml += `<div class="menu-item" onclick="executeCommand('copy')"><span>📋</span> Copy Details</div>`;
-    }
+    menuHtml += `
+        <div class="menu-item" onclick="executeCommand('copy')">
+            <span>📋</span> Copy Details
+        </div>
+
+        <div class="menu-item" onclick="executeCommand('edit')">
+            <span>✏️</span> Edit Record
+        </div>
+    `;
+}
+
     menuHtml += `
         <div class="menu-item" onclick="executeCommand('trace')"><span>🔍</span> Trace Sequence (${selectedCount})</div>
         <div class="menu-item danger" onclick="executeCommand('purge')"><span>🔥</span> Global Purge (${selectedCount})</div>
@@ -3145,9 +3154,14 @@ async function executeCommand(type) {
     
     if (type === 'copy' && selectedRows.length === 1) {
         copyRowToClipboard(selectedRows[0]);
-    } else if (type === 'trace') {
+    } 
+    else if (type === 'edit' && selectedRows.length === 1) {
+        openEditModal(selectedRows[0]);
+    }
+    else if (type === 'trace') {
         fetchAssociated();
-    } else if (type === 'purge') {
+    } 
+    else if (type === 'purge') {
         deleteRecords();
     }
 }
@@ -3446,6 +3460,87 @@ document.addEventListener("click", function (e) {
         selector.classList.remove("open");
     }
 });
+let editingRowId = null;
+
+function openEditModal(rowElement) {
+
+    const table = document.getElementById('mainDataTable');
+    const headers = Array.from(table.querySelectorAll('th'))
+        .map(th => th.innerText.trim());
+
+    const cells = Array.from(rowElement.querySelectorAll('td'))
+        .map(td => td.innerText.trim());
+
+    editingRowId = rowElement.getAttribute('data-id');
+
+    let fieldsHtml = "";
+
+    headers.forEach((header, i) => {
+
+        fieldsHtml += `
+            <div style="margin-bottom:12px;">
+                <label style="font-size:11px; color:var(--text-muted);">${header}</label>
+                <input 
+                    type="text"
+                    value="${cells[i] || ""}"
+                    data-index="${i}"
+                    style="
+                        width:100%;
+                        padding:8px;
+                        border-radius:8px;
+                        border:1px solid var(--border);
+                        background:#111827;
+                        color:white;
+                        margin-top:4px;
+                    "
+                >
+            </div>
+        `;
+    });
+
+    document.getElementById('edit-fields').innerHTML = fieldsHtml;
+    document.getElementById('edit-modal').style.display = "flex";
+}
+function closeEditModal() {
+    document.getElementById('edit-modal').style.display = "none";
+    editingRowId = null;
+}
+async function saveEdit() {
+
+    if (!editingRowId) return;
+
+    const inputs = document.querySelectorAll('#edit-fields input');
+    const updatedRow = Array.from(inputs).map(input => input.value);
+
+    setProcessing(true, "UPDATING RECORD...");
+
+    try {
+
+        await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'updateRow',
+                id: editingRowId,
+                values: updatedRow,
+                token: sessionStorage.getItem("session_token")
+            })
+        });
+
+        closeEditModal();
+
+        setTimeout(async () => {
+            await initializeDashboard();
+            await loadMain();
+            setProcessing(false);
+            document.getElementById('status').innerText = "UPDATE SUCCESSFUL";
+        }, 1200);
+
+    } catch (e) {
+        setProcessing(false);
+        alert("Update failed.");
+    }
+}
+
 </script>
 <div id="custom-context-menu"></div>
 <!-- ===== Floating Action Button ===== -->
@@ -3468,5 +3563,33 @@ document.addEventListener("click", function (e) {
         ☰
     </div>
 </div>
+<div id="edit-modal" style="
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.8);
+    backdrop-filter:blur(8px);
+    z-index:20000;
+    align-items:center;
+    justify-content:center;
+">
+    <div style="
+        background:#0f172a;
+        padding:30px;
+        border-radius:20px;
+        width:600px;
+        max-height:80vh;
+        overflow:auto;
+        border:1px solid var(--primary);
+    ">
+        <h3 style="margin-top:0;">✏️ Edit Record</h3>
+        <div id="edit-fields"></div>
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+            <button class="btn-future-danger" onclick="closeEditModal()">Cancel</button>
+            <button class="btn-future" onclick="saveEdit()">Save Changes</button>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
