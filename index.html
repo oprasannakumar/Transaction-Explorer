@@ -22,7 +22,87 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
     <style>
+        @keyframes scanning {
+    0% { box-shadow: 0 0 5px var(--primary-glow); border-color: rgba(14, 165, 233, 0.3); }
+    50% { box-shadow: 0 0 20px var(--primary), inset 0 0 10px var(--primary-glow); border-color: var(--primary); }
+    100% { box-shadow: 0 0 5px var(--primary-glow); border-color: rgba(14, 165, 233, 0.3); }
+}
+
+.verifying-mode {
+    animation: scanning 1s infinite ease-in-out;
+    pointer-events: none; /* Prevent typing during verification */
+    opacity: 0.8;
+}
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-8px); }
+    40%, 80% { transform: translateX(8px); }
+}
+
+.auth-error {
+    animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+    border-color: var(--danger) !important;
+    box-shadow: 0 0 20px rgba(244, 63, 94, 0.4) !important;
+}
+        #otp-modal .stat-card::before {
+    display: none; /* Disables the animated sweep border just for the OTP modal */
+}
+        body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+
+    background: repeating-linear-gradient(
+        transparent,
+        transparent 2px,
+        rgba(255,255,255,0.02) 3px
+    );
+
+    pointer-events:none;
+}
+        /* ===== CYBER GRID BACKGROUND ===== */
+
+.bg-grid{
+    position:fixed;
+    inset:0;
+    z-index:-2;
+
+    background-image:
+        linear-gradient(rgba(14,165,233,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(14,165,233,0.06) 1px, transparent 1px);
+
+    background-size:40px 40px;
+
+    animation:gridMove 18s linear infinite;
+}
+
+@keyframes gridMove{
+    from{background-position:0 0;}
+    to{background-position:40px 40px;}
+}
+
+
+/* ===== AURORA LIGHTING ===== */
+
+.bg-glow{
+    position:fixed;
+    inset:0;
+    z-index:-3;
+
+    background:
+        radial-gradient(circle at 20% 20%, rgba(14,165,233,0.2), transparent 40%),
+        radial-gradient(circle at 80% 30%, rgba(139,92,246,0.2), transparent 40%),
+        radial-gradient(circle at 40% 80%, rgba(16,185,129,0.15), transparent 40%);
+
+    animation:auroraMove 16s ease-in-out infinite alternate;
+}
+
+@keyframes auroraMove{
+    0%{transform:translateY(-10px);}
+    100%{transform:translateY(10px);}
+}
        :root {
             --bg: #030712;
             --surface: rgba(30, 41, 59, 0.5);
@@ -96,7 +176,24 @@
     display: block;
 }
 
+.transaction-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
 
+.toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
 /* Options */
 .sheet-options {
     max-height: 240px;
@@ -532,23 +629,28 @@ overflow-y:auto;
     margin: auto; 
 }
         /* --- Header & Status --- */
-        #status { 
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px; 
-            letter-spacing: 2px;
-            color: var(--primary); 
-            margin-bottom: 16px; 
-            text-transform: uppercase;
-            margin-top: 10px;    /* Added top margin for breathing room */
-            margin-bottom: 24px;
-            
-        }
+        #status{
+    font-family:'JetBrains Mono';
 
+    letter-spacing:4px;
+
+    text-shadow:
+        0 0 10px rgba(14,165,233,0.7),
+        0 0 20px rgba(14,165,233,0.3);
+
+    animation:hudPulse 3s ease-in-out infinite;
+}
+
+@keyframes hudPulse{
+    0%,100%{opacity:1}
+    50%{opacity:.6}
+}
         /* --- Futuristic Stat Cards --- */
         .dashboard {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 8px;
+    margin-top: 25px;
     margin-bottom: 30px;
     position: relative;
 }
@@ -556,7 +658,7 @@ overflow-y:auto;
 
 
 
-dashboard::before {
+.dashboard::before {
     content: "";
     position: absolute;
     inset: 0;
@@ -579,44 +681,58 @@ dashboard::before {
 .header-content span {
     white-space: nowrap; /* Prevents header text from wrapping */
 }
-
-.stat-card {
-    position: relative;
-    background: rgba(15,23,42,0.7);
-    backdrop-filter: blur(18px);
-    border: 1px solid rgba(14,165,233,0.2);
-    border-radius: 20px;
-    padding: 10px;
-    overflow: hidden;
-    transition: all 0.4s ease;
+.stat-card{
+    position:relative;
+    background:rgba(15,23,42,0.75);
+    backdrop-filter:blur(25px);
+    border-radius:20px;
+    border:1px solid rgba(14,165,233,0.25);
+    padding:20px;
+    overflow:hidden;
+    transition:all .4s ease;
 }
 
 /* Neon Edge Glow */
-.stat-card::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: 18px;
-    padding: 1px;
-    background: linear-gradient(
+.stat-card::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    border-radius:20px;
+
+    padding:1px;
+
+    background:linear-gradient(
         120deg,
-        rgba(14,165,233,0.8),
         transparent,
-        rgba(14,165,233,0.8)
+        rgba(14,165,233,0.9),
+        transparent
     );
+
     -webkit-mask:
-        linear-gradient(#000 0 0) content-box,
-        linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0.4;
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+
+mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+
+-webkit-mask-composite: xor;
+mask-composite: exclude;
+
+    animation:borderSweep 4s linear infinite;
+}
+@keyframes borderSweep{
+    from{background-position:0%}
+    to{background-position:300%}
 }
 
 /* Hover Effect */
-.stat-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 0 40px rgba(14,165,233,0.3);
-    border-color: var(--primary);
+.stat-card:hover{
+    transform:translateY(-8px) scale(1.02);
+
+    box-shadow:
+        0 0 25px rgba(14,165,233,0.4),
+        0 0 60px rgba(14,165,233,0.2);
 }
 
 /* Tactical Label */
@@ -677,7 +793,7 @@ dashboard::before {
     font-size: 11px;
     font-family: 'JetBrains Mono', monospace;
     border: 1px solid var(--border);margin-bottom:10px;
-    transition: 0.2s;gap:6px;min-widhth:5px;
+    transition: 0.2s;gap:6px;min-width:5px;
     /* This makes the card narrow and clean */
 }/* Color Coding for specific denominations */
 .denom-tile[data-v="500"] { border: 3px solid #fbbf24; } /* Gold */
@@ -760,14 +876,31 @@ dashboard::before {
     box-shadow: var(--card-shadow);
 }
 
-        .table-search-box {
-            padding: 20px;
-            background: rgba(255,255,255,0.02);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;max-widht:120px;
-        }
+.table-search-box{
+    padding:16px 20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    width:100%;
+    flex-wrap:wrap;
+    gap:12px;
+    box-sizing:border-box;
+}
+
+.toolbar-left{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.toolbar-right{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+}#searchInput{
+    max-width:220px;
+}
 thead th {
     position: sticky;
     top: 0;
@@ -851,30 +984,33 @@ tbody {
 }
 /* ===== FUTURISTIC CONTROL BUTTON ===== */
 
-.btn-future {
-    position: relative;
-    padding: 10px 22px;
-    border-radius: 14px;
-    font-weight: 700;
-    font-size: 13px;
-    letter-spacing: 1px;
-    cursor: pointer;
-    color: var(--primary);
-    background: rgba(14,165,233,0.05);
-    border: 1px solid var(--primary);
-    overflow: hidden;
-    transition: all 0.3s ease;
+.btn-future{
+    position:relative;
+    padding:10px ;
+    font-weight:700;
+    letter-spacing:1px;
+    border-radius:10px;
+    border:1px solid var(--primary);
+    background:rgba(14,165,233,0.06);
+    color:var(--primary);
+    cursor:pointer;
+    overflow:hidden;
+    transition:.35s;
 }
 
 /* Neon Glow Border */
-.btn-future::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: 14px;
-    box-shadow: 0 0 15px var(--primary-glow);
-    opacity: 0;
-    transition: 0.3s;
+.btn-future::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(
+        120deg,
+        transparent,
+        rgba(14,165,233,0.5),
+        transparent
+    );
+
+    transform:translateX(-100%);
 }
 
 /* Energy Sweep Effect */
@@ -895,13 +1031,17 @@ tbody {
 }
 
 /* Hover */
-.btn-future:hover {
-    background: rgba(14,165,233,0.15);
-    transform: translateY(-2px);
+.btn-future:hover{
+    box-shadow:
+        0 0 15px rgba(14,165,233,0.6),
+        inset 0 0 10px rgba(14,165,233,0.2);
+
+    transform:translateY(-2px);
 }
 
-.btn-future:hover::before {
-    opacity: 1;
+.btn-future:hover::before{
+    transform:translateX(100%);
+    transition:0.7s;
 }
 
 .btn-future:hover::after {
@@ -917,7 +1057,14 @@ tbody {
     width: 40px;
 }
         .data-row { transition: 0.2s; }
-        .data-row:hover { background: rgba(255,255,255,0.03); }
+        .data-row:hover{
+    background:rgba(14,165,233,0.08);
+
+    box-shadow:
+        inset 0 0 15px rgba(14,165,233,0.2);
+
+    transform:scale(1.002);
+}
         .data-row.selected { background: rgba(14, 165, 233, 0.15) !important; color: var(--primary); }
 
         /* --- Buttons --- */
@@ -1080,11 +1227,17 @@ tbody {
         rgba(14,165,233,0.8)
     );
     -webkit-mask:
-        linear-gradient(#000 0 0) content-box,
-        linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0.3;
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+
+mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+
+-webkit-mask-composite: xor;
+mask-composite: exclude;
+
+opacity: 0.3;
 }
 
 /* Hover Lift */
@@ -1140,6 +1293,9 @@ tbody {
     </style>
 </head>
 <body>
+    
+        <div class="bg-grid"></div>
+        <div class="bg-glow"></div>
 <div id="processing-overlay">
     <div class="spinner"></div>
     <div id="overlay-text" style="margin-top:20px; font-weight: 800; letter-spacing: 3px; color: var(--primary);">INITIALIZING SYSTEM...</div>
@@ -1207,7 +1363,7 @@ tbody {
 
 // 1. Configuration
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxMoMIKcjc0GHe59XS3cZzZZnKHY_iphv3J2YcyREf3C--zI7OF0ItQ7hCn4idFKUJeIw/exec';
-	
+	let otpVerifying = false;
     let navStack = []; 
     let currentViewType = 'Savings'; 
     let currentTableMode = 'statement';
@@ -1479,8 +1635,8 @@ netEl.style.color = netPosition < 0 ? 'var(--danger)' : 'var(--primary)';
             "Sync Failed: Token Invalid";
     }
 }
+let currentOtpResolve = null;
 
-let selectedSheetName = "";
 async function startAuthSequence() {
     setProcessing(true, "REQUESTING ACCESS KEYS...");
     
@@ -1489,33 +1645,100 @@ async function startAuthSequence() {
         const data = await res.json();
 
         if (data.status === "success") {
-            let code = prompt("🔐 SECURITY CHECK\nEnter the 6-digit code sent to your Telegram:");
+            setProcessing(false);
+            // Open our custom themed modal instead of prompt()
+            document.getElementById('otp-modal').style.display = 'flex';
+            document.getElementById('otp-input').focus();
             
-            if (!code) { 
-                setProcessing(false); 
-                return; 
-            }
-
-            const verifyRes = await fetch(`${SCRIPT_URL}?action=verifyOTP&code=${code}`);
-            const verifyData = await verifyRes.json();
-
-            if (verifyData.isValid) {
-                sessionStorage.setItem("finance_auth_v3", "true");
-                sessionStorage.setItem("session_token", verifyData.token);
-                setProcessing(false);
-                document.getElementById('displayArea').innerHTML = ""; // Clear the login button
-                loadSheetList();
-                initializeDashboard();
-            } else {
-                alert("INVALID AUTHENTICATION CODE.");
-                location.reload();
-            }
+            // Allow "Enter" key to submit
+            document.getElementById('otp-input').onkeyup = (e) => {
+                if(e.key === "Enter") submitOtp();
+            };
         }
     } catch (e) {
-        alert("Auth Node Offline. Check SCRIPT_URL.");
+        alert("Auth Node Offline.");
         setProcessing(false);
     }
 }
+async function submitOtp() {
+    if (otpVerifying) return; // prevents accidental trigger
+    otpVerifying = true;
+    const input = document.getElementById('otp-input');
+    const verifyBtn = document.querySelector('#otp-modal .btn-future');
+    const code = input.value;
+    
+    if (code.length < 6) {
+        input.classList.add('auth-error');
+        setTimeout(() => input.classList.remove('auth-error'), 500);
+        return;
+    }
+
+    // --- Start Visual sequence ---
+    input.classList.add('verifying-mode');
+    const originalBtnText = verifyBtn.innerText;
+    verifyBtn.innerText = "VERIFYING...";
+    verifyBtn.disabled = true;
+    verifyBtn.style.opacity = "0.6";
+    document.getElementById('status').innerText = "VERIFYING_CREDENTIALS...";
+    
+    try {
+        const verifyRes = await fetch(`${SCRIPT_URL}?action=verifyOTP&code=${code}`);
+        const verifyData = await verifyRes.json();
+
+        if (verifyData.isValid) {
+            // 1. Save Session
+            sessionStorage.setItem("finance_auth_v3", "true");
+            sessionStorage.setItem("session_token", verifyData.token);
+            
+            // 2. Clear UI
+            document.getElementById('otp-modal').style.display = 'none';
+            document.getElementById('displayArea').innerHTML = ""; 
+            input.value = "";
+            
+            // 3. WAKE UP SYSTEM (Crucial for loading data)
+            setProcessing(true, "SYNCING_DATABASE...");
+            loadSheetList(); 
+            await initializeDashboard(); 
+            setProcessing(false);
+            
+            document.getElementById('status').innerText = "SYSTEM_ONLINE // AUTHORIZED";
+        } else {
+            // Failure Path
+            setProcessing(false);
+            otpVerifying = false;
+            input.classList.remove('verifying-mode');
+            input.classList.add('auth-error');
+            verifyBtn.innerText = originalBtnText;
+            verifyBtn.disabled = false;
+            verifyBtn.style.opacity = "1";
+            document.getElementById('status').innerText = "ACCESS DENIED: INVALID KEY";
+            
+            setTimeout(() => {
+                input.value = "";
+                input.classList.remove('auth-error');
+                input.focus();
+            }, 600);
+        }
+    } catch (e) {
+        setProcessing(false);
+        otpVerifying = false;
+        input.classList.remove('verifying-mode');
+        verifyBtn.innerText = originalBtnText;
+        verifyBtn.disabled = false;
+        verifyBtn.style.opacity = "1";
+        document.getElementById('status').innerText = "NODE_OFFLINE: CHECK CONNECTION";
+        console.error("Auth Error:", e);
+    }
+}
+
+function closeOtpModal() {
+    document.getElementById('otp-modal').style.display = 'none';
+    document.getElementById('status').innerText = "Auth Aborted // Terminal Locked";
+    showLogoutScreen();
+}    
+
+
+
 const APP_MODULES = [
     "Full Statement", 
     "Monthly Transaction", 
@@ -1558,7 +1781,10 @@ function selectSheet(name, el) {
 
 // --- 3. EXECUTE SEARCH (With Token) ---
 async function loadMain() {
-
+    if (sessionStorage.getItem("finance_auth_v3") !== "true") {
+        document.getElementById('status').innerText = "AUTH_REQUIRED // PLEASE LOGIN";
+        return; 
+    }
     const selectedSheet = selectedSheetName;
     const s = selectedStart;
     const e = selectedEnd;
@@ -1653,12 +1879,16 @@ async function loadMain() {
 }
 
 async function viewNamedRange(rangeName) {
+    if (sessionStorage.getItem("finance_auth_v3") !== "true") {
+        document.getElementById('status').innerText = "ACCESS DENIED // PLEASE LOGIN FIRST";
+        return; 
+    }
+
     currentViewType = rangeName;
     currentTableMode = 'registry';
     setProcessing(true, `Accessing ${rangeName} Vault...`);
     
     try {
-        // Fetch data with security token
         const res = await fetch(`${SCRIPT_URL}?action=fetchNamedRange&range=${rangeName}${getAuthParams()}`);
         const data = await res.json();
         
@@ -1667,109 +1897,38 @@ async function viewNamedRange(rangeName) {
                     </div><div class="card-grid">`;
         
         data.rows.forEach(row => {
-
-    // ❌ Skip Total row for Savings view
-    if (rangeName === "Savings" && 
-        String(row[0]).trim().toLowerCase() === "total") {
-        return;
-    }
+            if (rangeName === "Savings" && String(row[0]).trim().toLowerCase() === "total") return;
 
             const isSavings = rangeName === 'Savings';
             const themeColor = isSavings ? 'var(--success)' : 'var(--danger)';
-            
             const name = row[0];
-            const openingOrAvailable = Number(row[1]) || 0; // Savings: Col B (Opening) | CC: Col B (Available)
-            const currentBalance = Number(row[2]) || 0;     // Col C (Utilized/Current)
-            const totalLimit = !isSavings ? (Number(row[3]) || 0) : 0; // CC: Col D (Total Limit)
+            const openingOrAvailable = Number(row[1]) || 0; 
+            const currentBalance = Number(row[2]) || 0;     
+            const totalLimit = !isSavings ? (Number(row[3]) || 0) : 0; 
 
             let progressBarHTML = "";
-            
             if (!isSavings && totalLimit > 0) {
-                // --- Credit Card Utilization logic ---
                 const percent = Math.round((currentBalance / totalLimit) * 100);
                 const displayWidth = Math.min(Math.max(percent, 0), 100);
-                const isOverLimit = percent > 100;
-                
-                // Color Logic: Blue -> Gold -> Red -> Purple (Over-Limit)
-                let barColor = 'var(--primary)';
-                if (percent > 80) barColor = 'var(--danger)';
-                else if (percent > 50) barColor = 'var(--gold)';
-                if (isOverLimit) barColor = '#a855f7'; 
-
-                progressBarHTML = `
-                    <div style="margin: 4px 0 16px 0;">
-                        <div style="display:flex; justify-content:space-between; font-size:9px; margin-bottom:4px; font-weight:800; letter-spacing:1px;">
-                            <span style="color:var(--text-muted);">${isOverLimit ? '⚠️ OVER LIMIT' : 'UTILIZATION'}</span>
-                            <span style="color:${barColor};">${percent}%</span>
-                        </div>
-                        <div style="width:100%; height:4px; background:rgba(255,255,255,0.05); border-radius:4px; overflow:visible;">
-                            <div style="width:${displayWidth}%; height:100%; background:${barColor}; 
-                                 box-shadow: 0 0 10px ${barColor}aa; border-radius:4px; transition:1s ease-in-out;">
-                            </div>
-                        </div>
-                    </div>`;
-
-            } else if (isSavings && openingOrAvailable > 0) {
-                // --- Savings Growth logic (Current vs Opening) ---
-                const ratio = Math.round((currentBalance / openingOrAvailable) * 100);
-                const displayWidth = Math.min(ratio, 100);
-                const isGrowth = ratio > 100;
-                const barColor = isGrowth ? '#22c55e' : 'var(--success)';
-
-                progressBarHTML = `
-                    <div style="margin: 4px 0 16px 0;">
-                        <div style="display:flex; justify-content:space-between; font-size:9px; margin-bottom:4px; font-weight:800; letter-spacing:1px;">
-                            <span style="color:var(--text-muted);">${isGrowth ? '✨ GROWTH' : 'ASSET FILL'}</span>
-                            <span style="color:${barColor};">${ratio}%</span>
-                        </div>
-                        <div style="width:100%; height:4px; background:rgba(255,255,255,0.05); border-radius:4px; overflow:visible;">
-                            <div style="width:${displayWidth}%; height:100%; background:${barColor}; 
-                                 box-shadow: 0 0 12px ${isGrowth ? '#22c55e' : 'var(--success)88'}; 
-                                 border-radius:4px; transition:1s ease-in-out;">
-                            </div>
-                        </div>
-                    </div>`;
+                const barColor = percent > 80 ? 'var(--danger)' : percent > 50 ? 'var(--gold)' : 'var(--primary)';
+                progressBarHTML = `<div style="margin: 4px 0 16px 0;"><div style="display:flex; justify-content:space-between; font-size:9px; margin-bottom:4px; font-weight:800;"><span style="color:var(--text-muted);">UTILIZATION</span><span style="color:${barColor};">${percent}%</span></div><div style="width:100%; height:4px; background:rgba(255,255,255,0.05); border-radius:4px;"><div style="width:${displayWidth}%; height:100%; background:${barColor}; box-shadow: 0 0 10px ${barColor}aa; border-radius:4px;"></div></div></div>`;
             }
 
-            html += `
-                <div class="fin-panel" style="border-right: 4px solid ${themeColor};" onclick="filterLedgerByEntity('${rangeName}', '${name}')">
-                    <div class="label" style="margin-bottom:4px;">${isSavings ? 'ASSET' : 'LIABILITY'}</div>
-                    <div style="font-size:16px; font-weight:700; letter-spacing:0.5px;">${name}</div>
-                    
-                   <div class="vault-balance" style="color:${themeColor};">
-                        ₹${currentBalance.toLocaleString('en-IN')}
-                    </div>
-
-                    ${progressBarHTML}
-                    
-                    <div style="display:flex; justify-content:space-between; border-top:1px solid var(--border); padding-top:12px;">
-                        <div style="font-size:10px; color:var(--text-muted); line-height:1.4;">
-                            ${isSavings ? 'OPENING' : 'TOTAL LIMIT'}<br>
-                            <span style="color:var(--text); font-weight:700; font-size:15px;">₹${(isSavings ? openingOrAvailable : totalLimit).toLocaleString('en-IN')}</span>
-                        </div>
-                        ${!isSavings ? `
-                        <div style="font-size:10px; color:var(--text-muted); text-align:right; line-height:1.4;">
-                            AVAILABLE<br>
-                            <span style="color:var(--success); font-weight:700; font-size:15px;">₹${openingOrAvailable.toLocaleString('en-IN')}</span>
-                        </div>` : ''}
-                    </div>
-                </div>`;
+            html += `<div class="fin-panel" style="border-right: 4px solid ${themeColor};" onclick="filterLedgerByEntity('${rangeName}', '${name}')">
+                        <div class="label" style="margin-bottom:4px;">${isSavings ? 'ASSET' : 'LIABILITY'}</div>
+                        <div style="font-size:16px; font-weight:700;">${name}</div>
+                        <div class="vault-balance" style="color:${themeColor}; font-size:20px; font-weight:800; font-family:'JetBrains Mono';">₹${currentBalance.toLocaleString('en-IN')}</div>
+                        ${progressBarHTML}
+                    </div>`;
         });
-        
         document.getElementById('displayArea').innerHTML = html + `</div>`;
         setProcessing(false);
-        
-        // Adjust layout for dynamic height
-        if (typeof adjustTableHeight === "function") adjustTableHeight();
-        
+        adjustTableHeight();
     } catch(e) { 
-        console.error("Vault Error:", e);
         setProcessing(false);
         document.getElementById('status').innerText = "Vault Access Error";
     }
 }
-
-
 
 
 
@@ -2303,6 +2462,7 @@ if (selectedSheetName &&
     if (pill) pill.style.display = "none";
 }
 }
+
 function updateLoanNetFromBars() {
 
     const pill = document.getElementById("loan-net-pill");
@@ -3078,39 +3238,25 @@ window.addEventListener("resize", adjustTableHeight);
 window.addEventListener("load", adjustTableHeight);
 
 function showLogoutScreen() {
+    // Reset Status Bar
+    document.getElementById('status').innerText = "System Locked // Awaiting Auth";
 
-    document.body.innerHTML = `
-    <div style="
-        height:100vh;
-        background: radial-gradient(circle at 50% 0%, #1e293b 0%, #030712 100%);
-        display:flex;
-        flex-direction:column;
-        align-items:center;
-        justify-content:center;
-        font-family:'JetBrains Mono';
-        color:white;
-        overflow:hidden;
-        position:relative;
-    ">
-
-        <div id="floating-transactions"></div>
-
-        <h1 style="
-            font-size:42px;
-            letter-spacing:4px;
-            margin-bottom:20px;
-            color:var(--primary);
-        ">
-            NODE LOCKED
-        </h1>
-
-        <button class="btn-blue" onclick="location.reload()">
-            🔐 LOGIN
-        </button>
-
-    </div>
+    // Restore the original "Access Portal" Start-up Page
+    document.getElementById('displayArea').innerHTML = `
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 50vh; text-align: center;">
+            <div style="margin-bottom: 20px; font-size: 50px;">🔐</div>
+            <h2 style="letter-spacing: 4px; color: var(--primary);">ENCRYPTED TERMINAL</h2>
+            <p style="color: var(--text-muted); margin-bottom: 30px;">Connection secure. Awaiting authorization...</p>
+            <button class="btn-future" onclick="startAuthSequence()" style="padding: 15px 40px; font-size: 16px;">
+                INITIALIZE LOGIN
+            </button>
+        </div>
     `;
-
+    
+    // Start the background animation (optional)
+    const container = document.createElement("div");
+    container.id = "floating-transactions";
+    document.getElementById('displayArea').appendChild(container);
     startTransactionAnimation();
 }
 function startTransactionAnimation() {
@@ -3186,13 +3332,60 @@ document.addEventListener("click", function(e) {
         document.getElementById("forms-menu").style.display = "none";
     }
 });
+function resetDashboardToZero() {
+    // Reset Main Stats
+    const vals = ['net-val', 'debt-val', 'total-available', 'cash-total'];
+    vals.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = "₹0";
+    });
 
+    // Reset Liquidity Card Details (if already rendered)
+    const liquidityCard = document.querySelector(".dashboard .stat-card:nth-child(1)");
+    if (liquidityCard) {
+        liquidityCard.innerHTML = `
+            <div class="corner-accent"></div>
+            <span class="label">Liquidity Pool</span>
+            <div class="value" style="color: var(--success);" id="net-val">₹0</div>
+        `;
+    }
+
+    // Reset Credit Card Details (if already rendered)
+    const creditCard = document.querySelector(".dashboard .stat-card:nth-child(2)");
+    if (creditCard) {
+        creditCard.innerHTML = `
+            <span class="label">Credit Exposure</span>
+            <div class="value" style="color: var(--danger);" id="debt-val">₹0</div>
+        `;
+    }
+
+    // Clear Cash Grid
+    const cashGrid = document.getElementById('cash-grid');
+    if (cashGrid) cashGrid.innerHTML = "";
+    
+    // Clear Main Display (Tables/Cards)
+    document.getElementById('displayArea').innerHTML = "";
+}
 function logout() {
+    // 1. Instantly hide the Quick Actions dropdown
+    const actionSelector = document.getElementById("quickActionsSelector");
+    if (actionSelector) {
+        actionSelector.classList.remove("open");
+    }
+
+    // 2. Clear credentials
     sessionStorage.removeItem("finance_auth_v3");
     sessionStorage.removeItem("session_token");
+    
+    // 3. Purge Dashboard Data (Reset to Zero)
+    resetDashboardToZero();
+    
+    // 4. Reset display area to start-up page
     showLogoutScreen();
+    
+    // 5. Update system status
+    document.getElementById('status').innerText = "SESSION_TERMINATED // DATA_PURGED";
 }
-
 // Close dropdown if the user scrolls the table or clicks outside
 document.addEventListener('scroll', function(e) {
     if (e.target.id === 'tableWrap') {
@@ -3357,5 +3550,35 @@ document.addEventListener("click", function (e) {
     });
   }
 </script>
+<div id="otp-modal" style="display:none; position:fixed; inset:0; background:rgba(3,7,18,0.95); backdrop-filter:blur(15px); z-index:30000; align-items:center; justify-content:center;">
+    <div class="stat-card" style="width:340px; text-align:center; border: 1px solid var(--primary); box-shadow:0 0 40px rgba(14,165,233,0.2); animation: none;">
+        <div class="corner-accent"></div>
+        <div style="font-size:32px; margin-bottom:10px;">🛡️</div>
+        <h2 style="letter-spacing:3px; font-size:13px; color:var(--primary); margin-bottom:15px;">SECURITY CHALLENGE</h2>
+        <p style="font-size:10px; color:var(--text-muted); margin-bottom:20px; line-height:1.5; letter-spacing:1px;">
+            DECRYPTING SESSION...<br>ENTER TELEGRAM AUTHORIZATION KEY
+        </p>
+        
+        <input type="tel" id="otp-input" maxlength="6" placeholder="000000" 
+       autocomplete="one-time-code" 
+       inputmode="numeric" 
+       autocorrect="off" 
+       autocapitalize="off" 
+       spellcheck="false"
+       style="width:180px; display:block; margin: 0 auto 25px auto; background:rgba(0,0,0,0.6); border: 1px solid rgba(14,165,233,0.3); border-radius:10px; padding:12px; color:var(--primary); font-family:'JetBrains Mono'; font-size:20px; text-align:center; letter-spacing:6px; outline:none; box-shadow:inset 0 0 15px rgba(0,0,0,0.5);">
+        
+        <div style="display:flex; gap:12px; padding: 0 10px; justify-content: center;">
+            <button class="btn-future-danger" 
+                    style="flex:1; height:45px; display:flex; align-items:center; justify-content:center; text-align:center;" 
+                    onclick="closeOtpModal()">
+                ABORT
+            </button>
+                        <button class="btn-future" 
+                    style="flex:1; height:45px; display:flex; align-items:center; justify-content:center; text-align:center;" 
+                    onclick="submitOtp()"> VERIFY
+            </button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
