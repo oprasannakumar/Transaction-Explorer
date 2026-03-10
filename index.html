@@ -834,20 +834,11 @@ mask-composite: exclude;
     border-radius: 10px;
     font-size: 13px;
     transition: 0.2s;
-    min-width: 220px;
+    width: 160px;
+    min-width: 160px;
     cursor: pointer;
 }
-.range-input {
-    background: rgba(0,0,0,0.3);
-    border: 1px solid var(--border);
-    color: white;
-    padding: 10px 14px;
-    border-radius: 10px;
-    font-size: 13px;
-    transition: 0.2s;
-    min-width: 220px;
-    cursor: pointer;
-}
+
 
 /* Focus effect */
 .range-input:focus {
@@ -1881,54 +1872,266 @@ async function loadMain() {
 }
 
 async function viewNamedRange(rangeName) {
+
     if (sessionStorage.getItem("finance_auth_v3") !== "true") {
-        document.getElementById('status').innerText = "ACCESS DENIED // PLEASE LOGIN FIRST";
-        return; 
+        document.getElementById('status').innerText =
+            "ACCESS DENIED // PLEASE LOGIN FIRST";
+        return;
     }
 
     currentViewType = rangeName;
     currentTableMode = 'registry';
+
     setProcessing(true, `Accessing ${rangeName} Vault...`);
-    
+
     try {
-        const res = await fetch(`${SCRIPT_URL}?action=fetchNamedRange&range=${rangeName}${getAuthParams()}`);
+
+        const res = await fetch(
+            `${SCRIPT_URL}?action=fetchNamedRange&range=${rangeName}${getAuthParams()}`
+        );
+
         const data = await res.json();
-        
-        let html = `<div style="margin-bottom:15px; border-left:4px solid var(--primary); padding-left:15px;">
-                        <h3 style="margin:0; font-size:16px;">${rangeName === 'Savings' ? 'Active Assets' : 'Credit Accounts'}</h3>
-                    </div><div class="card-grid">`;
-        
+
+        let html = `
+        <div style="margin-bottom:15px;border-left:4px solid var(--primary);padding-left:15px;">
+            <h3 style="margin:0;font-size:16px;">
+                ${rangeName === 'Savings' ? 'Active Assets' : 'Credit Accounts'}
+            </h3>
+        </div>
+
+        <div class="card-grid">
+        `;
+
         data.rows.forEach(row => {
-            if (rangeName === "Savings" && String(row[0]).trim().toLowerCase() === "total") return;
 
-            const isSavings = rangeName === 'Savings';
-            const themeColor = isSavings ? 'var(--success)' : 'var(--danger)';
+            if (
+                rangeName === "Savings" &&
+                String(row[0]).trim().toLowerCase() === "total"
+            ) return;
+
+            const isSavings = rangeName === "Savings";
+
+            const themeColor = isSavings
+                ? "var(--success)"
+                : "var(--danger)";
+
             const name = row[0];
-            const openingOrAvailable = Number(row[1]) || 0; 
-            const currentBalance = Number(row[2]) || 0;     
-            const totalLimit = !isSavings ? (Number(row[3]) || 0) : 0; 
 
-            let progressBarHTML = "";
-            if (!isSavings && totalLimit > 0) {
-                const percent = Math.round((currentBalance / totalLimit) * 100);
-                const displayWidth = Math.min(Math.max(percent, 0), 100);
-                const barColor = percent > 80 ? 'var(--danger)' : percent > 50 ? 'var(--gold)' : 'var(--primary)';
-                progressBarHTML = `<div style="margin: 4px 0 16px 0;"><div style="display:flex; justify-content:space-between; font-size:9px; margin-bottom:4px; font-weight:800;"><span style="color:var(--text-muted);">UTILIZATION</span><span style="color:${barColor};">${percent}%</span></div><div style="width:100%; height:4px; background:rgba(255,255,255,0.05); border-radius:4px;"><div style="width:${displayWidth}%; height:100%; background:${barColor}; box-shadow: 0 0 10px ${barColor}aa; border-radius:4px;"></div></div></div>`;
+            const opening = Number(row[1]) || 0;
+            const current = Number(row[2]) || 0;
+            const totalLimit = Number(row[3]) || 0;
+
+            let cardContent = "";
+
+            // ======================
+            // SAVINGS CARD
+            // ======================
+
+            if (isSavings) {
+
+                cardContent = `
+                <div style="
+                    margin-top:12px;
+                    padding-top:10px;
+                    border-top:1px solid var(--border);
+                    font-family:'JetBrains Mono';
+                ">
+
+                    <div style="
+                        display:flex;
+                        justify-content:space-between;
+                        font-size:9px;
+                        letter-spacing:2px;
+                        color:var(--text-muted);
+                        margin-bottom:4px;
+                    ">
+                        <span>OPENING</span>
+                        <span>CURRENT</span>
+                    </div>
+
+                    <div style="
+    display:flex;
+    justify-content:space-between;
+    font-size:14px;
+    font-weight:700;
+    font-family:'JetBrains Mono';
+">
+
+    <span style="
+        color:var(--gold);
+        text-shadow:0 0 8px var(--ledger-glow);
+    ">
+        ₹${opening.toLocaleString('en-IN')}
+    </span>
+
+    <span style="
+        color:var(--success);
+        text-shadow:0 0 8px rgba(16,185,129,0.4);
+    ">
+        ₹${current.toLocaleString('en-IN')}
+    </span>
+
+</div>
+
+                </div>
+                `;
             }
 
-            html += `<div class="fin-panel" style="border-right: 4px solid ${themeColor};" onclick="filterLedgerByEntity('${rangeName}', '${name}')">
-                        <div class="label" style="margin-bottom:4px;">${isSavings ? 'ASSET' : 'LIABILITY'}</div>
-                        <div style="font-size:16px; font-weight:700;">${name}</div>
-                        <div class="vault-balance" style="color:${themeColor}; font-size:20px; font-weight:800; font-family:'JetBrains Mono';">₹${currentBalance.toLocaleString('en-IN')}</div>
-                        ${progressBarHTML}
-                    </div>`;
+            // ======================
+            // CREDIT CARD
+            // ======================
+
+            else {
+
+                const available = totalLimit - current;
+
+                const percent =
+                    totalLimit > 0
+                        ? Math.round((current / totalLimit) * 100)
+                        : 0;
+
+                const barColor =
+                    percent > 80
+                        ? "var(--danger)"
+                        : percent > 50
+                        ? "var(--gold)"
+                        : "var(--primary)";
+
+                cardContent = `
+
+                <div style="
+                    color:${themeColor};
+                    font-size:22px;
+                    font-weight:800;
+                    font-family:'JetBrains Mono';
+                    margin-top:6px;
+                ">
+                    ₹${current.toLocaleString('en-IN')}
+                </div>
+
+                <div style="margin:12px 0 10px 0;">
+
+                    <div style="
+                        display:flex;
+                        justify-content:space-between;
+                        font-size:9px;
+                        margin-bottom:4px;
+                        font-weight:800;
+                    ">
+                        <span style="color:var(--text-muted);">
+                            UTILIZATION
+                        </span>
+
+                        <span style="color:${barColor};">
+                            ${percent}%
+                        </span>
+                    </div>
+
+                    <div style="
+                        width:100%;
+                        height:4px;
+                        background:rgba(255,255,255,0.05);
+                        border-radius:4px;
+                    ">
+                        <div style="
+                            width:${percent}%;
+                            height:100%;
+                            background:${barColor};
+                            box-shadow:0 0 10px ${barColor}aa;
+                            border-radius:4px;
+                        "></div>
+                    </div>
+
+                </div>
+
+                <div style="
+                    margin-top:8px;
+                    padding-top:10px;
+                    border-top:1px solid var(--border);
+                    display:flex;
+                    justify-content:space-between;
+                    font-family:'JetBrains Mono';
+                ">
+
+                    <div>
+
+                        <div style="
+                            font-size:9px;
+                            letter-spacing:2px;
+                            color:var(--text-muted);
+                        ">
+                            TOTAL LIMIT
+                        </div>
+
+                        <div style="
+                            font-size:14px;
+                            font-weight:700;
+                            color:var(--gold);
+                        ">
+                            ₹${totalLimit.toLocaleString('en-IN')}
+                        </div>
+
+                    </div>
+
+                    <div style="text-align:right">
+
+                        <div style="
+                            font-size:9px;
+                            letter-spacing:2px;
+                            color:var(--text-muted);
+                        ">
+                            AVAILABLE
+                        </div>
+
+                        <div style="
+                            font-size:14px;
+                            font-weight:700;
+                            color:var(--success);
+                        ">
+                            ₹${available.toLocaleString('en-IN')}
+                        </div>
+
+                    </div>
+
+                </div>
+                `;
+            }
+
+            html += `
+            <div class="fin-panel"
+                 style="border-right:4px solid ${themeColor};"
+                 onclick="filterLedgerByEntity('${rangeName}','${name}')">
+
+                <div style="font-size:16px;font-weight:700;">
+                    ${name}
+                </div>
+
+                ${cardContent}
+
+            </div>
+            `;
         });
-        document.getElementById('displayArea').innerHTML = html + `</div>`;
+
+        html += `</div>`;
+
+        document.getElementById("displayArea").innerHTML = html;
+
+setProcessing(false);
+
+// Update status for both vaults
+document.getElementById("status").innerText =
+    `${rangeName} Vault Loaded // System Online`;
+
+adjustTableHeight();
+
+    } catch (e) {
+
         setProcessing(false);
-        adjustTableHeight();
-    } catch(e) { 
-        setProcessing(false);
-        document.getElementById('status').innerText = "Vault Access Error";
+        document.getElementById("status").innerText =
+    `${rangeName} Vault Loaded // System Online`;
+        document.getElementById("status").innerText =
+            "Vault Access Error";
+
     }
 }
 
