@@ -1,14 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finance Command Center | v3.0</title>
-	<meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    
-    <title>Transaction Explorer</title>
+    <title>Finance Command Center | v3.0</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#030712">
@@ -18,92 +13,62 @@
     <link rel="apple-touch-icon" href="icon-192.png">
 
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
     <style>
         @keyframes scanning {
-    0% { box-shadow: 0 0 5px var(--primary-glow); border-color: rgba(14, 165, 233, 0.3); }
-    50% { box-shadow: 0 0 20px var(--primary), inset 0 0 10px var(--primary-glow); border-color: var(--primary); }
-    100% { box-shadow: 0 0 5px var(--primary-glow); border-color: rgba(14, 165, 233, 0.3); }
-}
+            0% { box-shadow: 0 0 5px var(--primary-glow); border-color: rgba(14, 165, 233, 0.3); }
+            50% { box-shadow: 0 0 20px var(--primary), inset 0 0 10px var(--primary-glow); border-color: var(--primary); }
+            100% { box-shadow: 0 0 5px var(--primary-glow); border-color: rgba(14, 165, 233, 0.3); }
+        }
 
-.verifying-mode {
-    animation: scanning 1s infinite ease-in-out;
-    pointer-events: none; /* Prevent typing during verification */
-    opacity: 0.8;
-}
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    20%, 60% { transform: translateX(-8px); }
-    40%, 80% { transform: translateX(8px); }
-}
+        .verifying-mode {
+            animation: scanning 1s infinite ease-in-out;
+            pointer-events: none;
+            opacity: 0.8;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
 
-.auth-error {
-    animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
-    border-color: var(--danger) !important;
-    box-shadow: 0 0 20px rgba(244, 63, 94, 0.4) !important;
-}
+        .auth-error {
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+            border-color: var(--danger) !important;
+            box-shadow: 0 0 20px rgba(244, 63, 94, 0.4) !important;
+        }
         #otp-modal .stat-card::before {
-    display: none; /* Disables the animated sweep border just for the OTP modal */
-}
+            display: none;
+        }
         body::after{
-    content:"";
-    position:fixed;
-    inset:0;
+            content:""; position:fixed; inset:0;
+            background: repeating-linear-gradient(transparent, transparent 2px, rgba(255,255,255,0.02) 3px);
+            pointer-events:none;
+        }
+        .bg-grid{
+            position:fixed; inset:0; z-index:-2;
+            background-image: linear-gradient(rgba(14,165,233,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(14,165,233,0.06) 1px, transparent 1px);
+            background-size:40px 40px; animation:gridMove 18s linear infinite;
+        }
 
-    background: repeating-linear-gradient(
-        transparent,
-        transparent 2px,
-        rgba(255,255,255,0.02) 3px
-    );
+        @keyframes gridMove{
+            from{background-position:0 0;}
+            to{background-position:40px 40px;}
+        }
 
-    pointer-events:none;
-}
-        /* ===== CYBER GRID BACKGROUND ===== */
+        .bg-glow{
+            position:fixed; inset:0; z-index:-3;
+            background: radial-gradient(circle at 20% 20%, rgba(14,165,233,0.2), transparent 40%), radial-gradient(circle at 80% 30%, rgba(139,92,246,0.2), transparent 40%), radial-gradient(circle at 40% 80%, rgba(16,185,129,0.15), transparent 40%);
+            animation:auroraMove 16s ease-in-out infinite alternate;
+        }
 
-.bg-grid{
-    position:fixed;
-    inset:0;
-    z-index:-2;
-
-    background-image:
-        linear-gradient(rgba(14,165,233,0.06) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(14,165,233,0.06) 1px, transparent 1px);
-
-    background-size:40px 40px;
-
-    animation:gridMove 18s linear infinite;
-}
-
-@keyframes gridMove{
-    from{background-position:0 0;}
-    to{background-position:40px 40px;}
-}
-
-
-/* ===== AURORA LIGHTING ===== */
-
-.bg-glow{
-    position:fixed;
-    inset:0;
-    z-index:-3;
-
-    background:
-        radial-gradient(circle at 20% 20%, rgba(14,165,233,0.2), transparent 40%),
-        radial-gradient(circle at 80% 30%, rgba(139,92,246,0.2), transparent 40%),
-        radial-gradient(circle at 40% 80%, rgba(16,185,129,0.15), transparent 40%);
-
-    animation:auroraMove 16s ease-in-out infinite alternate;
-}
-
-@keyframes auroraMove{
-    0%{transform:translateY(-10px);}
-    100%{transform:translateY(10px);}
-}
-       :root {
+        @keyframes auroraMove{
+            0%{transform:translateY(-10px);}
+            100%{transform:translateY(10px);}
+        }
+        :root {
             --bg: #030712;
             --surface: rgba(30, 41, 59, 0.5);
             --surface-bright: rgba(51, 65, 85, 0.8);
@@ -120,1169 +85,184 @@
             --card-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
             --glass-blur: blur(12px);
         }
-/* ===== SHEET SELECTOR (Custom UI) ===== */
 
-.sheet-selector {
-    position: relative;
-    min-width: 140px;
-}
-
-.sheet-selector-trigger {
-    background: rgba(15,23,42,0.75);
-    backdrop-filter: blur(18px);
-    border: 1px solid rgba(14,165,233,0.4);
-    border-radius: 16px;
-    padding: 12px 16px;
-    font-weight: 700;
-    letter-spacing: 0.8px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    transition: 0.3s ease;
-}
-
-.sheet-selector-trigger:hover {
-    border-color: var(--primary);
-    box-shadow: 0 0 20px var(--primary-glow);
-}
-
-.sheet-arrow {
-    font-size: 14px;
-    transition: 0.3s ease;
-}
-
-.sheet-selector.open .sheet-arrow {
-    transform: rotate(180deg);
-}
-
-/* Dropdown */
-.sheet-selector-dropdown {
-    position: absolute;
-    top: 110%;
-    left: 0;
-    width: 160px;
-    background: rgba(15,23,42,0.95);
-    backdrop-filter: blur(18px);
-    border: 1px solid var(--primary);
-    border-radius: 16px;
-    padding: 14px;
-    display: none;
-    z-index: 3000;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.7);
-}
-
-.sheet-selector.open .sheet-selector-dropdown {
-    display: block;
-}
-
-.transaction-toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-}
-
-.toolbar-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.toolbar-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-/* Options */
-.sheet-options {
-    max-height: 240px;
-overflow-y:auto;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.sheet-option {
-    padding: 10px 14px;
-    border-radius: 12px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.06);
-    cursor: pointer;
-    font-size: 13px;
-    transition: 0.25s ease;
-	width:78%;
-}
-
-.sheet-option:hover {
-    background: rgba(14,165,233,0.15);
-    border-color: var(--primary-glow);
-    transform: translateX(4px);
-}
-
-.sheet-option.active {
-    background: linear-gradient(
-        135deg,
-        rgba(14,165,233,0.85),
-        rgba(56,189,248,0.95)
-    );
-    color: var(--bg);
-    font-weight: 700;
-}
-.sheet-selector-dropdown {
-    opacity: 0;
-    transform: translateY(-8px);
-    transition: 0.25s ease;
-    pointer-events: none;
-	width:160px;
-}
-
-.sheet-selector.open .sheet-selector-dropdown {
-    display: block;
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: auto;
-}
-
-#sheetSelect {
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-
-    background: linear-gradient(
-        145deg,
-        rgba(15,23,42,0.9),
-        rgba(30,41,59,0.7)
-    );
-
-    border: 1px solid rgba(14,165,233,0.4);
-    border-radius: 16px;
-
-    padding: 12px 42px 12px 18px;
-    min-width: 200px;
-
-    font-weight: 700;
-    letter-spacing: 0.8px;
-    font-size: 13px;
-
-    color: var(--primary);
-
-    box-shadow:
-        inset 0 0 10px rgba(14,165,233,0.05),
-        0 0 15px rgba(14,165,233,0.1);
-
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-/* Hover Glow */
-#sheetSelect:hover {
-    border-color: var(--primary);
-    box-shadow:
-        0 0 25px var(--primary-glow),
-        inset 0 0 15px rgba(14,165,233,0.1);
-}
-
-/* Focus State */
-#sheetSelect:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow:
-        0 0 0 3px var(--primary-glow),
-        0 0 30px var(--primary-glow);
-}
-
-/* Custom Arrow */
-#sheetSelect {
-    background-image:
-        linear-gradient(45deg, transparent 50%, var(--primary) 50%),
-        linear-gradient(135deg, var(--primary) 50%, transparent 50%);
-    background-position:
-        calc(100% - 20px) calc(50% - 3px),
-        calc(100% - 14px) calc(50% - 3px);
-    background-size: 6px 6px;
-    background-repeat: no-repeat;
-}
-
-#sheetSelect option {
-    background: #0f172a;
-    color: white;
-}
-/* =========================================
-   FLATPICKR — CYBER COMMAND CENTER THEME
-========================================= */
-
-.flatpickr-calendar {
-    background: rgba(15,23,42,0.95) !important;
-    backdrop-filter: blur(18px);
-    border: 1px solid var(--primary);
-    border-radius: 16px;
-    box-shadow: 0 0 40px rgba(14,165,233,0.25);
-    color: var(--text);
-    font-family: 'Plus Jakarta Sans', sans-serif;
-}
-
-/* Month + Year header */
-.flatpickr-months {
-    background: transparent;
-    border-bottom: 1px solid var(--border);
-}
-
-.flatpickr-current-month {
-    font-weight: 700;
-    color: var(--primary);
-    letter-spacing: 1px;
-}
-
-/* Arrows */
-.flatpickr-prev-month,
-.flatpickr-next-month {
-    fill: var(--primary);
-}
-
-.flatpickr-prev-month:hover,
-.flatpickr-next-month:hover {
-    background: rgba(14,165,233,0.15);
-    border-radius: 8px;
-}
-
-/* Weekday header */
-.flatpickr-weekdays {
-    background: transparent;
-}
-
-.flatpickr-weekday {
-    color: var(--text-muted);
-    font-size: 11px;
-    letter-spacing: 1px;
-}
-
-/* Day cells */
-.flatpickr-day {
-    border-radius: 10px;
-    color: var(--text);
-    font-weight: 500;
-}
-
-.flatpickr-day:hover {
-    background: rgba(14,165,233,0.15);
-    box-shadow: 0 0 12px var(--primary-glow);
-}
-
-/* Selected date */
-.flatpickr-day.selected,
-.flatpickr-day.startRange,
-.flatpickr-day.endRange {
-    background: var(--primary) !important;
-    color: var(--bg) !important;
-    box-shadow: 0 0 20px var(--primary-glow);
-    border: none;
-}
-
-/* Range middle dates */
-.flatpickr-day.inRange {
-    background: rgba(14,165,233,0.2);
-    color: var(--text);
-}
-
-/* Today highlight */
-.flatpickr-day.today {
-    border: 1px solid var(--gold);
-}
-
-/* Disabled */
-.flatpickr-day.disabled {
-    opacity: 0.3;
-}
-
-/* Time picker (if enabled later) */
-.flatpickr-time {
-    background: rgba(0,0,0,0.4);
-    border-top: 1px solid var(--border);
-}
-
-/* Input focus glow */
-.flatpickr-input:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px var(--primary-glow);
-}
-
-.filter-trigger {
-        font-size: 9px;
-        padding: 4px;
-        border-radius: 4px;
-        background: rgba(255,255,255,0.05);
-        transition: 0.2s;
-        cursor: pointer;
-    }.filter-trigger:hover {
-        background: var(--primary);
-        color: var(--bg);
-    }
-
-/* Trace View specific: Remove fixed height constraints */
-.trace-card {
-    margin-bottom: 32px;
-    border: 1px solid var(--primary-glow);
-    animation: menuFadeIn 0.4s ease-out;
-}
-
-.trace-table-wrap {
-    overflow-x: auto;
-    /* This allows the table to grow vertically based on content */
-    height: auto; 
-    max-height: none !important; 
-    border-radius: 0 0 24px 24px;
-}
-.trace-table-wrap table {
-    width: 100%;
-    text-align: center;
-}
-.trace-amount {
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 700;
-    color: var(--gold);
-    text-align: center;
-}
-.filter-search-input {
-    width: 95%;
-    box-sizing: border-box;   /* 🔥 important */
-    margin-bottom: 8px;
-    font-size: 11px;
-    height: 30px;
-    padding: 6px 8px;
-    background: rgba(0,0,0,0.3);
-    border: 1px solid var(--border);
-    color: var(--text);
-    border-radius: 6px;
-    
-}
-
-.filter-search-input:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 2px var(--primary-glow);
-}
-.trace-table-wrap th,
-.trace-table-wrap td {
-    text-align: center !important;
-    vertical-align: middle;
-}
-.id-badge {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    background: rgba(14, 165, 233, 0.1);
-    color: var(--primary);
-    padding: 5px 12px;
-    border-radius: 6px;
-    border: 1px solid var(--primary-glow);
-    white-space: nowrap; /* Prevents the ID from snapping into two lines */
-    display: inline-block;
-}
-/* Custom Command Menu Styles */
-#custom-context-menu {
-    position: absolute; /* Changed from fixed to absolute to scroll with table if needed */
-    display: none;
-    z-index: 10000;
-    background: rgba(15, 23, 42, 0.95);
-    backdrop-filter: blur(12px);
-    border: 1px solid var(--primary);
-    border-radius: 8px;
-    min-width: 180px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-    overflow: hidden;
-    /* Remove scale from animation to prevent jumping when flipped */
-    animation: menuFadeIn 0.15s ease-out;
-}
-.filter-options-container {
-    max-height: 260px;
-    overflow-y: auto;
-    padding-right: 6px;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;   /* 🔥 spacing between options */
-    margin-top: 6px;
-}
-.filter-option {
-    padding: 10px 14px;  /* 🔥 more inner spacing */
-    border-radius: 12px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.06);
-    cursor: pointer;
-    font-size: 12px;
-    transition: all 0.25s ease;
-    user-select: none;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.filter-option:hover {
-    background: rgba(14,165,233,0.15);
-    border-color: var(--primary-glow);
-    transform: translateX(3px);
-}
-.filter-option input {
-    display: none;
-}
-
-.filter-option:hover {
-    background: rgba(14,165,233,0.15);
-    border-color: var(--primary-glow);
-    transform: translateX(3px);
-}
-/* Highlight state for selected filter chips */
-.filter-option.selected {
-    background: var(--primary) !important;
-    color: var(--bg) !important;
-    border-color: var(--primary);
-    box-shadow: 0 0 10px var(--primary-glow);
-    font-weight: 700;
-}
-
-/* Add a checkmark icon to selected items */
-.filter-option.selected::after {
-    content: "✓";
-    font-size: 10px;
-    margin-left: 8px;
-}
-
-@keyframes menuFadeIn {
-    from { opacity: 0;}
-    to { opacity: 1;}
-}
-
-.menu-item {
-    padding: 12px 16px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    transition: 0.2s;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-
-.menu-item:last-child { border-bottom: none; }
-
-.menu-item:hover {
-    background: var(--primary);
-    color: var(--bg);
-}
-
-.menu-item.danger:hover {
-    background: var(--danger);
-    color: white;
-}
-
-.menu-item i { font-size: 14px; opacity: 0.8; }
-    /* Ensure Reference Data column stands out */
-    .ref-data {
-        color: var(--gold);
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 11px;
-    }
-    /* Fixed Dropdown Position */
-.filter-dropdown {
-    position: absolute; /* Changed to handle dynamic positioning */
-    background: #1e293b;
-    border: 1px solid var(--primary);
-    padding: 16px;
-    border-radius: 12px;
-    width: 260px;
-    z-index: 99999; /* Ensure it stays above the toolbar and cards */
-    box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-    display: none;
-}
-
-
-
-/* Strict Right Anchor */
-.filter-dropdown.align-right {
-    right: 0 !important;
-    left: auto !important;
-}
-
-/* Emergency Left Anchor (only if screen is too narrow) */
-.filter-dropdown.align-left {
-    left: 0 !important;
-    right: auto !important;
-}
-        body { 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            background: radial-gradient(circle at 50% 0%, #1e293b 0%, #030712 100%); 
-            color: var(--text); 
-            margin: 0; 
-            
-            /* PWA: Safe Area Padding for Notch */
-            padding: calc(env(safe-area-inset-top) + 10px) 24px 24px 24px;
-            min-height: 100vh;
+        .sheet-selector { position: relative; min-width: 140px; }
+        .sheet-selector-trigger {
+            background: rgba(15,23,42,0.75); backdrop-filter: blur(18px); border: 1px solid rgba(14,165,233,0.4); border-radius: 16px; padding: 12px 16px; font-weight: 700; letter-spacing: 0.8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.3s ease;
         }
+        .sheet-selector-trigger:hover { border-color: var(--primary); box-shadow: 0 0 20px var(--primary-glow); }
+        .sheet-arrow { font-size: 14px; transition: 0.3s ease; }
+        .sheet-selector.open .sheet-arrow { transform: rotate(180deg); }
+        .sheet-selector-dropdown {
+            position: absolute; top: 110%; left: 0; width: 160px; background: rgba(15,23,42,0.95); backdrop-filter: blur(18px); border: 1px solid var(--primary); border-radius: 16px; padding: 14px; display: none; z-index: 3000; box-shadow: 0 20px 40px rgba(0,0,0,0.7); opacity: 0; transform: translateY(-8px); transition: 0.25s ease; pointer-events: none;
+        }
+        .sheet-selector.open .sheet-selector-dropdown { display: block; opacity: 1; transform: translateY(0); pointer-events: auto; }
 
-        /* --- Custom Scrollbar --- */
+        .transaction-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .toolbar-left { display: flex; align-items: center; gap: 10px; }
+        .toolbar-right { display: flex; align-items: center; gap: 12px; }
+
+        .sheet-options { max-height: 240px; overflow-y:auto; display: flex; flex-direction: column; gap: 8px; }
+        .sheet-option { padding: 10px 14px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); cursor: pointer; font-size: 13px; transition: 0.25s ease; width:78%; }
+        .sheet-option:hover { background: rgba(14,165,233,0.15); border-color: var(--primary-glow); transform: translateX(4px); }
+        .sheet-option.active { background: linear-gradient(135deg, rgba(14,165,233,0.85), rgba(56,189,248,0.95)); color: var(--bg); font-weight: 700; }
+
+        .flatpickr-calendar {
+            background: rgba(15,23,42,0.95) !important; backdrop-filter: blur(18px); border: 1px solid var(--primary); border-radius: 16px; box-shadow: 0 0 40px rgba(14,165,233,0.25); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .flatpickr-months { background: transparent; border-bottom: 1px solid var(--border); }
+        .flatpickr-current-month { font-weight: 700; color: var(--primary); letter-spacing: 1px; }
+        .flatpickr-prev-month, .flatpickr-next-month { fill: var(--primary); }
+        .flatpickr-prev-month:hover, .flatpickr-next-month:hover { background: rgba(14,165,233,0.15); border-radius: 8px; }
+        .flatpickr-weekdays { background: transparent; }
+        .flatpickr-weekday { color: var(--text-muted); font-size: 11px; letter-spacing: 1px; }
+        .flatpickr-day { border-radius: 10px; color: var(--text); font-weight: 500; }
+        .flatpickr-day:hover { background: rgba(14,165,233,0.15); box-shadow: 0 0 12px var(--primary-glow); }
+        .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange { background: var(--primary) !important; color: var(--bg) !important; box-shadow: 0 0 20px var(--primary-glow); border: none; }
+        .flatpickr-day.inRange { background: rgba(14,165,233,0.2); color: var(--text); }
+        .flatpickr-day.today { border: 1px solid var(--gold); }
+        .flatpickr-day.disabled { opacity: 0.3; }
+        .flatpickr-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
+
+        .filter-trigger { font-size: 9px; padding: 4px; border-radius: 4px; background: rgba(255,255,255,0.05); transition: 0.2s; cursor: pointer; }
+        .filter-trigger:hover { background: var(--primary); color: var(--bg); }
+
+        .trace-card { margin-bottom: 32px; border: 1px solid var(--primary-glow); animation: menuFadeIn 0.4s ease-out; }
+        .trace-table-wrap { overflow-x: auto; height: auto; max-height: none !important; border-radius: 0 0 24px 24px; }
+        .trace-table-wrap table { width: 100%; text-align: center; }
+        .trace-amount { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--gold); text-align: center; }
+        .filter-search-input { width: 95%; box-sizing: border-box; margin-bottom: 8px; font-size: 11px; height: 30px; padding: 6px 8px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: var(--text); border-radius: 6px; }
+        .filter-search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-glow); }
+        .trace-table-wrap th, .trace-table-wrap td { text-align: center !important; vertical-align: middle; }
+        .id-badge { font-family: 'JetBrains Mono', monospace; font-size: 10px; background: rgba(14, 165, 233, 0.1); color: var(--primary); padding: 5px 12px; border-radius: 6px; border: 1px solid var(--primary-glow); white-space: nowrap; display: inline-block; }
+        
+        #custom-context-menu { position: absolute; display: none; z-index: 10000; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); border: 1px solid var(--primary); border-radius: 8px; min-width: 180px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); overflow: hidden; animation: menuFadeIn 0.15s ease-out; }
+        .filter-options-container { max-height: 260px; overflow-y: auto; padding-right: 6px; display: flex; flex-direction: column; gap: 5px; margin-top: 6px; }
+        .filter-option { padding: 10px 14px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); cursor: pointer; font-size: 12px; transition: all 0.25s ease; user-select: none; display: flex; align-items: center; justify-content: space-between; }
+        .filter-option:hover { background: rgba(14,165,233,0.15); border-color: var(--primary-glow); transform: translateX(3px); }
+        .filter-option input { display: none; }
+        .filter-option.selected { background: var(--primary) !important; color: var(--bg) !important; border-color: var(--primary); box-shadow: 0 0 10px var(--primary-glow); font-weight: 700; }
+        .filter-option.selected::after { content: "✓"; font-size: 10px; margin-left: 8px; }
+
+        @keyframes menuFadeIn { from { opacity: 0;} to { opacity: 1;} }
+
+        .menu-item { padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--text); cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.2s; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .menu-item:last-child { border-bottom: none; }
+        .menu-item:hover { background: var(--primary); color: var(--bg); }
+        .menu-item.danger:hover { background: var(--danger); color: white; }
+        .menu-item i { font-size: 14px; opacity: 0.8; }
+        
+        .ref-data { color: var(--gold); font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+        .filter-dropdown { position: absolute; background: #1e293b; border: 1px solid var(--primary); padding: 16px; border-radius: 12px; width: 260px; z-index: 99999; box-shadow: 0 10px 40px rgba(0,0,0,0.8); display: none; }
+        .filter-dropdown.align-right { right: 0 !important; left: auto !important; }
+        .filter-dropdown.align-left { left: 0 !important; right: auto !important; }
+        
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: radial-gradient(circle at 50% 0%, #1e293b 0%, #030712 100%); color: var(--text); margin: 0; padding: calc(env(safe-area-inset-top) + 10px) 24px 24px 24px; min-height: 100vh; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--surface-bright); border-radius: 10px; }
 
-       .container { 
-    max-width: 98% !important; /* Increased from 1500px to near full-screen */
-    margin: auto; 
-}
-        /* --- Header & Status --- */
-        #status{
-    font-family:'JetBrains Mono';
+        .container { max-width: 98% !important; margin: auto; }
+        #status{ font-family:'JetBrains Mono'; letter-spacing:4px; text-shadow: 0 0 10px rgba(14,165,233,0.7), 0 0 20px rgba(14,165,233,0.3); animation:hudPulse 3s ease-in-out infinite; }
 
-    letter-spacing:4px;
+        @keyframes hudPulse{ 0%,100%{opacity:1} 50%{opacity:.6} }
+        
+        .dashboard { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 25px; margin-bottom: 30px; position: relative; }
+        .dashboard::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(rgba(14,165,233,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(14,165,233,0.05) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; animation: gridShift 20s linear infinite; }
+        
+        .header-content { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; cursor: default; }
+        .header-content span { white-space: nowrap; }
+        
+        .stat-card{ position:relative; background:rgba(15,23,42,0.75); backdrop-filter:blur(25px); border-radius:20px; border:1px solid rgba(14,165,233,0.25); padding:20px; overflow:hidden; transition:all .4s ease; }
+        .stat-card::before{ content:""; position:absolute; inset:0; border-radius:20px; padding:1px; background:linear-gradient(120deg, transparent, rgba(14,165,233,0.9), transparent); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation:borderSweep 4s linear infinite; }
+        @keyframes borderSweep{ from{background-position:0%} to{background-position:300%} }
+        .stat-card:hover{ transform:translateY(-8px) scale(1.02); box-shadow: 0 0 25px rgba(14,165,233,0.4), 0 0 60px rgba(14,165,233,0.2); }
+        .stat-card .label { font-size: 10px; font-weight: 800; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; }
+        .stat-card .value { font-size: 30px; font-weight: 800; font-family: 'JetBrains Mono', monospace; position: relative; z-index: 2; }
+        .stat-card .value::after { content: ""; position: absolute; inset: 0; border-radius: 6px; background: radial-gradient(circle, rgba(14,165,233,0.4) 0%, transparent 70%); opacity: 0; animation: valuePulse 3s ease-in-out infinite; }
 
-    text-shadow:
-        0 0 10px rgba(14,165,233,0.7),
-        0 0 20px rgba(14,165,233,0.3);
+        #cash-grid { display: grid; grid-template-columns: repeat(3, 1fr); justify-content: center; gap: 3px; margin-top: 12px; padding-left:0px;padding-right:0px; width:100%; }
+        #cash-total { font-size:12px; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+        .denom-tile { background: rgba(0, 0, 0, 0.3); padding: 4px 6px; border-radius: 6px; display: flex; gap:6px; justify-content:space-between; align-items: center; font-size: 11px; font-family: 'JetBrains Mono', monospace; border: 1px solid var(--border);margin-bottom:10px; transition: 0.2s;gap:6px;min-width:3px; }
+        .denom-tile[data-v="500"] { border: 3px solid #fbbf24; } 
+        .denom-tile[data-v="200"] { border: 3px solid #fbbf24; } 
+        .denom-tile[data-v="100"] { border: 3px solid #fbbf24; } 
+        .denom-tile[data-v="50"]  { border: 3px solid #C0C0C0; } 
+        .denom-tile[data-v="20"]  { border: 3px solid #C0C0C0; } 
+        .denom-tile[data-v="10"]  { border: 3px solid #C0C0C0; } 
+        .denom-tile[data-v="5"]   { border: 3px solid #B87333; } 
+        .denom-tile[data-v="2"]   { border: 3px solid #B87333; } 
+        .denom-tile[data-v="1"]   { border: 3px solid #B87333; } 
 
-    animation:hudPulse 3s ease-in-out infinite;
-}
-
-@keyframes hudPulse{
-    0%,100%{opacity:1}
-    50%{opacity:.6}
-}
-        /* --- Futuristic Stat Cards --- */
-        .dashboard {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    margin-top: 25px;
-    margin-bottom: 30px;
-    position: relative;
-}
-/* ===== FLOATING ACTION BUTTON ===== */
-
-
-
-.dashboard::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image: 
-        linear-gradient(rgba(14,165,233,0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(14,165,233,0.05) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    animation: gridShift 20s linear infinite;
-}
-
-       .header-content {
-    display: flex;
-    align-items: center;
-    justify-content: center; 
-    gap: 8px; 
-    width: 100%;
-    cursor: default;
-}
-.header-content span {
-    white-space: nowrap; /* Prevents header text from wrapping */
-}
-.stat-card{
-    position:relative;
-    background:rgba(15,23,42,0.75);
-    backdrop-filter:blur(25px);
-    border-radius:20px;
-    border:1px solid rgba(14,165,233,0.25);
-    padding:20px;
-    overflow:hidden;
-    transition:all .4s ease;
-}
-
-/* Neon Edge Glow */
-.stat-card::before{
-    content:"";
-    position:absolute;
-    inset:0;
-    border-radius:20px;
-
-    padding:1px;
-
-    background:linear-gradient(
-        120deg,
-        transparent,
-        rgba(14,165,233,0.9),
-        transparent
-    );
-
-    -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-
-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-
--webkit-mask-composite: xor;
-mask-composite: exclude;
-
-    animation:borderSweep 4s linear infinite;
-}
-@keyframes borderSweep{
-    from{background-position:0%}
-    to{background-position:300%}
-}
-
-/* Hover Effect */
-.stat-card:hover{
-    transform:translateY(-8px) scale(1.02);
-
-    box-shadow:
-        0 0 25px rgba(14,165,233,0.4),
-        0 0 60px rgba(14,165,233,0.2);
-}
-
-/* Tactical Label */
-.stat-card .label {
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 2px;
-    color: var(--text-muted);
-    margin-bottom: 10px;
-    text-transform: uppercase;
-}
-
-/* Animated Value */
-.stat-card .value {
-    font-size: 30px;
-    font-weight: 800;
-    font-family: 'JetBrains Mono', monospace;
-    position: relative;
-    z-index: 2;
-}
-
-/* Pulse animation for live values */
-.stat-card .value::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: 6px;
-    background: radial-gradient(
-        circle,
-        rgba(14,165,233,0.4) 0%,
-        transparent 70%
-    );
-    opacity: 0;
-    animation: valuePulse 3s ease-in-out infinite;
-}
-
-        /* Cash Breakdown Grid */
-       #cash-grid { 
-    display: grid; 
-    grid-template-columns: repeat(3, 1fr);
-    justify-content: center;
-    gap: 3px; 
-    margin-top: 12px;
-	padding-left:0px;padding-right:0px;
-	width:100%;
-}
-#cash-total {
-    font-size:12px;
-    font-weight: 800;
-    font-family: 'JetBrains Mono', monospace;
-}
-        .denom-tile {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 4px 6px;
-    border-radius: 6px;
-    display: flex;
-    gap:6px;
-    justify-content:space-between;
-    align-items: center;
-    font-size: 11px;
-    font-family: 'JetBrains Mono', monospace;
-    border: 1px solid var(--border);margin-bottom:10px;
-    transition: 0.2s;gap:6px;min-width:3px;
-    /* This makes the card narrow and clean */
-}/* Color Coding for specific denominations */
-.denom-tile[data-v="500"] { border: 3px solid #fbbf24; } /* Gold */
-.denom-tile[data-v="200"] { border: 3px solid #fbbf24; } /* Gold */
-.denom-tile[data-v="100"] { border: 3px solid #fbbf24; } /* Gold */
-.denom-tile[data-v="50"]  { border: 3px solid #C0C0C0; } /* Silver */
-.denom-tile[data-v="20"]  { border: 3px solid #C0C0C0; } /* Silver*/
-.denom-tile[data-v="10"]  { border: 3px solid #C0C0C0; } /* Silver */
-.denom-tile[data-v="5"]  { border: 3px solid #B87333; } /* Copper */
-.denom-tile[data-v="2"]  { border: 3px solid #B87333; } /* Copper */
-.denom-tile[data-v="1"]  { border: 3px solid #B87333; } /* Copper */
-
-
-        /* --- Unified Toolbar --- */
-        .toolbar {
-            background: var(--surface);
-            backdrop-filter: var(--glass-blur);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 16px 24px;
-            margin-bottom: 24px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            position: sticky;
-            top: 20px;
-            z-index: 100;
-        }
-
+        .toolbar { background: var(--surface); backdrop-filter: var(--glass-blur); border: 1px solid var(--border); border-radius: 20px; padding: 16px 24px; margin-bottom: 24px; display: flex; align-items: center; gap: 16px; position: sticky; top: 20px; z-index: 100; }
         .controls-group { display: flex; align-items: center; gap: 12px; flex-grow: 1; }
-        .range-input {
-    background: rgba(0,0,0,0.3);
-    border: 1px solid var(--border);
-    color: white;
-    padding: 10px 14px;
-    border-radius: 10px;
-    font-size: 13px;
-    transition: 0.2s;
-    width: 160px;
-    min-width: 160px;
-    cursor: pointer;
-}
-
-
-/* Focus effect */
-.range-input:focus {
-    border-color: var(--primary);
-    outline: none;
-    box-shadow: 0 0 0 3px var(--primary-glow);
-}
-        select, .table-search-box input {
-            background: rgba(0,0,0,0.3);
-            border: 1px solid var(--border);
-            color: white;
-            padding: 10px 14px;
-            border-radius: 10px;
-            font-size: 13px;
-            transition: 0.2s;
-            width:125px;
-            
-        }
-
+        .range-input { background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; padding: 10px 14px; border-radius: 10px; font-size: 13px; transition: 0.2s; width: 160px; min-width: 160px; cursor: pointer; }
+        .range-input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px var(--primary-glow); }
+        select, .table-search-box input { background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; padding: 10px 14px; border-radius: 10px; font-size: 13px; transition: 0.2s; width:125px; }
         select:focus, input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px var(--primary-glow); }
 
-        /* --- Table Container --- */
-.sheet-card {
-    background: var(--surface);
-    backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--border);
-    border-radius: 24px;
-    box-shadow: var(--card-shadow);
-}
-
-.table-search-box{
-    padding:16px 20px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    width:100%;
-    flex-wrap:wrap;
-    gap:12px;
-    box-sizing:border-box;
-}
-
-.toolbar-left{
-    display:flex;
-    align-items:center;
-    gap:10px;
-}
-
-.toolbar-right{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    flex-wrap:wrap;
-}#searchInput{
-    max-width:220px;
-}
-thead th {
-    position: sticky;
-    top: 0;
-    background: #1e293b;
-    z-index: 50;
-    box-shadow: 0 2px 0 rgba(0,0,0,0.4);
-}
-th {
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    background: #1e293b !important;
-    padding: 18px 12px;
-    /* Anchor for the absolute dropdown */
-    position: relative; 
-}
-.trace-table-wrap {
-    overflow-x: auto;
-    overflow-y: visible;
-    height: auto;
-    max-height: none !important;
-    border-radius: 0 0 24px 24px;
-}
-
-.table-wrap {
-    height: auto; /* JS will control height */
-    overflow-y: auto;
-    overflow-x: auto;
-    position: relative;
-    border-radius: 0 0 24px 24px;
-    background: var(--surface);
-}
-thead tr {
-    position: sticky;
-    top: 0;
-}
-thead {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-}      table {
-    border-collapse: separate;
-    border-spacing: 0;
-    width: 100%;
-}
-tbody {
-    position: relative;
-    z-index: 1;
-}
-        denom-tile:hover {
-    background: var(--surface-bright);
-    transform: scale(1.05);
-    border-color: var(--primary);
-}
-
+        .sheet-card { background: var(--surface); backdrop-filter: var(--glass-blur); border: 1px solid var(--border); border-radius: 24px; box-shadow: var(--card-shadow); }
+        .table-search-box{ padding:16px 20px; display:flex; justify-content:space-between; align-items:center; width:100%; flex-wrap:wrap; gap:12px; box-sizing:border-box; }
+        #searchInput{ max-width:220px; }
+        thead th { position: sticky; top: 0; background: #1e293b; z-index: 50; box-shadow: 0 2px 0 rgba(0,0,0,0.4); }
+        th { position: sticky; top: 0; z-index: 1000; background: #1e293b !important; padding: 18px 12px; position: relative; }
+        .trace-table-wrap { overflow-x: auto; overflow-y: visible; height: auto; max-height: none !important; border-radius: 0 0 24px 24px; }
+        .table-wrap { height: auto; overflow-y: auto; overflow-x: auto; position: relative; border-radius: 0 0 24px 24px; background: var(--surface); }
+        thead tr { position: sticky; top: 0; }
+        thead { position: sticky; top: 0; z-index: 100; }
+        table { border-collapse: separate; border-spacing: 0; width: 100%; }
+        tbody { position: relative; z-index: 1; }
+        denom-tile:hover { background: var(--surface-bright); transform: scale(1.05); border-color: var(--primary); }
         td { padding: 14px 20px; font-size: 13px; border-bottom: 1px solid var(--border); }
-/* Increase width of first column */
-#mainDataTable th:first-child,
-#mainDataTable td:first-child {
-    min-width: 100px;   /* Adjust this value */
-    width: 100px;
-}
-#tableFilter {
-    width: 30%;
-    padding-left: 36px;
-    position: relative;
-}
+        #mainDataTable th:first-child, #mainDataTable td:first-child { min-width: 100px; width: 100px; }
+        #tableFilter { width: 30%; padding-left: 36px; position: relative; }
+        .table-search-box { position: relative; }
+        .table-search-box::before { content: "🔎"; position: absolute; left: 30px; top: 50%; transform: translateY(-50%); font-size: 14px; opacity: 0.6; }
+        
+        .btn-future{ position:relative; padding:10px ; font-weight:700; letter-spacing:1px; border-radius:10px; border:1px solid var(--primary); background:rgba(14,165,233,0.06); color:var(--primary); cursor:pointer; overflow:hidden; transition:.35s; }
+        .btn-future::before{ content:""; position:absolute; inset:0; background:linear-gradient(120deg, transparent, rgba(14,165,233,0.5), transparent); transform:translateX(-100%); }
+        .btn-future::after { content: ""; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(120deg, transparent, rgba(14,165,233,0.4), transparent); transition: 0.6s; }
+        .btn-future:hover{ box-shadow: 0 0 15px rgba(14,165,233,0.6), inset 0 0 10px rgba(14,165,233,0.2); transform:translateY(-2px); }
+        .btn-future:hover::before{ transform:translateX(100%); transition:0.7s; }
+        .btn-future:hover::after { left: 100%; }
 
-.table-search-box {
-    position: relative;
-}
-
-.table-search-box::before {
-    content: "🔎";
-    position: absolute;
-    left: 30px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 14px;
-    opacity: 0.6;
-}
-/* ===== FUTURISTIC CONTROL BUTTON ===== */
-
-.btn-future{
-    position:relative;
-    padding:10px ;
-    font-weight:700;
-    letter-spacing:1px;
-    border-radius:10px;
-    border:1px solid var(--primary);
-    background:rgba(14,165,233,0.06);
-    color:var(--primary);
-    cursor:pointer;
-    overflow:hidden;
-    transition:.35s;
-}
-
-/* Neon Glow Border */
-.btn-future::before{
-    content:"";
-    position:absolute;
-    inset:0;
-    background:linear-gradient(
-        120deg,
-        transparent,
-        rgba(14,165,233,0.5),
-        transparent
-    );
-
-    transform:translateX(-100%);
-}
-
-/* Energy Sweep Effect */
-.btn-future::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-        120deg,
-        transparent,
-        rgba(14,165,233,0.4),
-        transparent
-    );
-    transition: 0.6s;
-}
-
-/* Hover */
-.btn-future:hover{
-    box-shadow:
-        0 0 15px rgba(14,165,233,0.6),
-        inset 0 0 10px rgba(14,165,233,0.2);
-
-    transform:translateY(-2px);
-}
-
-.btn-future:hover::before{
-    transform:translateX(100%);
-    transition:0.7s;
-}
-
-.btn-future:hover::after {
-    left: 100%;
-}
-
-/* Increase width of 8th and 9th columns */
-#mainDataTable th:nth-child(8),
-#mainDataTable td:nth-child(8),
-#mainDataTable th:nth-child(9),
-#mainDataTable td:nth-child(9) {
-    min-width: 40px;   /* Adjust as needed */
-    width: 40px;
-}
+        #mainDataTable th:nth-child(8), #mainDataTable td:nth-child(8), #mainDataTable th:nth-child(9), #mainDataTable td:nth-child(9) { min-width: 40px; width: 40px; }
         .data-row { transition: 0.2s; }
-        .data-row:hover{
-    background:rgba(14,165,233,0.08);
-
-    box-shadow:
-        inset 0 0 15px rgba(14,165,233,0.2);
-
-    transform:scale(1.002);
-}
+        .data-row:hover{ background:rgba(14,165,233,0.08); box-shadow: inset 0 0 15px rgba(14,165,233,0.2); transform:scale(1.002); }
         .data-row.selected { background: rgba(14, 165, 233, 0.15) !important; color: var(--primary); }
 
-        /* --- Buttons --- */
-        button {
-            padding: 10px 20px;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.3s;
-            border: 1px solid transparent;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
+        button { padding: 10px 20px; border-radius: 12px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.3s; border: 1px solid transparent; display: flex; align-items: center; gap: 8px; }
         .btn-blue { background: var(--primary); color: #fff; box-shadow: 0 4px 14px 0 var(--primary-glow); }
         .btn-blue:hover { transform: translateY(-2px); box-shadow: 0 6px 20px 0 var(--primary-glow); }
+        .corner-accent { position: absolute; top: 0; right: 0; width: 50px; height: 50px; background: linear-gradient(135deg, var(--primary), transparent); opacity: 0.15; }
 
-        .corner-accent {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 50px;
-    height: 50px;
-    background: linear-gradient(
-        135deg,
-        var(--primary),
-        transparent
-    );
-    opacity: 0.15;
-}
-
-
-        /* ===== FUTURISTIC DANGER BUTTON ===== */
-
-.btn-future-danger {
-    position: relative;
-    padding: 10px 22px;
-    border-radius: 14px;
-    font-weight: 700;
-    font-size: 13px;
-    letter-spacing: 1px;
-    cursor: pointer;
-    color: var(--danger);
-    background: rgba(244,63,94,0.05);
-    border: 1px solid var(--danger);
-    overflow: hidden;
-    transition: all 0.3s ease;
-}
-
-/* Red Glow Border */
-.btn-future-danger::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: 14px;
-    box-shadow: 0 0 15px rgba(244,63,94,0.4);
-    opacity: 0;
-    transition: 0.3s;
-}
-
-/* Energy Sweep Effect */
-.btn-future-danger::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-        120deg,
-        transparent,
-        rgba(244,63,94,0.4),
-        transparent
-    );
-    transition: 0.6s;
-}
-
-/* Hover */
-.btn-future-danger:hover {
-    background: rgba(244,63,94,0.15);
-    transform: translateY(-2px);
-}
-
-.btn-future-danger:hover::before {
-    opacity: 1;
-}
-
-.btn-future-danger:hover::after {
-    left: 100%;
-}
-.stat-card {
-    position: relative;
-    background: rgba(15,23,42,0.7);
-    backdrop-filter: blur(18px);
-    border: 1px solid rgba(14,165,233,0.2);
-    border-radius: 18px;
-    padding: 24px;
-    overflow: hidden;
-    transition: all 0.4s ease;
-}
-
-        /* --- Processing Overlay --- */
-        #processing-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(3, 7, 18, 0.8); backdrop-filter: blur(8px);
-            z-index: 9999; flex-direction: column; align-items: center; justify-content: center;
-        }
-
-        .spinner {
-            width: 50px; height: 50px; border: 3px solid transparent;
-            border-top-color: var(--primary); border-right-color: var(--primary);
-            border-radius: 50%; animation: spin 0.8s linear infinite;
-        }
-.denom-value { color: #a2b4f9; font-weight: 600; font-size: 12px; }
-.denom-count { color: var(--text); font-weight: 800;  }
+        .btn-future-danger { position: relative; padding: 10px 22px; border-radius: 14px; font-weight: 700; font-size: 13px; letter-spacing: 1px; cursor: pointer; color: var(--danger); background: rgba(244,63,94,0.05); border: 1px solid var(--danger); overflow: hidden; transition: all 0.3s ease; }
+        .btn-future-danger::before { content: ""; position: absolute; inset: 0; border-radius: 14px; box-shadow: 0 0 15px rgba(244,63,94,0.4); opacity: 0; transition: 0.3s; }
+        .btn-future-danger::after { content: ""; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(120deg, transparent, rgba(244,63,94,0.4), transparent); transition: 0.6s; }
+        .btn-future-danger:hover { background: rgba(244,63,94,0.15); transform: translateY(-2px); }
+        .btn-future-danger:hover::before { opacity: 1; }
+        .btn-future-danger:hover::after { left: 100%; }
+        
+        #processing-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(3, 7, 18, 0.8); backdrop-filter: blur(8px); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; }
+        .spinner { width: 50px; height: 50px; border: 3px solid transparent; border-top-color: var(--primary); border-right-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        .denom-value { color: #a2b4f9; font-weight: 600; font-size: 12px; }
+        .denom-count { color: var(--text); font-weight: 800;  }
         @keyframes spin { to { transform: rotate(360deg); } }
-  	@keyframes gridShift {
-    0% { background-position: 0 0; }
-    100% { background-position: 40px 40px; }
-}
-        /* Pill Metrics */
+        @keyframes gridShift { 0% { background-position: 0 0; } 100% { background-position: 40px 40px; } }
         .metric-pill { background: rgba(0,0,0,0.3); padding: 8px 16px; border-radius: 12px; border: 1px solid var(--border); }
         .pill-label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 2px; display: block; }
         .pill-val { font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 700; }
-#yearSelect {
-    width: 40px !important;
-    padding: 10px 8px; /* Slightly less horizontal padding */
-    text-align: center;
-    padding-left:1px;
-}
+        #yearSelect { width: 40px !important; padding: 10px 8px; text-align: center; padding-left:1px; }
 
-        /* Grid for Accounts (Registry View) */
         .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; padding: 20px 0; }
-/* ===== FUTURISTIC VAULT PANELS (Savings / CC) ===== */
-
-.fin-panel {
-    position: relative;
-    background: rgba(15,23,42,0.75);
-    backdrop-filter: blur(18px);
-    border-radius: 20px;
-    padding: 28px;
-    border: 1px solid rgba(14,165,233,0.15);
-    overflow: hidden;
-    transition: all 0.4s ease;
-}
-
-/* Neon Edge Border */
-.fin-panel::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: 20px;
-    padding: 1px;
-    background: linear-gradient(
-        120deg,
-        rgba(14,165,233,0.8),
-        transparent,
-        rgba(14,165,233,0.8)
-    );
-    -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-
-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-
--webkit-mask-composite: xor;
-mask-composite: exclude;
-
-opacity: 0.3;
-}
-
-/* Hover Lift */
-.fin-panel:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 0 45px rgba(14,165,233,0.25);
-    border-color: var(--primary);
-}
-
-/* Animated Background Grid */
-.fin-panel::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image:
-        linear-gradient(rgba(14,165,233,0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(14,165,233,0.04) 1px, transparent 1px);
-    background-size: 30px 30px;
-    pointer-events: none;
-    opacity: 0.4;
-}
-.fin-panel .label {
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 2px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-}
-
-.fin-panel > div:nth-child(2) {
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: 1px;
-}
-.reset-filter-btn {
-    padding: 8px 14px;
-    background: #111;
-    color: #fff;
-    border: 1px solid #333;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 13px;
-    transition: 0.2s ease;
-}
-
-.reset-filter-btn:hover {
-    background: #222;
-    border-color: #555;
-}
-
-
-
+        .fin-panel { position: relative; background: rgba(15,23,42,0.75); backdrop-filter: blur(18px); border-radius: 20px; padding: 28px; border: 1px solid rgba(14,165,233,0.15); overflow: hidden; transition: all 0.4s ease; }
+        .fin-panel::before { content: ""; position: absolute; inset: 0; border-radius: 20px; padding: 1px; background: linear-gradient(120deg, rgba(14,165,233,0.8), transparent, rgba(14,165,233,0.8)); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; opacity: 0.3; }
+        .fin-panel:hover { transform: translateY(-8px); box-shadow: 0 0 45px rgba(14,165,233,0.25); border-color: var(--primary); }
+        .fin-panel::after { content: ""; position: absolute; inset: 0; background-image: linear-gradient(rgba(14,165,233,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(14,165,233,0.04) 1px, transparent 1px); background-size: 30px 30px; pointer-events: none; opacity: 0.4; }
+        .fin-panel .label { font-size: 10px; font-weight: 800; letter-spacing: 2px; color: var(--text-muted); text-transform: uppercase; }
+        .fin-panel > div:nth-child(2) { font-size: 18px; font-weight: 700; letter-spacing: 1px; }
+        .reset-filter-btn { padding: 8px 14px; background: #111; color: #fff; border: 1px solid #333; border-radius: 6px; cursor: pointer; font-size: 13px; transition: 0.2s ease; }
+        .reset-filter-btn:hover { background: #222; border-color: #555; }
     </style>
 </head>
 <body>
@@ -1300,7 +280,7 @@ opacity: 0.3;
     <div class="dashboard">
         <div class="stat-card interactive" onclick="viewNamedRange('Savings')">
                  <div class="corner-accent"></div>
-		<span class="label">Liquidity Pool</span>
+        <span class="label">Liquidity Pool</span>
             <div class="value" style="color: var(--success);" id="net-val">₹0</div>
         </div>
         <div class="stat-card interactive" onclick="viewNamedRange('CC')">
@@ -1331,7 +311,12 @@ opacity: 0.3;
             <input type="text" id="dateRange" class="range-input" placeholder="Select Date Range" readonly>
             
             <button class="btn-future" onclick="loadMain()">Execute Search</button>
-    
+            
+            <!-- NEW REFRESH BUTTON -->
+            <button class="btn-future" onclick="syncAllData(true)" style="border-color: var(--success); color: var(--success);">
+                <span style="font-size: 14px;">🔄</span> Refresh
+            </button>
+
             <div class="sheet-selector" id="quickActionsSelector" style="min-width: 160px;">
                 <div class="btn-future" onclick="toggleQuickActions(event)" style="border-color: var(--gold);">
                     <span style="color: var(--gold);">⚡ Quick Actions</span>
@@ -1355,61 +340,133 @@ opacity: 0.3;
 <script>
 
 // 1. Configuration
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxMoMIKcjc0GHe59XS3cZzZZnKHY_iphv3J2YcyREf3C--zI7OF0ItQ7hCn4idFKUJeIw/exec';
-	let otpVerifying = false;
-    let navStack = []; 
-    let currentViewType = 'Savings'; 
-    let currentTableMode = 'statement';
-    let selectedStart = "";
-    let selectedEnd = "";
-    let globalRawHeaders = [];
-    let globalRawRows = [];
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxMoMIKcjc0GHe59XS3cZzZZnKHY_iphv3J2YcyREf3C--zI7OF0ItQ7hCn4idFKUJeIw/exec';
+let otpVerifying = false;
+let navStack = []; 
+let currentViewType = 'Savings'; 
+let currentTableMode = 'statement';
+let selectedStart = "";
+let selectedEnd = "";
+let globalRawHeaders = [];
+let globalRawRows = [];
 let activeFilters = {};
+
+// Cache Engine & Local Storage Logic
+let globalDataCache = null;
+
 function normalizeValue(val) {
-    return (val ?? "")
-        .toString()
-        .toLowerCase()
-        .replace(/[₹,\s]/g, '')
-        .split('.')[0]
-        .trim();
+    return (val ?? "").toString().toLowerCase().replace(/[₹,\s]/g, '').split('.')[0].trim();
 }
+
+function parseDateValue(val) {
+    if (!val) return 0;
+    const cleaned = val.toString().trim();
+    let d = new Date(cleaned);
+    if (!isNaN(d)) return d.getTime();
+
+    const parts = cleaned.split("-");
+    if (parts.length === 3) {
+        const months = { Jan:0, Feb:1, Mar:2, Apr:3, May:4, Jun:5, Jul:6, Aug:7, Sep:8, Oct:9, Nov:10, Dec:11 };
+        const day = parseInt(parts[0], 10);
+        const month = months[parts[1]];
+        const year = parseInt(parts[2], 10);
+        if (!isNaN(day) && month !== undefined && !isNaN(year)) {
+            return new Date(year, month, day).getTime();
+        }
+    }
+    return 0;
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     flatpickr("#dateRange", {
         mode: "range",
         dateFormat: "Y-m-d",
         onClose: function(selectedDates) {
-
             if (selectedDates.length === 2) {
-
                 const toLocalISO = (date) => {
                     const y = date.getFullYear();
                     const m = String(date.getMonth() + 1).padStart(2, '0');
                     const d = String(date.getDate()).padStart(2, '0');
                     return `${y}-${m}-${d}`;
                 };
-
                 selectedStart = toLocalISO(selectedDates[0]);
                 selectedEnd   = toLocalISO(selectedDates[1]);
-
                 console.log("Selected Range:", selectedStart, "to", selectedEnd);
             }
         }
     });
 });
 
-    // Helper to get token for every request
-    const getAuthParams = () => `&token=${sessionStorage.getItem("session_token")}`;
+const getAuthParams = () => `&token=${sessionStorage.getItem("session_token")}`;
 
-    // --- 1. AUTHORIZATION SEQUENCE ---
-    window.onload = async () => {
-    // Check if already authenticated
+// Sync all data massively
+async function syncAllData(forceRefresh = false) {
+    if (!forceRefresh) {
+        const cached = localStorage.getItem("finance_data_cache_v3");
+        if (cached) {
+            try {
+                globalDataCache = JSON.parse(cached);
+                console.log("Loaded from local cache");
+                return true;
+            } catch (e) {
+                console.warn("Cache corrupted, re-fetching...");
+            }
+        }
+    }
+
+    setProcessing(true, "DOWNLOADING SECURE LEDGER...");
+    try {
+        const res = await fetch(`${SCRIPT_URL}?action=fetchAllData${getAuthParams()}`);
+        const data = await res.json();
+        
+        globalDataCache = data;
+        
+        try {
+            localStorage.setItem("finance_data_cache_v3", JSON.stringify(data));
+        } catch (e) {
+            console.warn("Local storage quota exceeded. Running in memory mode.");
+        }
+
+        setProcessing(false);
+        document.getElementById('status').innerText = "SYSTEM_ONLINE // DATA_SYNCED";
+        
+        if (forceRefresh) {
+            initializeDashboard();
+            if (selectedSheetName) loadMain();
+        }
+        return true;
+    } catch (e) {
+        setProcessing(false);
+        document.getElementById('status').innerText = "NODE_OFFLINE: SYNC FAILED";
+        return false;
+    }
+}
+
+function filterRowsLocallyByDate(headers, rows, startStr, endStr) {
+    if (!startStr || !endStr) return rows;
+    const dateIndex = headers.findIndex(h => /date/i.test(h));
+    if (dateIndex === -1) return rows;
+
+    const sTime = new Date(startStr).getTime();
+    const eTime = new Date(endStr).setHours(23, 59, 59, 999);
+
+    return rows.filter(row => {
+        const rowTime = parseDateValue(row[dateIndex]);
+        return rowTime >= sTime && rowTime <= eTime;
+    });
+}
+
+// --- AUTHORIZATION SEQUENCE ---
+window.onload = async () => {
     if (sessionStorage.getItem("finance_auth_v3") === "true") {
-        loadSheetList();
-        initializeDashboard();
+        const synced = await syncAllData(false);
+        if (synced) {
+            loadSheetList();
+            initializeDashboard();
+        }
         return;
     }
 
-    // If not authenticated, show the "Access Portal" screen
     document.getElementById('displayArea').innerHTML = `
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 50vh; text-align: center;">
             <div style="margin-bottom: 20px; font-size: 50px;">🔐</div>
@@ -1420,230 +477,82 @@ document.addEventListener("DOMContentLoaded", function () {
             </button>
         </div>
     `;
-    
-    // Set status to waiting
     document.getElementById('status').innerText = "System Locked // Awaiting Auth";
 };
-// --- 2. DASHBOARD INITIALIZATION (With Token) ---
+
+// --- DASHBOARD INITIALIZATION (Zero Latency) ---
 async function initializeDashboard() {
-    try {
-        const res = await fetch(`${SCRIPT_URL}?action=getDashboard${getAuthParams()}`);
-        const data = await res.json();
+    if (!globalDataCache) return;
+    
+    const data = globalDataCache.dashboard;
+    const savingsData = globalDataCache.namedRanges.Savings;
 
-// =========================
-// 🔹 LIQUIDITY POOL (FROM SAVINGS TOTAL ROW)
-// =========================
+    const totalRow = savingsData.rows.find(r => String(r[0]).trim().toLowerCase() === "total");
+    let totalOpening = totalRow ? (parseFloat(totalRow[1]) || 0) : 0;
+    let totalCurrent = totalRow ? (parseFloat(totalRow[2]) || 0) : 0;
 
-const savingsRes = await fetch(
-    `${SCRIPT_URL}?action=fetchNamedRange&range=Savings${getAuthParams()}`
-);
-const savingsData = await savingsRes.json();
+    const liquidityCard = document.querySelector(".dashboard .stat-card:nth-child(1)");
+    liquidityCard.innerHTML = `
+        <div class="corner-accent"></div>
+        <div style="font-size:12px; font-weight:800; letter-spacing:3px; margin-bottom:14px; color:var(--primary);">LIQUIDITY POOL</div>
+        <div style="font-size:26px; font-family:'JetBrains Mono'; font-weight:900; color:var(--success); text-shadow:0 0 18px rgba(16,185,129,0.4);">₹${totalCurrent.toLocaleString('en-IN')}</div>
+        <div style="margin-top:14px; padding-top:12px; border-top:1px solid var(--border);">
+            <div style="font-size:16px; font-family:'JetBrains Mono'; font-weight:700; color:var(--ledger); text-shadow:0 0 12px var(--ledger-glow);">₹${totalOpening.toLocaleString('en-IN')}</div>
+            <div style="font-size:10px; letter-spacing:2px; color:var(--text-muted);">TOTAL OPENING BALANCE</div>
+        </div>
+    `;
 
-// Find "Total" row (Column A must contain "Total")
-const totalRow = savingsData.rows.find(r =>
-    String(r[0]).trim().toLowerCase() === "total"
-);
+    const creditCard = document.querySelector(".dashboard .stat-card:nth-child(2)");
+    creditCard.innerHTML = `
+        <div style="font-size:12px; font-weight:800; letter-spacing:3px; margin-bottom:14px; color:var(--danger);">CREDIT LIMIT CONTROL</div>
+        <div style="font-size:26px; font-family:'JetBrains Mono'; font-weight:800; color:var(--gold); text-shadow:0 0 18px rgba(245,158,11,0.4);">₹${data.totalLimit.toLocaleString('en-IN')}</div>
+        <div style="font-size:16px; letter-spacing:2px; color:var(--text-muted); margin-bottom:16px;">TOTAL LIMIT</div>
+        <div style="display:flex; justify-content:space-between; border-top:1px solid var(--border); padding-top:14px; font-family:'JetBrains Mono';">
+            <div>
+                <div style="font-size:10px; font-weight:700; color:var(--danger);">₹${data.debt.toLocaleString('en-IN')}</div>
+                <div style="font-size:10px; letter-spacing:2px; color:var(--text-muted);">USED</div>
+            </div>
+            <div style="text-align:right;">
+                <div style="font-size:10px; font-weight:700; color:var(--success);">₹${data.availableLimit.toLocaleString('en-IN')}</div>
+                <div style="font-size:10px; letter-spacing:2px; color:var(--text-muted);">AVAILABLE</div>
+            </div>
+        </div>
+    `;
 
-let totalOpening = 0;
-let totalCurrent = 0;
+    const netPosition = totalCurrent - data.debt; 
+    const netEl = document.getElementById('total-available');
+    netEl.innerText = '₹' + netPosition.toLocaleString('en-IN');
+    netEl.style.color = netPosition < 0 ? 'var(--danger)' : 'var(--primary)';
 
-if (totalRow) {
-    totalOpening = parseFloat(totalRow[1]) || 0;   // Column B
-    totalCurrent = parseFloat(totalRow[2]) || 0;   // Column C
+    document.getElementById('cash-total').innerText = '₹' + (data.cashBreakdown[10] || 0).toLocaleString('en-IN');
+
+    const denoms = [500, 50, 5, 200, 20, 2, 100, 10, 1];
+    const sourceMap = { 500:1, 200:2, 100:3, 50:4, 20:5, 10:6, 5:7, 2:8, 1:9 };
+    
+    let html = "";
+    denoms.forEach((v) => {
+        const dataIndex = sourceMap[v];
+        const count = data.cashBreakdown[dataIndex] || 0;
+        html += `<div class="denom-tile" data-v="${v}"><span class="denom-value">₹${v}</span><span class="denom-count">${count}</span></div>`;
+    });
+    document.getElementById('cash-grid').innerHTML = html;
+
+    document.getElementById('status').innerText = "System Online // Authorized";
+    adjustTableHeight();
 }
 
-const liquidityCard = document.querySelector(".dashboard .stat-card:nth-child(1)");
-liquidityCard.innerHTML = `
-    <div class="corner-accent"></div>
-
-    <div style="
-        font-size:12px;
-        font-weight:800;
-        letter-spacing:3px;
-        margin-bottom:14px;
-        color:var(--primary);
-    ">
-        LIQUIDITY POOL
-    </div>
-
-    <div style="
-        font-size:26px;
-        font-family:'JetBrains Mono';
-        font-weight:900;
-        color:var(--success);
-        text-shadow:0 0 18px rgba(16,185,129,0.4);
-    ">
-        ₹${totalCurrent.toLocaleString('en-IN')}
-    </div>
-
-    <div style="
-        margin-top:14px;
-        padding-top:12px;
-        border-top:1px solid var(--border);
-    ">
-        <div style="
-            font-size:16px;
-            font-family:'JetBrains Mono';
-            font-weight:700;
-            color:var(--ledger);
-            text-shadow:0 0 12px var(--ledger-glow);
-        ">
-            ₹${totalOpening.toLocaleString('en-IN')}
-        </div>
-
-        <div style="
-            font-size:10px;
-            letter-spacing:2px;
-            color:var(--text-muted);
-        ">
-            TOTAL OPENING BALANCE
-        </div>
-    </div>
-`;
-
-
-const creditCard = document.querySelector(".dashboard .stat-card:nth-child(2)");
-creditCard.innerHTML = `
-    <div style="
-        font-size:12px;
-        font-weight:800;
-        letter-spacing:3px;
-        margin-bottom:14px;
-        color:var(--danger);
-    ">
-        CREDIT LIMIT CONTROL
-    </div>
-
-    <div style="
-        font-size:26px;
-        font-family:'JetBrains Mono';
-        font-weight:800;
-        color:var(--gold);
-        text-shadow:0 0 18px rgba(245,158,11,0.4);
-    ">
-        ₹${data.totalLimit.toLocaleString('en-IN')}
-    </div>
-
-    <div style="
-        font-size:16px;
-        letter-spacing:2px;
-        color:var(--text-muted);
-        margin-bottom:16px;
-    ">
-        TOTAL LIMIT
-    </div>
-
-    <div style="
-        display:flex;
-        justify-content:space-between;
-        border-top:1px solid var(--border);
-        padding-top:14px;
-        font-family:'JetBrains Mono';
-    ">
-
-        <div>
-            <div style="
-                font-size:10px;
-                font-weight:700;
-                color:var(--danger);
-            ">
-                ₹${data.debt.toLocaleString('en-IN')}
-            </div>
-            <div style="
-                font-size:10px;
-                letter-spacing:2px;
-                color:var(--text-muted);
-            ">
-                USED
-            </div>
-        </div>
-
-        <div style="text-align:right;">
-            <div style="
-                font-size:10px;
-                font-weight:700;
-                color:var(--success);
-            ">
-                ₹${data.availableLimit.toLocaleString('en-IN')}
-            </div>
-            <div style="
-                font-size:10px;
-                letter-spacing:2px;
-                color:var(--text-muted);
-            ">
-                AVAILABLE
-            </div>
-        </div>
-
-    </div>
-`;
-
-
-
-// =========================
-// 🔹 NET POSITION CARD (FIXED)
-// =========================
-// Calculation should be Assets (Liquidity) minus Liabilities (Debt)
-const netPosition = totalCurrent - data.debt; 
-
-const netEl = document.getElementById('total-available');
-netEl.innerText = '₹' + netPosition.toLocaleString('en-IN');
-
-// Dynamic styling: Red if you owe more than you have, Blue if positive
-netEl.style.color = netPosition < 0 ? 'var(--danger)' : 'var(--primary)';
-
-
-        // =========================
-        // 🔹 CASH BREAKDOWN
-        // =========================
-        document.getElementById('cash-total').innerText =
-            '₹' + data.cashBreakdown[10].toLocaleString('en-IN');
-
-        const denoms = [500, 50, 5, 200, 20, 2, 100, 10, 1];
-        const sourceMap = { 500:1, 200:2, 100:3, 50:4, 20:5, 10:6, 5:7, 2:8, 1:9 };
-
-        let html = "";
-        denoms.forEach((v) => {
-            const dataIndex = sourceMap[v];
-            const count = data.cashBreakdown[dataIndex] || 0;
-            html += `
-                <div class="denom-tile" data-v="${v}">
-                    <span class="denom-value">₹${v}</span>
-                    <span class="denom-count">${count}</span>
-                </div>`;
-        });
-
-        document.getElementById('cash-grid').innerHTML = html;
-
-        // =========================
-        // 🔹 SYSTEM STATUS
-        // =========================
-        document.getElementById('status').innerText =
-            "System Online // Authorized";
-
-        adjustTableHeight();
-
-    } catch (e) {
-        document.getElementById('status').innerText =
-            "Sync Failed: Token Invalid";
-    }
-}
 let currentOtpResolve = null;
 
 async function startAuthSequence() {
     setProcessing(true, "REQUESTING ACCESS KEYS...");
-    
     try {
         const res = await fetch(`${SCRIPT_URL}?action=requestNewOTP`);
         const data = await res.json();
 
         if (data.status === "success") {
             setProcessing(false);
-            // Open our custom themed modal instead of prompt()
             document.getElementById('otp-modal').style.display = 'flex';
             document.getElementById('otp-input').focus();
-            
-            // Allow "Enter" key to submit
             document.getElementById('otp-input').onkeyup = (e) => {
                 if(e.key === "Enter") submitOtp();
             };
@@ -1653,8 +562,9 @@ async function startAuthSequence() {
         setProcessing(false);
     }
 }
+
 async function submitOtp() {
-    if (otpVerifying) return; // prevents accidental trigger
+    if (otpVerifying) return;
     otpVerifying = true;
     const input = document.getElementById('otp-input');
     const verifyBtn = document.querySelector('#otp-modal .btn-future');
@@ -1666,7 +576,6 @@ async function submitOtp() {
         return;
     }
 
-    // --- Start Visual sequence ---
     input.classList.add('verifying-mode');
     const originalBtnText = verifyBtn.innerText;
     verifyBtn.innerText = "VERIFYING...";
@@ -1679,24 +588,20 @@ async function submitOtp() {
         const verifyData = await verifyRes.json();
 
         if (verifyData.isValid) {
-            // 1. Save Session
             sessionStorage.setItem("finance_auth_v3", "true");
             sessionStorage.setItem("session_token", verifyData.token);
             
-            // 2. Clear UI
             document.getElementById('otp-modal').style.display = 'none';
             document.getElementById('displayArea').innerHTML = ""; 
             input.value = "";
             
-            // 3. WAKE UP SYSTEM (Crucial for loading data)
-            setProcessing(true, "SYNCING_DATABASE...");
-            loadSheetList(); 
-            await initializeDashboard(); 
-            setProcessing(false);
-            
-            document.getElementById('status').innerText = "SYSTEM_ONLINE // AUTHORIZED";
+            // 🔥 DOWNLOAD ALL DATA ONCE
+            const synced = await syncAllData(true); 
+            if (synced) {
+                loadSheetList(); 
+                initializeDashboard(); 
+            }
         } else {
-            // Failure Path
             setProcessing(false);
             otpVerifying = false;
             input.classList.remove('verifying-mode');
@@ -1705,7 +610,6 @@ async function submitOtp() {
             verifyBtn.disabled = false;
             verifyBtn.style.opacity = "1";
             document.getElementById('status').innerText = "ACCESS DENIED: INVALID KEY";
-            
             setTimeout(() => {
                 input.value = "";
                 input.classList.remove('auth-error');
@@ -1720,7 +624,6 @@ async function submitOtp() {
         verifyBtn.disabled = false;
         verifyBtn.style.opacity = "1";
         document.getElementById('status').innerText = "NODE_OFFLINE: CHECK CONNECTION";
-        console.error("Auth Error:", e);
     }
 }
 
@@ -1728,169 +631,106 @@ function closeOtpModal() {
     document.getElementById('otp-modal').style.display = 'none';
     document.getElementById('status').innerText = "Auth Aborted // Terminal Locked";
     showLogoutScreen();
-}    
+}   
 
-
-
-const APP_MODULES = [
-    "Full Statement", 
-    "Monthly Transaction", 
-    "Loan", 
-    "Credit", 
-    "Self Transfer", 
-    "Cash Entries"
-];
+const APP_MODULES = ["Full Statement", "Monthly Transaction", "Loan", "Credit", "Self Transfer", "Cash Entries"];
 
 function loadSheetList() {
     const container = document.getElementById("sheetOptionsContainer");
-    
-    // Using the hardcoded list for zero-latency loading
     container.innerHTML = APP_MODULES.map(name => `
         <div class="sheet-option" onclick="selectSheet('${name}', this)">
             📄 ${name}
         </div>
     `).join("");
 }
-	function toggleSheetDropdown(event) {
+
+function toggleSheetDropdown(event) {
     event.stopPropagation();
-    document.getElementById("sheetSelector")
-            .classList.toggle("open");
+    document.getElementById("sheetSelector").classList.toggle("open");
 }
 
+let selectedSheetName = "";
 function selectSheet(name, el) {
     selectedSheetName = name;
-
     document.getElementById("selectedSheetLabel").innerText = "📄 " + name;
-
-    document.querySelectorAll(".sheet-option")
-        .forEach(opt => opt.classList.remove("active"));
-
+    document.querySelectorAll(".sheet-option").forEach(opt => opt.classList.remove("active"));
     if (el) el.classList.add("active");
-
-    toggleSheetDropdown();
+    toggleSheetDropdown(new Event('click'));
 }
 
-
-
-// --- 3. EXECUTE SEARCH (With Token) ---
+// --- EXECUTE SEARCH (Zero Latency) ---
 async function loadMain() {
     if (sessionStorage.getItem("finance_auth_v3") !== "true") {
         document.getElementById('status').innerText = "AUTH_REQUIRED // PLEASE LOGIN";
         return; 
     }
+    if (!globalDataCache) return;
+
     const selectedSheet = selectedSheetName;
     const s = selectedStart;
     const e = selectedEnd;
 
-    // CASE 1: Sheet + Date Range
-    if (selectedSheet !== "" && s && e) {
-        setProcessing(true, `ACCESSING ${selectedSheet} // FILTERING RANGE...`);
-
-        try {
-            const res = await fetch(
-                `${SCRIPT_URL}?action=fetchSheetWithDate` +
-                `&sheetName=${encodeURIComponent(selectedSheet)}` +
-                `&start=${s}&end=${e}` +
-                getAuthParams()
-            );
-
-            const data = await res.json();
-
-            currentTableMode = 'registry';
-            renderTable(data.headers, data.rows);
-
-            setProcessing(false);
-            document.getElementById('status').innerText =
-                `Source: ${selectedSheet} // Range Applied`;
-
-        } catch (e) {
-            setProcessing(false);
-            document.getElementById('status').innerText =
-                "Sync Error: Date Filter Failed";
-        }
-
-        return;
-    }
-
-    // CASE 2: Only Sheet
+    // CASE 1 & 2: Specific Sheet (With or without dates)
     if (selectedSheet !== "") {
-        setProcessing(true, `ACCESSING MODULE: ${selectedSheet.toUpperCase()}...`);
-
-        try {
-            const res = await fetch(
-                `${SCRIPT_URL}?action=fetchRawSheet` +
-                `&sheetName=${encodeURIComponent(selectedSheet)}` +
-                getAuthParams()
-            );
-
-            const data = await res.json();
-
-            currentTableMode = 'registry';
-            renderTable(data.headers, data.rows);
-
+        setProcessing(true, `RENDERING MODULE: ${selectedSheet.toUpperCase()}...`);
+        
+        const sheetData = globalDataCache.sheets[selectedSheet];
+        if (!sheetData) {
             setProcessing(false);
-            document.getElementById('status').innerText =
-                `Source: ${selectedSheet}`;
-
-        } catch (e) {
-            setProcessing(false);
-            document.getElementById('status').innerText =
-                "Sync Error: Sheet Unreachable";
+            return alert("Sheet data not found in cache.");
         }
 
+        currentTableMode = 'registry';
+        let rowsToRender = sheetData.rows;
+
+        // Apply Date Filter instantly
+        if (s && e) {
+            rowsToRender = filterRowsLocallyByDate(sheetData.headers, sheetData.rows, s, e);
+        }
+
+        renderTable(sheetData.headers, rowsToRender);
+        setProcessing(false);
+        document.getElementById('status').innerText = `Source: ${selectedSheet} ${s ? '// Range Applied' : ''}`;
         return;
     }
 
-    // CASE 3: Only Date (Ledger Mode)
-    if (!s || !e) {
-        return alert("Select a Sheet or a Date Range.");
+    // CASE 3: Ledger Mode (Dates only)
+    if (!s || !e) return alert("Select a Sheet or a Date Range.");
+    
+    setProcessing(true, "COMPILING LEDGER LOCALLY...");
+    
+    let aggregatedRows = [];
+    let ledgerHeaders = [];
+    
+    for (const [sheetName, data] of Object.entries(globalDataCache.sheets)) {
+        if (ledgerHeaders.length === 0) ledgerHeaders = data.headers; 
+        const filtered = filterRowsLocallyByDate(data.headers, data.rows, s, e);
+        aggregatedRows = aggregatedRows.concat(filtered);
     }
 
-    setProcessing(true, "RETRIEVING LEDGER DATA...");
-
-    try {
-        const res = await fetch(
-            `${SCRIPT_URL}?action=getList&start=${s}&end=${e}` +
-            getAuthParams()
-        );
-
-        const data = await res.json();
-
-        currentTableMode = 'statement';
-        renderTable(data.headers, data.rows);
-        updateToolbarMetrics(data.headers, data.rows);
-
-        setProcessing(false);
-        document.getElementById('status').innerText =
-            "Ledger View // Range Applied";
-
-    } catch (e) {
-        setProcessing(false);
-        document.getElementById('status').innerText =
-            "Sync Error: Ledger Data Offline";
-    }
+    currentTableMode = 'statement';
+    renderTable(ledgerHeaders, aggregatedRows);
+    updateToolbarMetrics(ledgerHeaders, aggregatedRows);
+    
+    setProcessing(false);
+    document.getElementById('status').innerText = "Ledger View // Range Applied";
 }
 
+// --- VAULT VIEW (Zero Latency) ---
 async function viewNamedRange(rangeName) {
-
     if (sessionStorage.getItem("finance_auth_v3") !== "true") {
-        document.getElementById('status').innerText =
-            "ACCESS DENIED // PLEASE LOGIN FIRST";
+        document.getElementById('status').innerText = "ACCESS DENIED // PLEASE LOGIN FIRST";
         return;
     }
+    if (!globalDataCache) return;
 
     currentViewType = rangeName;
     currentTableMode = 'registry';
-
     setProcessing(true, `Accessing ${rangeName} Vault...`);
 
     try {
-
-        const res = await fetch(
-            `${SCRIPT_URL}?action=fetchNamedRange&range=${rangeName}${getAuthParams()}`
-        );
-
-        const data = await res.json();
+        const data = globalDataCache.namedRanges[rangeName];
+        if(!data) throw new Error("Data missing");
 
         let html = `
         <div style="margin-bottom:15px;border-left:4px solid var(--primary);padding-left:15px;">
@@ -1898,311 +738,206 @@ async function viewNamedRange(rangeName) {
                 ${rangeName === 'Savings' ? 'Active Assets' : 'Credit Accounts'}
             </h3>
         </div>
-
         <div class="card-grid">
         `;
 
         data.rows.forEach(row => {
-
-            if (
-                rangeName === "Savings" &&
-                String(row[0]).trim().toLowerCase() === "total"
-            ) return;
+            if (rangeName === "Savings" && String(row[0]).trim().toLowerCase() === "total") return;
 
             const isSavings = rangeName === "Savings";
-
-            const themeColor = isSavings
-                ? "var(--success)"
-                : "var(--danger)";
-
+            const themeColor = isSavings ? "var(--success)" : "var(--danger)";
             const name = row[0];
-
             const opening = Number(row[1]) || 0;
             const current = Number(row[2]) || 0;
             const totalLimit = Number(row[3]) || 0;
-
             let cardContent = "";
 
-            // ======================
-            // SAVINGS CARD
-            // ======================
-
             if (isSavings) {
-
                 cardContent = `
-                <div style="
-                    margin-top:12px;
-                    padding-top:10px;
-                    border-top:1px solid var(--border);
-                    font-family:'JetBrains Mono';
-                ">
-
-                    <div style="
-                        display:flex;
-                        justify-content:space-between;
-                        font-size:9px;
-                        letter-spacing:2px;
-                        color:var(--text-muted);
-                        margin-bottom:4px;
-                    ">
+                <div style="margin-top:12px; padding-top:10px; border-top:1px solid var(--border); font-family:'JetBrains Mono';">
+                    <div style="display:flex; justify-content:space-between; font-size:9px; letter-spacing:2px; color:var(--text-muted); margin-bottom:4px;">
                         <span>OPENING</span>
                         <span>CURRENT</span>
                     </div>
-
-                    <div style="
-    display:flex;
-    justify-content:space-between;
-    font-size:14px;
-    font-weight:700;
-    font-family:'JetBrains Mono';
-">
-
-    <span style="
-        color:var(--gold);
-        text-shadow:0 0 8px var(--ledger-glow);
-    ">
-        ₹${opening.toLocaleString('en-IN')}
-    </span>
-
-    <span style="
-        color:var(--success);
-        text-shadow:0 0 8px rgba(16,185,129,0.4);
-    ">
-        ₹${current.toLocaleString('en-IN')}
-    </span>
-
-</div>
-
+                    <div style="display:flex; justify-content:space-between; font-size:14px; font-weight:700; font-family:'JetBrains Mono';">
+                        <span style="color:var(--gold); text-shadow:0 0 8px var(--ledger-glow);">₹${opening.toLocaleString('en-IN')}</span>
+                        <span style="color:var(--success); text-shadow:0 0 8px rgba(16,185,129,0.4);">₹${current.toLocaleString('en-IN')}</span>
+                    </div>
                 </div>
                 `;
-            }
-
-            // ======================
-            // CREDIT CARD
-            // ======================
-
-            else {
-
+            } else {
                 const available = totalLimit - current;
-
-                const percent =
-                    totalLimit > 0
-                        ? Math.round((current / totalLimit) * 100)
-                        : 0;
-
-                const barColor =
-                    percent > 80
-                        ? "var(--danger)"
-                        : percent > 50
-                        ? "var(--gold)"
-                        : "var(--primary)";
+                const percent = totalLimit > 0 ? Math.round((current / totalLimit) * 100) : 0;
+                const barColor = percent > 80 ? "var(--danger)" : percent > 50 ? "var(--gold)" : "var(--primary)";
 
                 cardContent = `
-
-                <div style="
-                    color:${themeColor};
-                    font-size:22px;
-                    font-weight:800;
-                    font-family:'JetBrains Mono';
-                    margin-top:6px;
-                ">
+                <div style="color:${themeColor}; font-size:22px; font-weight:800; font-family:'JetBrains Mono'; margin-top:6px;">
                     ₹${current.toLocaleString('en-IN')}
                 </div>
-
                 <div style="margin:12px 0 10px 0;">
-
-                    <div style="
-                        display:flex;
-                        justify-content:space-between;
-                        font-size:9px;
-                        margin-bottom:4px;
-                        font-weight:800;
-                    ">
-                        <span style="color:var(--text-muted);">
-                            UTILIZATION
-                        </span>
-
-                        <span style="color:${barColor};">
-                            ${percent}%
-                        </span>
+                    <div style="display:flex; justify-content:space-between; font-size:9px; margin-bottom:4px; font-weight:800;">
+                        <span style="color:var(--text-muted);">UTILIZATION</span>
+                        <span style="color:${barColor};">${percent}%</span>
                     </div>
-
-                    <div style="
-                        width:100%;
-                        height:4px;
-                        background:rgba(255,255,255,0.05);
-                        border-radius:4px;
-                    ">
-                        <div style="
-                            width:${percent}%;
-                            height:100%;
-                            background:${barColor};
-                            box-shadow:0 0 10px ${barColor}aa;
-                            border-radius:4px;
-                        "></div>
+                    <div style="width:100%; height:4px; background:rgba(255,255,255,0.05); border-radius:4px;">
+                        <div style="width:${percent}%; height:100%; background:${barColor}; box-shadow:0 0 10px ${barColor}aa; border-radius:4px;"></div>
                     </div>
-
                 </div>
-
-                <div style="
-                    margin-top:8px;
-                    padding-top:10px;
-                    border-top:1px solid var(--border);
-                    display:flex;
-                    justify-content:space-between;
-                    font-family:'JetBrains Mono';
-                ">
-
+                <div style="margin-top:8px; padding-top:10px; border-top:1px solid var(--border); display:flex; justify-content:space-between; font-family:'JetBrains Mono';">
                     <div>
-
-                        <div style="
-                            font-size:9px;
-                            letter-spacing:2px;
-                            color:var(--text-muted);
-                        ">
-                            TOTAL LIMIT
-                        </div>
-
-                        <div style="
-                            font-size:14px;
-                            font-weight:700;
-                            color:var(--gold);
-                        ">
-                            ₹${totalLimit.toLocaleString('en-IN')}
-                        </div>
-
+                        <div style="font-size:9px; letter-spacing:2px; color:var(--text-muted);">TOTAL LIMIT</div>
+                        <div style="font-size:14px; font-weight:700; color:var(--gold);">₹${totalLimit.toLocaleString('en-IN')}</div>
                     </div>
-
                     <div style="text-align:right">
-
-                        <div style="
-                            font-size:9px;
-                            letter-spacing:2px;
-                            color:var(--text-muted);
-                        ">
-                            AVAILABLE
-                        </div>
-
-                        <div style="
-                            font-size:14px;
-                            font-weight:700;
-                            color:var(--success);
-                        ">
-                            ₹${available.toLocaleString('en-IN')}
-                        </div>
-
+                        <div style="font-size:9px; letter-spacing:2px; color:var(--text-muted);">AVAILABLE</div>
+                        <div style="font-size:14px; font-weight:700; color:var(--success);">₹${available.toLocaleString('en-IN')}</div>
                     </div>
-
                 </div>
                 `;
             }
 
             html += `
-            <div class="fin-panel"
-                 style="border-right:4px solid ${themeColor};"
-                 onclick="filterLedgerByEntity('${rangeName}','${name}')">
-
-                <div style="font-size:16px;font-weight:700;">
-                    ${name}
-                </div>
-
+            <div class="fin-panel" style="border-right:4px solid ${themeColor};" onclick="filterLedgerByEntity('${rangeName}','${name}')">
+                <div style="font-size:16px;font-weight:700;">${name}</div>
                 ${cardContent}
-
             </div>
             `;
         });
-
         html += `</div>`;
-
         document.getElementById("displayArea").innerHTML = html;
-
-setProcessing(false);
-
-// Update status for both vaults
-document.getElementById("status").innerText =
-    `${rangeName} Vault Loaded // System Online`;
-
-adjustTableHeight();
-
-    } catch (e) {
-
         setProcessing(false);
-        document.getElementById("status").innerText =
-    `${rangeName} Vault Loaded // System Online`;
-        document.getElementById("status").innerText =
-            "Vault Access Error";
-
+        document.getElementById("status").innerText = `${rangeName} Vault Loaded // System Online`;
+        adjustTableHeight();
+    } catch (e) {
+        setProcessing(false);
+        document.getElementById("status").innerText = "Vault Access Error";
     }
+}
+
+function accessDenied() {
+    document.body.innerHTML = `
+        <div style="background:radial-gradient(circle at 50% 0%, #1e293b 0%, #030712 100%); height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:'JetBrains Mono'; color: white;">
+            <h1 style="color:var(--danger); font-size:48px; margin:0;">403</h1>
+            <p style="color:var(--text-muted); letter-spacing:2px;">UNAUTHORIZED_ACCESS_DETECTED</p>
+            <button class="btn-blue" onclick="location.reload()" style="margin-top:20px;">RE-AUTHENTICATE</button>
+        </div>`;
+    window.stop();
 }
 
 
 
-    function accessDenied() {
-        document.body.innerHTML = `
-            <div style="background:radial-gradient(circle at 50% 0%, #1e293b 0%, #030712 100%); height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:'JetBrains Mono'; color: white;">
-                <h1 style="color:var(--danger); font-size:48px; margin:0;">403</h1>
-                <p style="color:var(--text-muted); letter-spacing:2px;">UNAUTHORIZED_ACCESS_DETECTED</p>
-                <button class="btn-blue" onclick="location.reload()" style="margin-top:20px;">RE-AUTHENTICATE</button>
-            </div>`;
-        window.stop();
-    }
-// --- 5. ENTITY FILTER (With Token) ---
- async function filterLedgerByEntity(type, query) {
-
+// --- ENTITY FILTER (Zero Latency - Strict Matches & Grouping Rules) ---
+async function filterLedgerByEntity(type, query) {
+    if (!globalDataCache) return;
     currentTableMode = 'statement';
     setProcessing(true, `Accessing Logs for ${query}...`);
 
     try {
-        const res = await fetch(
-            `${SCRIPT_URL}?action=searchStatementByEntity&type=${type}&query=${encodeURIComponent(query)}${getAuthParams()}`
-        );
-
-        const data = await res.json();
-
-        // 🔥 If Savings account → calculate running balance
-        if (type === "Savings") {
-
-    const openingBalance = await fetchOpeningBalance(query);
-
-    // 1️⃣ Sort first
-    const sortedRows = sortRowsByDate(data.headers, data.rows);
-
-    // 2️⃣ Then calculate running balance
-    const enhanced = injectRunningBalance(
-        data.headers,
-        sortedRows,
-        openingBalance
-    );
-
-    renderTable(enhanced.headers, enhanced.rows);
-}
- else {
-            renderTable(data.headers, data.rows);
+        const fullStatementData = globalDataCache.sheets["Full Statement"];
+        
+        if (!fullStatementData) {
+            setProcessing(false);
+            return alert("Full Statement data not found in cache. Please refresh.");
         }
 
-        setProcessing(false);
+        const ledgerHeaders = fullStatementData.headers;
+        
+        // Find exact column indexes
+        const transIdx = ledgerHeaders.findIndex(h => h.toLowerCase().includes('transaction'));
+        let entityIdx = ledgerHeaders.findIndex(h => h.toLowerCase().includes('from/'));
+        if (entityIdx === -1) entityIdx = ledgerHeaders.findIndex(h => h.toLowerCase().includes('account'));
+        
+        const qLower = query.toLowerCase().trim();
+        
+        // Advanced Filtering Logic
+        const matchedRows = fullStatementData.rows.filter(row => {
+            const transType = transIdx !== -1 && row[transIdx] ? String(row[transIdx]).toLowerCase().trim() : "";
+            const entity = entityIdx !== -1 && row[entityIdx] ? String(row[entityIdx]).toLowerCase().trim() : "";
 
+            if (type === "Savings") {
+                // SPECIAL RULE FOR CASH: Ignore transaction type, just check if from/to contains "cash"
+                if (qLower.includes("cash")) {
+                    return entity.includes("cash");
+                } 
+                else {
+                    // NORMAL SAVINGS RULE: 
+                    // 1. Transaction Type Rule: Must be upi, debit, or net
+                    const isAllowedTrans = transType.includes("upi") || transType.includes("debit") || transType.includes("net");
+                    
+                    // 2. Strict Entity Rule: Must be an EXACT match
+                    const isExactEntity = (entity === qLower);
+                    
+                    return isAllowedTrans && isExactEntity;
+                }
+            } 
+            else if (type === "CC") {
+                // 1. Transaction Type Rule: Must be credit
+                const isCredit = transType.includes("credit");
+                
+                // 2. Entity Matching Rule (Grouped by Bank)
+                let isMatchingEntity = false;
+                
+                if (qLower.includes("hdfc")) {
+                    // Allows HDFC Phonepe, HDFC Millennia, HDFC Tata Neu, etc.
+                    isMatchingEntity = entity.includes("hdfc"); 
+                } 
+                else if (qLower.includes("icici amazon")) {
+                    // Strict match ONLY for ICICI Amazon
+                    isMatchingEntity = entity.includes("icici amazon");
+                }
+                else if (qLower.includes("icici")) {
+                    // Groups ICICI Expressions and ICICI Coral for all OTHER ICICI clicks
+                    isMatchingEntity = entity.includes("icici expressions") || entity.includes("icici coral");
+                }
+                else if (qLower.includes("axis")) {
+                    // Strictly groups Axis Flipkart, Axis Neo, and Axis Myzone
+                    isMatchingEntity = entity.includes("axis flipkart") || entity.includes("axis neo") || entity.includes("axis myzone");
+                }
+                else {
+                    // Strict exact match for all other credit cards (e.g., SBI BPCL)
+                    isMatchingEntity = (entity === qLower);
+                }
+                
+                return isCredit && isMatchingEntity;
+            }
+            
+            return false;
+        });
+
+        // Process running balances if it's a Savings account
+        if (type === "Savings") {
+            const openingBalance = await fetchOpeningBalance(query); 
+            const sortedRows = sortRowsByDate(ledgerHeaders, matchedRows);
+            const enhanced = injectRunningBalance(ledgerHeaders, sortedRows, openingBalance);
+            renderTable(enhanced.headers, enhanced.rows);
+        } else {
+            renderTable(ledgerHeaders, matchedRows);
+        }
+        
+        setProcessing(false);
     } catch (e) {
+        console.error(e);
         setProcessing(false);
     }
 }
-
 async function fetchOpeningBalance(accountName) {
-
-    const res = await fetch(
-        `${SCRIPT_URL}?action=fetchNamedRange&range=Savings${getAuthParams()}`
-    );
-
-    const data = await res.json();
-
-    const row = data.rows.find(r => r[0] === accountName);
-
+    if (!globalDataCache) return 0;
+    
+    // 🟢 CHANGED: Now pulling from ActualOpenings instead of Savings
+    const openingsData = globalDataCache.namedRanges.ActualOpenings;
+    
+    if (!openingsData) return 0;
+    
+    // Find the row where Column A matches the account name
+    const row = openingsData.rows.find(r => r[0] === accountName);
     if (!row) return 0;
-
-    return parseFloat(row[1]) || 0;   // Column B = Opening
+    
+    // 🟢 NOTE: This assumes the opening balance is in Column B (index 1) of the ActualOpenings range.
+    // If it is in a different column in ActualOpenings, change row[1] to the correct index.
+    return parseFloat(row[1]) || 0; 
 }
-function injectRunningBalance(headers, rows, openingBalance) {
 
+function injectRunningBalance(headers, rows, openingBalance) {
     const depositIdx = headers.findIndex(h => /deposit/i.test(h));
     const withdrawnIdx = headers.findIndex(h => /withdrawn/i.test(h));
     const refIdx = headers.findIndex(h => /reference/i.test(h));
@@ -2212,23 +947,14 @@ function injectRunningBalance(headers, rows, openingBalance) {
     }
 
     let running = openingBalance;
-
     const newHeaders = [...headers];
     const insertPosition = refIdx !== -1 ? refIdx : depositIdx + 1;
-
     newHeaders.splice(insertPosition, 0, "Running Balance");
 
     const newRows = rows.map((row, index) => {
+        const deposit = parseFloat((row[depositIdx] || "0").toString().replace(/[^0-9.-]/g, "")) || 0;
+        const withdrawn = parseFloat((row[withdrawnIdx] || "0").toString().replace(/[^0-9.-]/g, "")) || 0;
 
-        const deposit = parseFloat(
-            (row[depositIdx] || "0").toString().replace(/[^0-9.-]/g, "")
-        ) || 0;
-
-        const withdrawn = parseFloat(
-            (row[withdrawnIdx] || "0").toString().replace(/[^0-9.-]/g, "")
-        ) || 0;
-
-        // 🔥 Running Balance Logic
         if (index === 0) {
             running = openingBalance + deposit - withdrawn;
         } else {
@@ -2236,79 +962,42 @@ function injectRunningBalance(headers, rows, openingBalance) {
         }
 
         const newRow = [...row];
-        // Round to 2 decimal places safely
-running = Math.round((running + Number.EPSILON) * 100) / 100;
-
-newRow.splice(insertPosition, 0, running);
-
-
+        running = Math.round((running + Number.EPSILON) * 100) / 100;
+        newRow.splice(insertPosition, 0, running);
         return newRow;
     });
 
-    return {
-        headers: newHeaders,
-        rows: newRows
-    };
+    return { headers: newHeaders, rows: newRows };
 }
 
-
-
 function updateToolbarMetrics(headers, rows) {
-
     const inflowEl = document.getElementById('bar-inflow');
     const outflowEl = document.getElementById('bar-outflow');
     if (!inflowEl || !outflowEl) return;
 
-    const inflowKeywords = [
-        "deposit",
-        "received",
-        "credit",
-        "incoming"
-    ];
-
-    const outflowKeywords = [
-        "withdrawn",
-        "given",
-        "debit",
-        "paid",
-        "expense"
-    ];
-
+    const inflowKeywords = ["deposit", "received", "credit", "incoming"];
+    const outflowKeywords = ["withdrawn", "given", "debit", "paid", "expense"];
     const headerLower = headers.map(h => h.toLowerCase());
 
-    const inflowIndexes = headerLower
-        .map((h, i) => inflowKeywords.some(k => h.includes(k)) ? i : -1)
-        .filter(i => i !== -1);
-
-    const outflowIndexes = headerLower
-        .map((h, i) => outflowKeywords.some(k => h.includes(k)) ? i : -1)
-        .filter(i => i !== -1);
+    const inflowIndexes = headerLower.map((h, i) => inflowKeywords.some(k => h.includes(k)) ? i : -1).filter(i => i !== -1);
+    const outflowIndexes = headerLower.map((h, i) => outflowKeywords.some(k => h.includes(k)) ? i : -1).filter(i => i !== -1);
 
     let inflow = 0;
     let outflow = 0;
 
     rows.forEach(row => {
-        inflowIndexes.forEach(i => {
-            inflow += parseFloat(
-                (row[i] || "0").toString().replace(/[^0-9.-]/g, "")
-            ) || 0;
-        });
-
-        outflowIndexes.forEach(i => {
-            outflow += parseFloat(
-                (row[i] || "0").toString().replace(/[^0-9.-]/g, "")
-            ) || 0;
-        });
+        inflowIndexes.forEach(i => { inflow += parseFloat((row[i] || "0").toString().replace(/[^0-9.-]/g, "")) || 0; });
+        outflowIndexes.forEach(i => { outflow += parseFloat((row[i] || "0").toString().replace(/[^0-9.-]/g, "")) || 0; });
     });
 
     inflowEl.innerText = formatINR(inflow);
     outflowEl.innerText = formatINR(outflow);
 }
 
-    function formatTacticalDate(dateStr) {
+function formatTacticalDate(dateStr) {
     if (!dateStr || dateStr === "") return "-";
     const date = new Date(dateStr);
-    if (isNaN(date)) return dateStr; // Return as-is if it's not a date
+    if (isNaN(date)) return dateStr; 
 
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const day = date.getDate();
@@ -2317,36 +1006,6 @@ function updateToolbarMetrics(headers, rows) {
 
     return `${day}-${month}-${year}`;
 }
-
-function autoFillDates() {
-    const month = document.getElementById('monthSelect').value;
-    const year = document.getElementById('yearSelect').value;
-
-    if (month === "") return;
-
-    // 1. Get the first day of the selected month
-    const firstDay = new Date(year, month, 1);
-    
-    // 2. Get the last day of the selected month
-    // Setting day to '0' of the next month correctly gets the last day of the current month
-    const lastDay = new Date(year, parseInt(month) + 1, 0);
-
-    // 3. Precise Formatting Helper (Prevents Timezone shifting)
-    const toLocalISO = (date) => {
-        const y = date.getFullYear();
-        const m = String(date.getMonth() + 1).padStart(2, '0');
-        const d = String(date.getDate()).padStart(2, '0');
-        return `${y}-${m}-${d}`;
-    };
-
-    // Update the actual inputs
-    document.getElementById('start').value = toLocalISO(firstDay);
-    document.getElementById('end').value = toLocalISO(lastDay);
-    
-    // Log for debugging (Check your browser console if it still acts up)
-    console.log(`Command Center: Range set to ${toLocalISO(firstDay)} through ${toLocalISO(lastDay)}`);
-}
-
 
 function setProcessing(isProcessing, message = "EXECUTING...") {
     const overlay = document.getElementById('processing-overlay');
@@ -2363,108 +1022,28 @@ function setProcessing(isProcessing, message = "EXECUTING...") {
         status.classList.remove('status-pulsing');
     }
 }
-  
-//sort by dates logic
+
 function sortRowsByDate(headers, rows) {
     const dateIndex = headers.findIndex(h => /date/i.test(h));
     if (dateIndex === -1) return rows;
 
     return rows.sort((a, b) => {
-        const parseDate = (val) => {
-            if (!val) return 0;
-
-            // Handle formats like:
-            // 2026-02-08
-            // 08-02-2026
-            // 8-Feb-2026
-            // 08-Feb-2026
-
-            const cleaned = val.toString().trim();
-
-            // Try ISO first
-            let d = new Date(cleaned);
-            if (!isNaN(d)) return d.getTime();
-
-            // Handle DD-MMM-YYYY (08-Feb-2026)
-            const parts = cleaned.split("-");
-            if (parts.length === 3) {
-                const months = {
-                    Jan:0, Feb:1, Mar:2, Apr:3, May:4, Jun:5,
-                    Jul:6, Aug:7, Sep:8, Oct:9, Nov:10, Dec:11
-                };
-
-                const day = parseInt(parts[0], 10);
-                const month = months[parts[1]];
-                const year = parseInt(parts[2], 10);
-
-                if (!isNaN(day) && month !== undefined && !isNaN(year)) {
-                    return new Date(year, month, day).getTime();
-                }
-            }
-
-            return 0;
-        };
-
-        return parseDate(a[dateIndex]) - parseDate(b[dateIndex]);
+        return parseDateValue(a[dateIndex]) - parseDateValue(b[dateIndex]);
     });
 }
 
-   function formatINR(value) {
+function formatINR(value) {
     if (value === null || value === undefined || value === "") return "";
-
     const num = parseFloat(value.toString().replace(/[^0-9.-]/g, ""));
     if (isNaN(num)) return value;
-
-    return "₹" + num.toLocaleString("en-IN", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    });
+    return "₹" + num.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function calculateLoanNet(headers, rows) {
-
-    const inflowKeywords = ["deposit","received","credit","incoming"];
-    const outflowKeywords = ["withdrawn","paid","debit","expense","given"];
-
-    const headerLower = headers.map(h => h.toLowerCase());
-
-    const inflowIndexes = headerLower
-        .map((h, i) => inflowKeywords.some(k => h.includes(k)) ? i : -1)
-        .filter(i => i !== -1);
-
-    const outflowIndexes = headerLower
-        .map((h, i) => outflowKeywords.some(k => h.includes(k)) ? i : -1)
-        .filter(i => i !== -1);
-
-    let totalInflow = 0;
-    let totalOutflow = 0;
-
-    rows.forEach(row => {
-        inflowIndexes.forEach(i => {
-            totalInflow += parseFloat(
-                (row[i] || "0").toString().replace(/[^0-9.-]/g, "")
-            ) || 0;
-        });
-
-        outflowIndexes.forEach(i => {
-            totalOutflow += parseFloat(
-                (row[i] || "0").toString().replace(/[^0-9.-]/g, "")
-            ) || 0;
-        });
-    });
-
-    return totalInflow - totalOutflow;
-}
-
-    // Shared table rendering logic
 function renderTable(headers, rows) {
-	 activeFilters = {};
-	
-	globalRawHeaders = headers; // Store for filter reference
-    globalRawRows = rows;       // Store for filter reference
-    // 🔹 Sort by date first
+    activeFilters = {};
+    globalRawHeaders = headers; 
+    globalRawRows = rows;      
     rows = sortRowsByDate(headers, rows);
-
     const isRegistry = currentTableMode === 'registry';
 
     let idColIdx = headers.findIndex(h => /id|ref_id|reference/i.test(h));
@@ -2476,7 +1055,7 @@ function renderTable(headers, rows) {
         <div class="table-search-box">
             <div style="display:flex; align-items:center; gap:15px; flex-grow:1;">
                 <input type="text" id="tableFilter" placeholder="Search Terminal..." onkeyup="applyFilters()">
-		  <button class="btn-future-danger" style="height:36px; font-size:11px;"onclick="resetAllFilters()">RESET</button>
+                <button class="btn-future-danger" style="height:36px; font-size:11px;"onclick="resetAllFilters()">RESET</button>
                 <span id="rowCount" style="font-family:'JetBrains Mono'; font-size:11px; color:var(--text-muted);">READY_</span>
             </div>
            <div style="display: flex; gap: 15px;">
@@ -2484,20 +1063,16 @@ function renderTable(headers, rows) {
         <span class="pill-label">Inflow</span>
         <span class="pill-val" id="bar-inflow" style="color: var(--success);">₹0</span>
     </div>
-
     <div class="metric-pill">
         <span class="pill-label">Outflow</span>
         <span class="pill-val" id="bar-outflow" style="color: var(--danger);">₹0</span>
     </div>
-
     <div class="metric-pill" id="loan-net-pill" style="display:none;">
         <span class="pill-label">Loan Net</span>
         <span class="pill-val" id="bar-loan-net">₹0</span>
     </div>
 </div>
-
         </div>
-
         <div class='table-wrap' id="tableWrap">
            <table id="mainDataTable" style="width: 100%; min-width: 1300px; table-layout: auto;">
                 <thead>
@@ -2511,49 +1086,24 @@ function renderTable(headers, rows) {
                                     <span class="filter-trigger" onclick="toggleFilterDropdown(event, '${fieldName}')">▼</span>
                                 </div>
                                 <div id="filter-dropdown-${fieldName}" class="filter-dropdown">
-                                    <input type="text"
-                                           class="filter-search-input"
-                                           placeholder="Search..."
-                                           onkeyup="filterColumnOptions('${fieldName}', this.value)">
-                                    <div id="options-container-${fieldName}" 
-                                         class="filter-options-container"></div>
+                                    <input type="text" class="filter-search-input" placeholder="Search..." onkeyup="filterColumnOptions('${fieldName}', this.value)">
+                                    <div id="options-container-${fieldName}" class="filter-options-container"></div>
                                     <div style="margin-top:8px; border-top:1px solid rgba(255,255,255,0.1); padding-top:8px;">
-
-<div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
-
-    <!-- Row 1: Select All + Reset -->
-    <div style="display:flex; gap:8px;">
-        <button class="btn-future"
-                style="flex:1; height:34px; font-size:11px; text-align:center; justify-content:center;"
-                onclick="selectAllOptions('${fieldName}')">
-            SELECT ALL
-        </button>
-
-        <button class="btn-future-danger"
-                style="flex:1; height:34px; font-size:11px; text-align:center; justify-content:center;"
-                onclick="clearFilter('${fieldName}')">
-            RESET
-        </button>
-    </div>
-
-    <!-- Row 2: Apply -->
-    <button class="btn-future"
-            style="width:100%; height:34px; font-size:11px; text-align:center; justify-content:center;"
-            onclick="confirmFilter('${fieldName}')">
-        APPLY FILTER
-    </button>
-</div>
-</div>
-
+                                        <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
+                                            <div style="display:flex; gap:8px;">
+                                                <button class="btn-future" style="flex:1; height:34px; font-size:11px; text-align:center; justify-content:center;" onclick="selectAllOptions('${fieldName}')">SELECT ALL</button>
+                                                <button class="btn-future-danger" style="flex:1; height:34px; font-size:11px; text-align:center; justify-content:center;" onclick="clearFilter('${fieldName}')">RESET</button>
+                                            </div>
+                                            <button class="btn-future" style="width:100%; height:34px; font-size:11px; text-align:center; justify-content:center;" onclick="confirmFilter('${fieldName}')">APPLY FILTER</button>
+                                        </div>
+                                    </div>
                                 </div>
                             </th>`;
                         }).join('')}
                     </tr>
                 </thead>
-
                 <tbody>
                     ${rows.map(row => {
-
                         const rawId = row[idColIdx];
                         const rowId = rawId ? String(rawId).trim() : "";
                         const clickAction = `handleRowClick(this)`;
@@ -2561,80 +1111,32 @@ function renderTable(headers, rows) {
                         return `
                         <tr class="data-row" data-id="${rowId}" onclick="${clickAction}">
                             ${row.map((cell, idx) => {
-
                                 const headerName = headers[idx].toLowerCase();
                                 const fieldName = headers[idx].toLowerCase().replace(/\s+/g, '_');
-
                                 const isIdCol = idx === idColIdx;
                                 const isRefData = idx === dataRefIdx;
                                 const isDate = /date/i.test(headers[idx]);
 
-                                // 💚 Inflow keywords
-                                const inflowKeywords = [
-                                    "deposit",
-                                    "received",
-                                    "credit",
-                                    "inflow",
-                                    "incoming"
-                                ];
-
-                                // ❤️ Outflow keywords
-                                const outflowKeywords = [
-                                    "withdrawn",
-                                    "given",
-                                    "debit",
-                                    "paid",
-                                    "outflow",
-                                    "expense"
-                                ];
-
+                                const inflowKeywords = ["deposit", "received", "credit", "inflow", "incoming"];
+                                const outflowKeywords = ["withdrawn", "given", "debit", "paid", "outflow", "expense"];
                                 const isInflow = inflowKeywords.some(k => headerName.includes(k));
                                 const isOutflow = outflowKeywords.some(k => headerName.includes(k));
                                 const isRunningBalance = headerName.includes("running balance");
-				const isAmount = isInflow || isOutflow || 
-		                 headerName.includes("total") || 
-                		 (headerName.includes("balance") && !isRunningBalance);
+                                const isAmount = isInflow || isOutflow || headerName.includes("total") || (headerName.includes("balance") && !isRunningBalance);
 
                                 let content = cell ?? '';
-				if (isAmount) {
- 				   content = formatINR(cell);
-				}
-                                if (isIdCol && !isRegistry) {
-                                    content = `<span class="id-badge">${cell}</span>`;
-                                }
-                                else if (isRefData) {
-                                    content = `<span class="ref-data">${cell}</span>`;
-                                }
-                                else if (isDate) {
-                                    content = formatTacticalDate(cell);
-                                }
+                                if (isAmount) content = formatINR(cell);
+                                if (isIdCol && !isRegistry) content = `<span class="id-badge">${cell}</span>`;
+                                else if (isRefData) content = `<span class="ref-data">${cell}</span>`;
+                                else if (isDate) content = formatTacticalDate(cell);
 
-				let amountStyle = "";
+                                let amountStyle = "";
+                                if (isRunningBalance) amountStyle = `color: var(--ledger); font-family: JetBrains Mono; font-weight: 800; text-shadow: 0 0 10px var(--ledger-glow);`;
+                                else if (isInflow) amountStyle = "color: var(--success); font-family:JetBrains Mono; font-weight:700;";
+                                else if (isOutflow) amountStyle = "color: var(--danger); font-family:JetBrains Mono; font-weight:700;";
+                                else if (isAmount) amountStyle = "font-family:JetBrains Mono; font-weight:600;";
 
-				if (isRunningBalance) {
-				    amountStyle = `
-        			    color: var(--ledger);
-        			    font-family: JetBrains Mono;
-        			    font-weight: 800;
-        			    text-shadow: 0 0 10px var(--ledger-glow);
-    				`;
-				}
-					else if (isInflow) {
-				    amountStyle = "color: var(--success); font-family:JetBrains Mono; font-weight:700;";
-				} 
-					else if (isOutflow) {
-				    amountStyle = "color: var(--danger); font-family:JetBrains Mono; font-weight:700;";
-				}
-				    else if (isAmount) {
-    				amountStyle = "font-family:JetBrains Mono; font-weight:600;";
-					}
-
-
-                                return `
-                                    <td data-field="${fieldName}"
-                                        style="${amountStyle} ${isIdCol ? 'min-width:140px;' : ''} text-align:center;">
-                                        ${content}
-                                    </td>`;
+                                return `<td data-field="${fieldName}" style="${amountStyle} ${isIdCol ? 'min-width:140px;' : ''} text-align:center;">${content}</td>`;
                             }).join('')}
                         </tr>`;
                     }).join('')}
@@ -2643,156 +1145,87 @@ function renderTable(headers, rows) {
         </div>
     </div>`;
 
-    let finalHTML = "";
-
-// 🔥 Loan Sheet Detection
-
-// Append Table
-finalHTML += html;
-
-document.getElementById('displayArea').innerHTML = finalHTML;
-
-
+    document.getElementById('displayArea').innerHTML = html;
     setTimeout(adjustTableHeight, 50);
     populateFilterOptions();
     recalculateMetricsFromVisible();
-	updateLoanNetFromBars();
-// 🔥 Inject Loan Net beside inflow/outflow
-if (selectedSheetName &&
-    selectedSheetName.toLowerCase().includes("loan")) {
+    updateLoanNetFromBars();
 
-    
-} else {
-    const pill = document.getElementById("loan-net-pill");
-    if (pill) pill.style.display = "none";
-}
+    if (!selectedSheetName || !selectedSheetName.toLowerCase().includes("loan")) {
+        const pill = document.getElementById("loan-net-pill");
+        if (pill) pill.style.display = "none";
+    }
 }
 
 function updateLoanNetFromBars() {
-
     const pill = document.getElementById("loan-net-pill");
     const netEl = document.getElementById("bar-loan-net");
 
-    if (!selectedSheetName ||
-        !selectedSheetName.toLowerCase().includes("loan")) {
-
+    if (!selectedSheetName || !selectedSheetName.toLowerCase().includes("loan")) {
         if (pill) pill.style.display = "none";
         return;
     }
 
     const inflowText = document.getElementById("bar-inflow")?.innerText || "0";
     const outflowText = document.getElementById("bar-outflow")?.innerText || "0";
-
     const inflow = parseFloat(inflowText.replace(/[^0-9.-]/g, "")) || 0;
     const outflow = parseFloat(outflowText.replace(/[^0-9.-]/g, "")) || 0;
-
     const net = inflow - outflow;
 
     if (pill && netEl) {
         pill.style.display = "block";
         netEl.innerText = formatINR(net);
-        netEl.style.color = net < 0
-            ? "var(--danger)"
-            : "var(--gold)";
+        netEl.style.color = net < 0 ? "var(--danger)" : "var(--gold)";
     }
 }
 
 function selectAllOptions(fieldName) {
-
     const container = document.getElementById(`options-container-${fieldName}`);
     if (!container) return;
-
     const options = container.querySelectorAll('.filter-option');
-
     let values = [];
-
     options.forEach(opt => {
-
         if (opt.style.display !== 'none') {
-
             opt.classList.add('selected');
-
             const val = opt.getAttribute('data-value');
             values.push(normalizeValue(val));
         }
     });
-
-    // 🔥 Update filter engine
     activeFilters[fieldName] = values;
-
-    // 🔥 Immediately re-run filtering
     applyFilters();
 }
-
-
 
 function filterColumnOptions(fieldName, query) {
     query = query.toLowerCase().trim();
     const container = document.getElementById(`options-container-${fieldName}`);
     if (!container) return;
-
     const options = container.querySelectorAll('.filter-option');
-    
     options.forEach(opt => {
         const val = opt.getAttribute('data-value').toLowerCase();
-        // If search is empty, show all. If typing, show only matches.
-        if (query === "" || val.includes(query)) {
-            opt.style.display = 'flex';
-        } else {
-            opt.style.display = 'none';
-        }
+        opt.style.display = (query === "" || val.includes(query)) ? 'flex' : 'none';
     });
 }
 
-
-
-
 function confirmFilter(fieldName) {
-
-    const container = document.getElementById(
-        `options-container-${fieldName}`
-    );
-
+    const container = document.getElementById(`options-container-${fieldName}`);
     const allChips = container.querySelectorAll(".filter-option");
     const selectedChips = container.querySelectorAll(".filter-option.selected");
-
     const total = allChips.length;
     const selected = selectedChips.length;
 
-    // 🚫 If nothing selected → DO NOTHING
-    if (selected === 0) {
-        return;
-    }
-
-    // 🔥 If all selected → remove filter (Excel behavior)
-    if (selected === total) {
-        activeFilters[fieldName] = [];
-    }
-    // 🔥 Partial selection → apply filter
-    else {
-        activeFilters[fieldName] = Array.from(selectedChips)
-            .map(chip => normalizeValue(chip.getAttribute("data-value")));
-    }
+    if (selected === 0) return;
+    if (selected === total) activeFilters[fieldName] = [];
+    else activeFilters[fieldName] = Array.from(selectedChips).map(chip => normalizeValue(chip.getAttribute("data-value")));
 
     applyFilters();
-
-    const dropdown = document.getElementById(
-        `filter-dropdown-${fieldName}`
-    );
-
+    const dropdown = document.getElementById(`filter-dropdown-${fieldName}`);
     if (dropdown) dropdown.style.display = "none";
 }
-function handleRowClick(rowElement) {
-    // 1. Toggle selection
-    rowElement.classList.toggle('selected');
-    
-    // 2. Clear status or update context menu (if you have logic for it)
-    if (typeof toggleButtons === "function") toggleButtons();
 
-    // 3. Update Metrics
+function handleRowClick(rowElement) {
+    rowElement.classList.toggle('selected');
     recalculateMetricsFromSelected();
 }
-
 
 function toggleFilterDropdown(event, fieldName) {
     event.stopPropagation();
@@ -2800,20 +1233,14 @@ function toggleFilterDropdown(event, fieldName) {
     const dropdown = document.getElementById(`filter-dropdown-${fieldName}`);
     
     if (dropdown.style.display !== 'block') {
-        // Close all other open menus
         document.querySelectorAll('.filter-dropdown').forEach(d => d.style.display = 'none');
-        
-        // 🔥 RE-CALCULATE OPTIONS BASED ON CURRENT VISIBILITY
         populateFilterOptions();
-
         document.body.appendChild(dropdown);
         dropdown.style.display = 'block';
         
-        // Existing positioning logic
         const rect = trigger.getBoundingClientRect();
         let topPos = rect.bottom + window.scrollY + 5;
         let leftPos = Math.max(10, Math.min(rect.left + window.scrollX - 200, window.innerWidth - 270));
-
         dropdown.style.top = topPos + "px";
         dropdown.style.left = leftPos + "px";
         dropdown.style.position = "absolute";
@@ -2821,56 +1248,32 @@ function toggleFilterDropdown(event, fieldName) {
         dropdown.style.display = 'none';
     }
 }
-function populateFilterOptions() {
 
+function populateFilterOptions() {
     const table = document.getElementById('mainDataTable');
     if (!table) return;
 
     globalRawHeaders.forEach((header, colIndex) => {
-
         const isDateColumn = /date/i.test(header);
         const fieldName = header.toLowerCase().replace(/\s+/g, '_');
-
-        const container = document.getElementById(
-            `options-container-${fieldName}`
-        );
-
+        const container = document.getElementById(`options-container-${fieldName}`);
         if (!container) return;
 
         const valueSet = new Set();
-
-        // ✅ Collect values properly
         globalRawRows.forEach(row => {
-
-            let rawValue = row[colIndex];
-            rawValue = (rawValue ?? "").toString().trim();
-
-            if (rawValue !== "") {
-                valueSet.add(rawValue);
-            }
+            let rawValue = (row[colIndex] ?? "").toString().trim();
+            if (rawValue !== "") valueSet.add(rawValue);
         });
 
         const sorted = Array.from(valueSet).sort((a, b) => {
-
-            if (isDateColumn) {
-                return new Date(a) - new Date(b);
-            }
-
-            if (!isNaN(a) && !isNaN(b)) {
-                return parseFloat(a) - parseFloat(b);
-            }
-
+            if (isDateColumn) return new Date(a) - new Date(b);
+            if (!isNaN(a) && !isNaN(b)) return parseFloat(a) - parseFloat(b);
             return a.localeCompare(b);
         });
 
         const selected = activeFilters[fieldName] || [];
-
         container.innerHTML = sorted.map(val => `
-            <div class="filter-option 
-                ${selected.includes(normalizeValue(val)) ? 'selected' : ''}"
-                data-field-target="${fieldName}"
-                data-value="${val}"
-                onclick="toggleFilterChip(this)">
+            <div class="filter-option ${selected.includes(normalizeValue(val)) ? 'selected' : ''}" data-field-target="${fieldName}" data-value="${val}" onclick="toggleFilterChip(this)">
                 <span>${val}</span>
             </div>
         `).join('');
@@ -2878,89 +1281,46 @@ function populateFilterOptions() {
 }
 
 function resetAllFilters() {
-
-    // 🔥 Clear filter state
     activeFilters = {};
-	
-    // 🔥 Clear search box
     const searchBox = document.getElementById('tableFilter');
     if (searchBox) searchBox.value = "";
+    document.querySelectorAll('.filter-option').forEach(chip => chip.classList.remove('selected'));
 
-    // 🔥 Remove selected chips visually
-    document.querySelectorAll('.filter-option')
-        .forEach(chip => chip.classList.remove('selected'));
-
-    // 🔥 Show all rows
     const table = document.getElementById('mainDataTable');
     if (!table) return;
+    table.querySelectorAll('.data-row').forEach(row => row.style.display = "");
 
-    table.querySelectorAll('.data-row')
-        .forEach(row => row.style.display = "");
-
-    // 🔥 Reset row counter
     const rowCount = document.getElementById('rowCount');
-    if (rowCount) {
-        rowCount.innerText =
-            "MATCH: " + table.querySelectorAll('.data-row').length;
-    }
+    if (rowCount) rowCount.innerText = "MATCH: " + table.querySelectorAll('.data-row').length;
 
-    // 🔥 Recalculate dashboard metrics
     recalculateMetricsFromVisible();
-	updateLoanNetFromBars();
-    // 🔥 Rebuild dropdown options
+    updateLoanNetFromBars();
     populateFilterOptions();
 
-    // 🔥 Status message
     const status = document.getElementById('status');
     if (status) status.innerText = "Filters Cleared // Full Dataset Active";
 }
 
-
 function toggleFilterChip(element) {
-
     const field = element.getAttribute('data-field-target');
-    const value = normalizeValue(
-    element.getAttribute('data-value')
-);
-
+    const value = normalizeValue(element.getAttribute('data-value'));
     element.classList.toggle('selected');
-
     if (!activeFilters[field]) activeFilters[field] = [];
-
     if (element.classList.contains('selected')) {
-        if (!activeFilters[field].includes(value)) {
-            activeFilters[field].push(value);
-        }
+        if (!activeFilters[field].includes(value)) activeFilters[field].push(value);
     } else {
-        activeFilters[field] = activeFilters[field]
-            .filter(v => v !== value);
+        activeFilters[field] = activeFilters[field].filter(v => v !== value);
     }
 }
 
-
-
-
 function clearFilter(fieldName) {
-
     activeFilters[fieldName] = [];
-
-    const chips = document.querySelectorAll(
-        `.filter-option[data-field-target="${fieldName}"]`
-    );
-
-    chips.forEach(c => c.classList.remove('selected'));
-
+    document.querySelectorAll(`.filter-option[data-field-target="${fieldName}"]`).forEach(c => c.classList.remove('selected'));
     applyFilters();
 }
 
-
-
 function applyFilters() {
-
-    const query = document.getElementById('tableFilter').value
-        .toLowerCase()
-        .trim();
-
+    const query = document.getElementById('tableFilter').value.toLowerCase().trim();
     const table = document.getElementById('mainDataTable');
     if (!table) return;
 
@@ -2968,32 +1328,20 @@ function applyFilters() {
     let visibleCount = 0;
 
     rows.forEach(row => {
-
         const cells = Array.from(row.querySelectorAll('td'));
-
-        // 🔎 Global Search
-        const matchesSearch = !query || cells.some(c =>
-            c.textContent.toLowerCase().includes(query)
-        );
-
-        // 🎯 Column Filters (AND Logic)
+        const matchesSearch = !query || cells.some(c => c.textContent.toLowerCase().includes(query));
         let matchesFilters = true;
 
         for (const field in activeFilters) {
-
             const selectedValues = activeFilters[field];
             if (!selectedValues || selectedValues.length === 0) continue;
 
             const cell = row.querySelector(`td[data-field="${field}"]`);
-            if (!cell) {
-   		 matchesFilters = false;
-   		 break;
-		}
+            if (!cell) { matchesFilters = false; break; }
 
             const cellText = normalizeValue(cell.textContent);
             if (!selectedValues.includes(cellText)) {
-                matchesFilters = false;
-                break;
+                matchesFilters = false; break;
             }
         }
 
@@ -3003,17 +1351,13 @@ function applyFilters() {
         } else {
             row.style.display = "none";
         }
-
     });
 
     document.getElementById('rowCount').innerText = `MATCH: ${visibleCount}`;
-
-    // 🔄 Update metrics
     recalculateMetricsFromVisible();
-	updateLoanNetFromBars();
+    updateLoanNetFromBars();
 }
 
-// Function to sum values from rows currently visible (after filtering)
 function recalculateMetricsFromVisible() {
     const rows = Array.from(document.querySelectorAll('#mainDataTable tbody tr'));
     let totalInflow = 0;
@@ -3033,14 +1377,12 @@ function recalculateMetricsFromVisible() {
     document.getElementById('bar-outflow').innerText = formatINR(totalOutflow);
 }
 
-// Function to sum values from rows manually selected (by clicking)
 function recalculateMetricsFromSelected() {
     const selectedRows = document.querySelectorAll('.data-row.selected');
     if (selectedRows.length === 0) {
-        recalculateMetricsFromVisible();// Revert to visible sum if nothing is selected
+        recalculateMetricsFromVisible();
         return;
     }
-
     let totalInflow = 0;
     let totalOutflow = 0;
 
@@ -3054,25 +1396,26 @@ function recalculateMetricsFromSelected() {
 
     document.getElementById('bar-inflow').innerText = formatINR(totalInflow);
     document.getElementById('bar-outflow').innerText = formatINR(totalOutflow);
-  updateLoanNetFromBars();
+    updateLoanNetFromBars();
 }
 
-
-
-
-
-
-
-
-    // --- ADDED MISSING LOGIC BELOW ---
-
+// --- TRACE SEQUENCE (Zero Latency Local) ---
 async function fetchAssociated() {
-        const ids = Array.from(document.querySelectorAll('.data-row.selected')).map(r => r.getAttribute('data-id'));
-        if (!ids.length) return;
-        setProcessing(true, "TRACING SYSTEM REFERENCES...");
-        try {
-            const res = await fetch(`${SCRIPT_URL}?action=fetchAssociated&ids=${encodeURIComponent(ids.join(','))}${getAuthParams()}`);
-            const grouped = await res.json();        
+    if (!globalDataCache) return;
+    const ids = Array.from(document.querySelectorAll('.data-row.selected')).map(r => r.getAttribute('data-id'));
+    if (!ids.length) return;
+    setProcessing(true, "TRACING SYSTEM REFERENCES LOCALLY...");
+
+    try {
+        let grouped = {};
+        for (const [sheetName, data] of Object.entries(globalDataCache.sheets)) {
+            // Very simple trace: checks if any cell in the row contains the ID
+            const matchedRows = data.rows.filter(row => row.some(cell => ids.includes(String(cell).trim())));
+            if (matchedRows.length > 0) {
+                grouped[sheetName] = { headers: data.headers, rows: matchedRows };
+            }
+        }
+
         let finalHtml = `
             <div style="margin-bottom:24px; display:flex; justify-content:space-between; align-items:center;">
                 <button class="btn-blue" onclick="loadMain()" style="background:var(--surface-bright); color:white; border: 1px solid var(--primary);">
@@ -3147,80 +1490,35 @@ async function deleteRecords() {
     setProcessing(true, "EXECUTING PURGE SEQUENCE...");
 
     try {
-        // We use the default 'cors' mode and handle the response properly
         const response = await fetch(SCRIPT_URL, {
             method: 'POST',
-            body: JSON.stringify({ 
-                action: 'deleteRows', 
-                ids: ids, 
-                token: token // Passing the HMAC token for authorization
-            })
+            body: JSON.stringify({ action: 'deleteRows', ids: ids, token: token })
         });
 
-        // Even if Apps Script returns a text response, we wait for it to finish
         await response.text();
-
         setProcessing(true, "PURGE SUCCESSFUL. SYNCING...");
 
-        // Small delay for Google Sheets to finish internal calculations
-        setTimeout(async () => {
-    try {
-
-        await initializeDashboard();
-
-        await loadMain();
-
-        document.getElementById('status').innerText = "TERMINAL SYNCED.";
-
-    } catch (err) {
-        console.error("Resync Error:", err);
-        document.getElementById('status').innerText = "SYNC ERROR";
-    } finally {
-        setProcessing(false);
-    }
-
-}, 1500);
+        // Refetch everything cleanly after modify
+        setTimeout(() => syncAllData(true), 1500);
 
     } catch(e) { 
         console.error("Purge Error:", e);
         setProcessing(false);
         document.getElementById('status').innerText = "PURGE FAILED: CONNECTION ERROR";
-        alert("System was unable to verify the deletion. Please check the ledger manually.");
     }
 }
-
-
-   
-  // Remove the old toggleButtons function entirely as we don't need fixed buttons anymore
-function toggleButtons() {
-    // Left empty: buttons are now inside the Context Menu
-    const holder = document.getElementById('action-buttons-holder');
-    if (holder) holder.innerHTML = ""; 
-}
-
-
 
 async function copyRowToClipboard(rowElement) {
     const table = document.getElementById('mainDataTable');
     const headers = Array.from(table.querySelectorAll('th')).map(th => th.innerText.trim());
     const cells = Array.from(rowElement.querySelectorAll('td')).map(td => td.innerText.trim());
 
-    // Helper to format date string from "07-Feb-2026" to "07-02-2026"
     const convertToNumericalDate = (dateStr) => {
         if (!dateStr || dateStr === "-") return dateStr;
         const parts = dateStr.split('-');
         if (parts.length !== 3) return dateStr;
-
-        const months = {
-            'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04', 'May': '05', 'Jun': '06',
-            'Jul': '07', 'Aug': '08', 'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
-        };
-
-        const day = parts[0].padStart(2, '0');
-        const month = months[parts[1]] || parts[1];
-        const year = parts[2];
-
-        return `${day}-${month}-${year}`;
+        const months = { 'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04', 'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08', 'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12' };
+        return `${parts[0].padStart(2, '0')}-${months[parts[1]] || parts[1]}-${parts[2]}`;
     };
 
     const getVal = (regex) => {
@@ -3228,10 +1526,8 @@ async function copyRowToClipboard(rowElement) {
         return idx !== -1 ? cells[idx] : "";
     };
 
-    // Format the date specifically for numerical output
     const rawDate = getVal(/date/i);
     const date = convertToNumericalDate(rawDate);
-    
     const narration = getVal(/narration/i);
     const spentFor = getVal(/spent for/i);
     const withdrawn = getVal(/withdrawn amount/i).replace(/[^0-9.]/g, "");
@@ -3243,137 +1539,57 @@ async function copyRowToClipboard(rowElement) {
     const amount = isDebit ? withdrawn : deposit;
     const type = isDebit ? "Debit" : "Credit";
 
-    const formattedText = 
-`📅 Date: ${date}
-👤 Name: ${spentFor}
-📝 Msg: ${narration}
-💰 Amount: ${amount}
-⇄ Type: ${type}
-🏢 Account: ${account}
-🔗 Ref: ${ref}`;
+    const formattedText = `📅 Date: ${date}\n👤 Name: ${spentFor}\n📝 Msg: ${narration}\n💰 Amount: ${amount}\n⇄ Type: ${type}\n🏢 Account: ${account}\n🔗 Ref: ${ref}`;
 
     try {
         await navigator.clipboard.writeText(formattedText);
-        
-        const originalBg = rowElement.style.background;
         rowElement.style.background = "var(--success)";
-        const statusMsg = document.getElementById('status');
-        const oldStatus = statusMsg.innerText;
-        statusMsg.innerText = "📋 COPIED AS NUMERICAL DATE";
+        document.getElementById('status').innerText = "📋 COPIED AS NUMERICAL DATE";
         
-        setTimeout(async () => {
-    try {
-
-        await initializeDashboard();
-
-        // 🔥 Always reload current view properly
-        if (selectedSheetName) {
-            await loadMain();
-        }
-        else if (selectedStart && selectedEnd) {
-            await loadMain();
-        }
-        else {
-            // Default fallback → reload current sheet if exists
-            await loadMain();
-        }
-
-        document.getElementById('status').innerText = "TERMINAL SYNCED.";
-
-    } catch (err) {
-        console.error("Resync Error:", err);
-        document.getElementById('status').innerText = "SYNC ERROR";
-    } finally {
-        setProcessing(false);
-    }
-
-}, 1500);
-
+        setTimeout(() => document.getElementById('status').innerText = "System Online // Authorized", 1500);
     } catch (err) {
         alert("Failed to copy text: " + err);
     }
 }
 
-let wasDragged = false;
-
-
-
-
 function adjustTableHeight() {
     const tableWrap = document.getElementById("tableWrap");
     if (!tableWrap) return;
-
     const viewportHeight = window.innerHeight;
-
     const dashboardHeight = document.querySelector(".dashboard")?.offsetHeight || 0;
     const toolbarHeight = document.querySelector(".toolbar")?.offsetHeight || 0;
-
     const paddingAllowance = 120; 
-
-    const calculatedHeight =
-        viewportHeight - dashboardHeight - toolbarHeight - paddingAllowance;
-
-    tableWrap.style.maxHeight = calculatedHeight + "px";
+    tableWrap.style.maxHeight = (viewportHeight - dashboardHeight - toolbarHeight - paddingAllowance) + "px";
 }
-let longPressTimer;
 
-// --- Context Menu Configuration ---
+let longPressTimer;
 function showContextMenu(e, rowElement) {
     e.preventDefault();
-    
-    // Select the row if not already selected
     if (!rowElement.classList.contains('selected')) {
         document.querySelectorAll('.data-row.selected').forEach(r => r.classList.remove('selected'));
         handleRowClick(rowElement);
     }
 
     const menu = document.getElementById('custom-context-menu');
-    const selectedRows = document.querySelectorAll('.data-row.selected');
-    const selectedCount = selectedRows.length;
+    const selectedCount = document.querySelectorAll('.data-row.selected').length;
     
-    // Dynamic Menu Content
     let menuHtml = ``;
     if (selectedCount === 1) {
-    menuHtml += `
-        <div class="menu-item" onclick="executeCommand('copy')">
-            <span>📋</span> Copy Details
-        </div>
-
-        <div class="menu-item" onclick="executeCommand('edit')">
-            <span>✏️</span> Edit Record
-        </div>
-    `;
-}
-
-    menuHtml += `
-        <div class="menu-item" onclick="executeCommand('trace')"><span>🔍</span> Trace Sequence (${selectedCount})</div>
-        <div class="menu-item danger" onclick="executeCommand('purge')"><span>🔥</span> Global Purge (${selectedCount})</div>
-    `;
+        menuHtml += `<div class="menu-item" onclick="executeCommand('copy')"><span>📋</span> Copy Details</div>
+                     <div class="menu-item" onclick="executeCommand('edit')"><span>✏️</span> Edit Record</div>`;
+    }
+    menuHtml += `<div class="menu-item" onclick="executeCommand('trace')"><span>🔍</span> Trace Sequence (${selectedCount})</div>
+                 <div class="menu-item danger" onclick="executeCommand('purge')"><span>🔥</span> Global Purge (${selectedCount})</div>`;
     menu.innerHTML = menuHtml;
 
-    // Display temporarily to calculate height
     menu.style.display = 'block';
     menu.style.visibility = 'hidden';
 
-    // Positioning Logic
     let x = e.pageX || (e.touches ? e.touches[0].pageX : 0);
     let y = e.pageY || (e.touches ? e.touches[0].pageY : 0);
 
-    const menuWidth = menu.offsetWidth;
-    const menuHeight = menu.offsetHeight;
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
-    // 🔥 Fix: Prevent Right-side Overflow
-    if (x + menuWidth > viewportWidth) {
-        x = x - menuWidth;
-    }
-
-    // 🔥 Fix: Prevent Bottom Overflow (Flip menu up if near bottom)
-    // We use window.scrollY to account for page scrolling
-    if (y + menuHeight > window.scrollY + viewportHeight) {
-        y = y - menuHeight;
-    }
+    if (x + menu.offsetWidth > window.innerWidth) x = x - menu.offsetWidth;
+    if (y + menu.offsetHeight > window.scrollY + window.innerHeight) y = y - menu.offsetHeight;
 
     menu.style.left = `${x}px`;
     menu.style.top = `${y}px`;
@@ -3387,66 +1603,32 @@ function hideContextMenu() {
     document.removeEventListener('click', hideContextMenu);
 }
 
-// --- command Executor ---
 async function executeCommand(type) {
     hideContextMenu();
     const selectedRows = document.querySelectorAll('.data-row.selected');
-    
-    if (type === 'copy' && selectedRows.length === 1) {
-        copyRowToClipboard(selectedRows[0]);
-    } 
-    else if (type === 'edit' && selectedRows.length === 1) {
-        openEditModal(selectedRows[0]);
-    }
-    else if (type === 'trace') {
-        fetchAssociated();
-    } 
-    else if (type === 'purge') {
-        deleteRecords();
-    }
+    if (type === 'copy' && selectedRows.length === 1) copyRowToClipboard(selectedRows[0]);
+    else if (type === 'edit' && selectedRows.length === 1) openEditModal(selectedRows[0]);
+    else if (type === 'trace') fetchAssociated();
+    else if (type === 'purge') deleteRecords();
 }
 
-// --- Mobile: Long Press Logic ---
 document.addEventListener('touchstart', function(e) {
     const row = e.target.closest('.data-row');
-    if (row) {
-        longPressTimer = setTimeout(() => showContextMenu(e, row), 600);
-    }
+    if (row) longPressTimer = setTimeout(() => showContextMenu(e, row), 600);
 }, {passive: true});
 
-document.addEventListener('touchend', function() {
-    clearTimeout(longPressTimer);
-});
-
-document.addEventListener('touchmove', function() {
-    clearTimeout(longPressTimer);
-});
-
-// Add these listeners to the bottom of your script
+document.addEventListener('touchend', () => clearTimeout(longPressTimer));
+document.addEventListener('touchmove', () => clearTimeout(longPressTimer));
 document.addEventListener('contextmenu', function(e) {
     const row = e.target.closest('.data-row');
     if (row) showContextMenu(e, row);
 });
 
-// Mobile long-press detection
-let pressTimer;
-document.addEventListener('touchstart', function(e) {
-    const row = e.target.closest('.data-row');
-    if (row) {
-        pressTimer = window.setTimeout(() => showContextMenu(e, row), 600);
-    }
-}, {passive: true});
-
-document.addEventListener('touchend', () => clearTimeout(pressTimer));
-document.addEventListener('touchmove', () => clearTimeout(pressTimer));
 window.addEventListener("resize", adjustTableHeight);
 window.addEventListener("load", adjustTableHeight);
 
 function showLogoutScreen() {
-    // Reset Status Bar
     document.getElementById('status').innerText = "System Locked // Awaiting Auth";
-
-    // Restore the original "Access Portal" Start-up Page
     document.getElementById('displayArea').innerHTML = `
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 50vh; text-align: center;">
             <div style="margin-bottom: 20px; font-size: 50px;">🔐</div>
@@ -3457,30 +1639,20 @@ function showLogoutScreen() {
             </button>
         </div>
     `;
-    
-    // Start the background animation (optional)
     const container = document.createElement("div");
     container.id = "floating-transactions";
     document.getElementById('displayArea').appendChild(container);
     startTransactionAnimation();
 }
+
 function startTransactionAnimation() {
-
     const container = document.getElementById("floating-transactions");
-
-    const transactions = [
-        "₹5,000 Credit",
-        "₹1,250 Debit",
-        "₹15,000 Deposit",
-        "₹3,200 Withdrawal",
-        "₹22,000 Credit",
-        "₹780 Debit"
-    ];
+    const transactions = ["₹5,000 Credit", "₹1,250 Debit", "₹15,000 Deposit", "₹3,200 Withdrawal", "₹22,000 Credit", "₹780 Debit"];
 
     setInterval(() => {
+        if(!document.getElementById("floating-transactions")) return;
         const div = document.createElement("div");
         div.innerText = transactions[Math.floor(Math.random() * transactions.length)];
-
         div.style.position = "absolute";
         div.style.left = Math.random() * 100 + "vw";
         div.style.bottom = "-40px";
@@ -3488,167 +1660,81 @@ function startTransactionAnimation() {
         div.style.opacity = "0.7";
         div.style.color = "rgba(14,165,233,0.7)";
         div.style.transition = "transform 6s linear, opacity 6s linear";
-
         container.appendChild(div);
 
-        setTimeout(() => {
-            div.style.transform = "translateY(-110vh)";
-            div.style.opacity = "0";
-        }, 50);
-
-        setTimeout(() => {
-            div.remove();
-        }, 6000);
-
+        setTimeout(() => { div.style.transform = "translateY(-110vh)"; div.style.opacity = "0"; }, 50);
+        setTimeout(() => { div.remove(); }, 6000);
     }, 800);
 }
 
-function toggleFormsMenu(e) {
-    e.stopPropagation();
-
-    const menu = document.getElementById("forms-menu");
-    const rect = e.target.getBoundingClientRect();
-
-    if (menu.style.display === "block") {
-        menu.style.display = "none";
-        return;
-    }
-
-    menu.style.display = "block";
-    menu.style.left = rect.left + "px";
-    menu.style.top = (rect.bottom + window.scrollY + 8) + "px";
-}
-
 function openFormLink(type) {
-
     const urls = {
         monthly: "https://oprasannakumar.github.io/MonthlytransactionsGoogleSheets/",
         loan: "https://oprasannakumar.github.io/LoanTransferGoogleSheets/",
         self: "https://oprasannakumar.github.io/Self-TransferGoogleScripts/"
     };
-
     window.open(urls[type], "_blank");
-
-    document.getElementById("forms-menu").style.display = "none";
+    document.getElementById("quickActionsSelector").classList.remove("open");
 }
 
-document.addEventListener("click", function(e) {
-    if (!e.target.closest("#forms-menu")) {
-        document.getElementById("forms-menu").style.display = "none";
-    }
-});
 function resetDashboardToZero() {
-    // Reset Main Stats
-    const vals = ['net-val', 'debt-val', 'total-available', 'cash-total'];
-    vals.forEach(id => {
+    ['net-val', 'debt-val', 'total-available', 'cash-total'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerText = "₹0";
     });
 
-    // Reset Liquidity Card Details (if already rendered)
     const liquidityCard = document.querySelector(".dashboard .stat-card:nth-child(1)");
-    if (liquidityCard) {
-        liquidityCard.innerHTML = `
-            <div class="corner-accent"></div>
-            <span class="label">Liquidity Pool</span>
-            <div class="value" style="color: var(--success);" id="net-val">₹0</div>
-        `;
-    }
+    if (liquidityCard) liquidityCard.innerHTML = `<div class="corner-accent"></div><span class="label">Liquidity Pool</span><div class="value" style="color: var(--success);" id="net-val">₹0</div>`;
 
-    // Reset Credit Card Details (if already rendered)
     const creditCard = document.querySelector(".dashboard .stat-card:nth-child(2)");
-    if (creditCard) {
-        creditCard.innerHTML = `
-            <span class="label">Credit Exposure</span>
-            <div class="value" style="color: var(--danger);" id="debt-val">₹0</div>
-        `;
-    }
+    if (creditCard) creditCard.innerHTML = `<span class="label">Credit Exposure</span><div class="value" style="color: var(--danger);" id="debt-val">₹0</div>`;
 
-    // Clear Cash Grid
     const cashGrid = document.getElementById('cash-grid');
     if (cashGrid) cashGrid.innerHTML = "";
-    
-    // Clear Main Display (Tables/Cards)
     document.getElementById('displayArea').innerHTML = "";
 }
-function logout() {
-    // 1. Instantly hide the Quick Actions dropdown
-    const actionSelector = document.getElementById("quickActionsSelector");
-    if (actionSelector) {
-        actionSelector.classList.remove("open");
-    }
 
-    // 2. Clear credentials
+function logout() {
+    const actionSelector = document.getElementById("quickActionsSelector");
+    if (actionSelector) actionSelector.classList.remove("open");
+
     sessionStorage.removeItem("finance_auth_v3");
     sessionStorage.removeItem("session_token");
     
-    // 3. Purge Dashboard Data (Reset to Zero)
     resetDashboardToZero();
-    
-    // 4. Reset display area to start-up page
     showLogoutScreen();
-    
-    // 5. Update system status
     document.getElementById('status').innerText = "SESSION_TERMINATED // DATA_PURGED";
 }
-// Close dropdown if the user scrolls the table or clicks outside
+
 document.addEventListener('scroll', function(e) {
-    if (e.target.id === 'tableWrap') {
-        document.querySelectorAll('.filter-dropdown').forEach(d => d.style.display = 'none');
-    }
+    if (e.target.id === 'tableWrap') document.querySelectorAll('.filter-dropdown').forEach(d => d.style.display = 'none');
 }, true);
 
 document.addEventListener('click', function(e) {
     if (!e.target.closest('.filter-dropdown') && !e.target.closest('.filter-trigger')) {
         document.querySelectorAll('.filter-dropdown').forEach(d => d.style.display = 'none');
     }
+    const sheetSelector = document.getElementById("sheetSelector");
+    const actionSelector = document.getElementById("quickActionsSelector");
+    if (sheetSelector && !sheetSelector.contains(e.target)) sheetSelector.classList.remove("open");
+    if (actionSelector && !actionSelector.contains(e.target)) actionSelector.classList.remove("open");
 });
 
-// Close Sheet Selector when clicking outside
-document.addEventListener("click", function (e) {
-
-    const selector = document.getElementById("sheetSelector");
-
-    if (!selector) return;
-    // If click is NOT inside sheet selector → close it
-    if (!selector.contains(e.target)) {
-        selector.classList.remove("open");
-    }
-});
 let editingRowId = null;
 
 function openEditModal(rowElement) {
-
     const table = document.getElementById('mainDataTable');
-    const headers = Array.from(table.querySelectorAll('th'))
-        .map(th => th.innerText.trim());
-
-    const cells = Array.from(rowElement.querySelectorAll('td'))
-        .map(td => td.innerText.trim());
+    const headers = Array.from(table.querySelectorAll('th')).map(th => th.innerText.trim());
+    const cells = Array.from(rowElement.querySelectorAll('td')).map(td => td.innerText.trim());
 
     editingRowId = rowElement.getAttribute('data-id');
-
     let fieldsHtml = "";
 
     headers.forEach((header, i) => {
-
         fieldsHtml += `
             <div style="margin-bottom:12px;">
                 <label style="font-size:11px; color:var(--text-muted);">${header}</label>
-                <input 
-                    type="text"
-                    value="${cells[i] || ""}"
-                    data-index="${i}"
-                    style="
-                        width:100%;
-                        padding:8px;
-                        border-radius:8px;
-                        border:1px solid var(--border);
-                        background:#111827;
-                        color:white;
-                        margin-top:4px;
-                    "
-                >
+                <input type="text" value="${cells[i] || ""}" data-index="${i}" style="width:100%; padding:8px; border-radius:8px; border:1px solid var(--border); background:#111827; color:white; margin-top:4px;">
             </div>
         `;
     });
@@ -3656,21 +1742,19 @@ function openEditModal(rowElement) {
     document.getElementById('edit-fields').innerHTML = fieldsHtml;
     document.getElementById('edit-modal').style.display = "flex";
 }
+
 function closeEditModal() {
     document.getElementById('edit-modal').style.display = "none";
     editingRowId = null;
 }
+
 async function saveEdit() {
-
     if (!editingRowId) return;
-
     const inputs = document.querySelectorAll('#edit-fields input');
     const updatedRow = Array.from(inputs).map(input => input.value);
-
     setProcessing(true, "UPDATING RECORD...");
 
     try {
-
         await fetch(SCRIPT_URL, {
             method: 'POST',
             body: JSON.stringify({
@@ -3682,61 +1766,27 @@ async function saveEdit() {
         });
 
         closeEditModal();
-
-        setTimeout(async () => {
-            await initializeDashboard();
-            await loadMain();
-            setProcessing(false);
-            document.getElementById('status').innerText = "UPDATE SUCCESSFUL";
-        }, 1200);
+        
+        // Massive re-sync after edit
+        setTimeout(() => syncAllData(true), 1200);
 
     } catch (e) {
         setProcessing(false);
         alert("Update failed.");
     }
 }
-// Toggle the new Quick Actions menu
+
 function toggleQuickActions(event) {
     event.stopPropagation();
-    // Close other dropdowns first
     document.getElementById("sheetSelector").classList.remove("open");
     document.getElementById("quickActionsSelector").classList.toggle("open");
 }
 
-// Global click listener to close dropdowns when clicking outside
-document.addEventListener("click", function (e) {
-    const sheetSelector = document.getElementById("sheetSelector");
-    const actionSelector = document.getElementById("quickActionsSelector");
-
-    if (sheetSelector && !sheetSelector.contains(e.target)) {
-        sheetSelector.classList.remove("open");
-    }
-    if (actionSelector && !actionSelector.contains(e.target)) {
-        actionSelector.classList.remove("open");
-    }
-});
 </script>
 <div id="custom-context-menu"></div>
 
-<div id="edit-modal" style="
-    display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,0.8);
-    backdrop-filter:blur(8px);
-    z-index:20000;
-    align-items:center;
-    justify-content:center;
-">
-    <div style="
-        background:#0f172a;
-        padding:30px;
-        border-radius:20px;
-        width:600px;
-        max-height:80vh;
-        overflow:auto;
-        border:1px solid var(--primary);
-    ">
+<div id="edit-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px); z-index:20000; align-items:center; justify-content:center;">
+    <div style="background:#0f172a; padding:30px; border-radius:20px; width:600px; max-height:80vh; overflow:auto; border:1px solid var(--primary);">
         <h3 style="margin-top:0;">✏️ Edit Record</h3>
         <div id="edit-fields"></div>
         <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
@@ -3746,12 +1796,9 @@ document.addEventListener("click", function (e) {
     </div>
 </div>
 <script>
-  // Register the Service Worker
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js')
-        .then(reg => console.log('Service Worker registered!', reg))
-        .catch(err => console.log('Service Worker failed:', err));
+      navigator.serviceWorker.register('./sw.js').catch(err => console.log('Service Worker failed:', err));
     });
   }
 </script>
@@ -3760,28 +1807,11 @@ document.addEventListener("click", function (e) {
         <div class="corner-accent"></div>
         <div style="font-size:32px; margin-bottom:10px;">🛡️</div>
         <h2 style="letter-spacing:3px; font-size:13px; color:var(--primary); margin-bottom:15px;">SECURITY CHALLENGE</h2>
-        <p style="font-size:10px; color:var(--text-muted); margin-bottom:20px; line-height:1.5; letter-spacing:1px;">
-            DECRYPTING SESSION...<br>ENTER TELEGRAM AUTHORIZATION KEY
-        </p>
-        
-        <input type="tel" id="otp-input" maxlength="6" placeholder="000000" 
-       autocomplete="one-time-code" 
-       inputmode="numeric" 
-       autocorrect="off" 
-       autocapitalize="off" 
-       spellcheck="false"
-       style="width:180px; display:block; margin: 0 auto 25px auto; background:rgba(0,0,0,0.6); border: 1px solid rgba(14,165,233,0.3); border-radius:10px; padding:12px; color:var(--primary); font-family:'JetBrains Mono'; font-size:20px; text-align:center; letter-spacing:6px; outline:none; box-shadow:inset 0 0 15px rgba(0,0,0,0.5);">
-        
+        <p style="font-size:10px; color:var(--text-muted); margin-bottom:20px; line-height:1.5; letter-spacing:1px;">DECRYPTING SESSION...<br>ENTER TELEGRAM AUTHORIZATION KEY</p>
+        <input type="tel" id="otp-input" maxlength="6" placeholder="000000" autocomplete="one-time-code" inputmode="numeric" autocorrect="off" autocapitalize="off" spellcheck="false" style="width:180px; display:block; margin: 0 auto 25px auto; background:rgba(0,0,0,0.6); border: 1px solid rgba(14,165,233,0.3); border-radius:10px; padding:12px; color:var(--primary); font-family:'JetBrains Mono'; font-size:20px; text-align:center; letter-spacing:6px; outline:none; box-shadow:inset 0 0 15px rgba(0,0,0,0.5);">
         <div style="display:flex; gap:12px; padding: 0 10px; justify-content: center;">
-            <button class="btn-future-danger" 
-                    style="flex:1; height:45px; display:flex; align-items:center; justify-content:center; text-align:center;" 
-                    onclick="closeOtpModal()">
-                ABORT
-            </button>
-                        <button class="btn-future" 
-                    style="flex:1; height:45px; display:flex; align-items:center; justify-content:center; text-align:center;" 
-                    onclick="submitOtp()"> VERIFY
-            </button>
+            <button class="btn-future-danger" style="flex:1; height:45px; display:flex; align-items:center; justify-content:center; text-align:center;" onclick="closeOtpModal()">ABORT</button>
+            <button class="btn-future" style="flex:1; height:45px; display:flex; align-items:center; justify-content:center; text-align:center;" onclick="submitOtp()"> VERIFY</button>
         </div>
     </div>
 </div>
