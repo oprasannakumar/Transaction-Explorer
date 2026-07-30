@@ -382,17 +382,26 @@ document.addEventListener("DOMContentLoaded", function () {
         mode: "range",
         dateFormat: "Y-m-d",
         onClose: function(selectedDates) {
+            const toLocalISO = (date) => {
+                const y = date.getFullYear();
+                const m = String(date.getMonth() + 1).padStart(2, '0');
+                const d = String(date.getDate()).padStart(2, '0');
+                return `${y}-${m}-${d}`;
+            };
+
             if (selectedDates.length === 2) {
-                const toLocalISO = (date) => {
-                    const y = date.getFullYear();
-                    const m = String(date.getMonth() + 1).padStart(2, '0');
-                    const d = String(date.getDate()).padStart(2, '0');
-                    return `${y}-${m}-${d}`;
-                };
                 selectedStart = toLocalISO(selectedDates[0]);
                 selectedEnd   = toLocalISO(selectedDates[1]);
-                console.log("Selected Range:", selectedStart, "to", selectedEnd);
+            } else if (selectedDates.length === 1) {
+                // 🟢 HANDLES SINGLE DAY SELECTION
+                selectedStart = toLocalISO(selectedDates[0]);
+                selectedEnd   = toLocalISO(selectedDates[0]); // Start and end are the same day
+            } else {
+                selectedStart = "";
+                selectedEnd = "";
             }
+
+            console.log("Selected Range/Date:", selectedStart, "to", selectedEnd);
         }
     });
 });
@@ -443,12 +452,14 @@ async function syncAllData(forceRefresh = false) {
 }
 
 function filterRowsLocallyByDate(headers, rows, startStr, endStr) {
-    if (!startStr || !endStr) return rows;
+    if (!startStr) return rows;
     const dateIndex = headers.findIndex(h => /date/i.test(h));
     if (dateIndex === -1) return rows;
 
-    const sTime = new Date(startStr).getTime();
-    const eTime = new Date(endStr).setHours(23, 59, 59, 999);
+    const sTime = new Date(startStr).setHours(0, 0, 0, 0);
+    // If no end date is provided or it's a single day, target the end of that same day
+    const targetEnd = endStr ? endStr : startStr;
+    const eTime = new Date(targetEnd).setHours(23, 59, 59, 999);
 
     return rows.filter(row => {
         const rowTime = parseDateValue(row[dateIndex]);
